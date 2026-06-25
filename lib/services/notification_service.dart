@@ -37,7 +37,7 @@ class NotificationService {
     _addInApp(AppNotification(
       id: 'welcome',
       title: '🚗 Welcome to ITEC Parking',
-      body: 'Rwanda National Parking System — tap to look up a vehicle.',
+      body: 'ITEC Parking — tap to look up a vehicle.',
       type: NotificationType.system,
       time: DateTime.now(),
     ));

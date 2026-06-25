@@ -95,7 +95,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 200.ms),
                     const SizedBox(height: 6),
-                    Text('Rwanda National Parking System',
+                    Text('ITEC Parking',
                       style: AppTheme.body.copyWith(color: AppTheme.textMuted),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 280.ms),
