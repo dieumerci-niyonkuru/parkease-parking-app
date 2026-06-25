@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 12),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('ITEC PARKING', style: AppTheme.heading4.copyWith(fontSize: 14, letterSpacing: 1.2, color: AppTheme.primary)),
-                  Text('RWANDA NATIONAL PORTAL', style: AppTheme.label.copyWith(fontSize: 9, letterSpacing: 0.5)),
+                  Text('RWA', style: AppTheme.label.copyWith(fontSize: 9, letterSpacing: 2, fontWeight: FontWeight.w900)),
                 ]),
               ]),
               actions: [

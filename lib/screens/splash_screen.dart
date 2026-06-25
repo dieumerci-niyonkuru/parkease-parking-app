@@ -108,8 +108,8 @@ class _SplashScreenState extends State<SplashScreen>
             style: AppTheme.heading1.copyWith(fontSize: 32, letterSpacing: 2, color: AppTheme.primary),
           ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
           
-          Text('NATIONAL DRIVER PORTAL',
-            style: AppTheme.label.copyWith(letterSpacing: 1.5, color: AppTheme.textMuted),
+          Text('RWA',
+            style: AppTheme.label.copyWith(letterSpacing: 4, color: AppTheme.textMuted, fontWeight: FontWeight.w900),
           ).animate().fadeIn(delay: 500.ms),
 
           const Spacer(flex: 2),
