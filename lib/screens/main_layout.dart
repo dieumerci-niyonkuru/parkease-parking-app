@@ -1,0 +1,233 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+import '../theme/app_theme.dart';
+import '../services/auth_service.dart';
+import '../services/profile_service.dart';
+import 'home_screen.dart';
+import 'plate_lookup_screen.dart';
+import 'history_screen.dart';
+import 'profile_screen.dart';
+
+class MainLayout extends StatefulWidget {
+  final int initialIndex;
+  const MainLayout({super.key, this.initialIndex = 0});
+
+  @override State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  late int _currentIndex;
+  final _searchCtrl = TextEditingController();
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
+
+  final List<Widget> _pages = [
+    const HomeScreen(),
+    const PlateLookupScreen(initialPlate: ''),
+    const HistoryScreen(),
+    const ProfileScreen(),
+  ];
+
+  String get _pageTitle {
+    switch (_currentIndex) {
+      case 0: return 'DASHBOARD';
+      case 1: return 'PLATE LOOKUP';
+      case 2: return 'RECEIPTS';
+      case 3: return 'MY ACCOUNT';
+      default: return 'ITEC PARKING';
+    }
+  }
+
+  @override Widget build(BuildContext context) {
+    final profile = ProfileService.profile;
+
+    return Scaffold(
+      backgroundColor: AppTheme.bgDeep,
+      appBar: AppBar(
+        backgroundColor: AppTheme.bgCard,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: false,
+        title: _isSearching 
+          ? TextField(
+              controller: _searchCtrl,
+              autofocus: true,
+              style: AppTheme.body,
+              decoration: const InputDecoration(
+                hintText: 'Quick search...',
+                border: InputBorder.none,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onChanged: (v) {
+                context.read<AppProvider>().updateSearchQuery(v);
+              },
+            )
+          : Row(
+              children: [
+                Container(
+                  width: 32, height: 32,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primary,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.local_parking_rounded, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('ITEC PARKING', style: AppTheme.heading4.copyWith(fontSize: 12, letterSpacing: 1.2)),
+                    Text(_pageTitle, style: AppTheme.label.copyWith(fontSize: 9, letterSpacing: 0.5)),
+                  ],
+                ),
+              ],
+            ),
+        actions: [
+          IconButton(
+            onPressed: () => setState(() => _isSearching = !_isSearching),
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: AppTheme.primary),
+          ),
+          if (!_isSearching)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, left: 4),
+              child: PopupMenuButton<int>(
+                offset: const Offset(0, 48),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                onSelected: (val) async {
+                  if (val == 0) {
+                    setState(() => _currentIndex = 3); // Go to profile
+                  } else if (val == 1) {
+                    await AuthService.logout();
+                    if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+                  }
+                },
+                child: Hero(
+                  tag: 'main-avatar',
+                  child: CircleAvatar(
+                    radius: 16,
+                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundImage: profile.profilePic.isNotEmpty
+                        ? FileImage(File(profile.profilePic))
+                        : null,
+                    child: profile.profilePic.isEmpty
+                        ? const Icon(Icons.person_rounded, color: AppTheme.primary, size: 18)
+                        : null,
+                  ),
+                ),
+                itemBuilder: (ctx) => [
+                  PopupMenuItem(
+                    value: 0,
+                    child: Row(children: [
+                      const Icon(Icons.person_outline_rounded, size: 20),
+                      const SizedBox(width: 12),
+                      Text('My Profile', style: AppTheme.body),
+                    ]),
+                  ),
+                  PopupMenuItem(
+                    value: 1,
+                    child: Row(children: [
+                      const Icon(Icons.logout_rounded, size: 20, color: AppTheme.danger),
+                      const SizedBox(width: 12),
+                      Text('Logout', style: AppTheme.body.copyWith(color: AppTheme.danger)),
+                    ]),
+                  ),
+                ],
+              ),
+            ),
+        ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: AppTheme.border.withOpacity(0.5), height: 1),
+        ),
+      ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: _pages,
+      ),
+      bottomNavigationBar: _PremiumBottomNav(
+        current: _currentIndex,
+        onTap: (i) {
+          HapticFeedback.lightImpact();
+          setState(() => _currentIndex = i);
+        },
+      ),
+    );
+  }
+}
+
+class _PremiumBottomNav extends StatelessWidget {
+  final int current;
+  final void Function(int) onTap;
+  const _PremiumBottomNav({required this.current, required this.onTap});
+
+  @override Widget build(BuildContext context) {
+    const items = [
+      (Icons.dashboard_rounded,       Icons.dashboard_outlined,      'Portal'),
+      (Icons.bolt_rounded,            Icons.bolt_outlined,           'Quick Pay'),
+      (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
+      (Icons.person_rounded,          Icons.person_outline_rounded,  'Account'),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        border: Border(top: BorderSide(color: AppTheme.border.withOpacity(0.5), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, -4))],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (i) {
+              final active = current == i;
+              final item   = items[i];
+
+              return GestureDetector(
+                onTap: () => onTap(i),
+                behavior: HitTestBehavior.opaque,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: active ? AppTheme.primary.withOpacity(0.12) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        active ? item.$1 : item.$2,
+                        color: active ? AppTheme.primary : AppTheme.textMuted,
+                        size: 24,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(item.$3,
+                        style: TextStyle(
+                          color: active ? AppTheme.primary : AppTheme.textMuted,
+                          fontSize: 10,
+                          fontWeight: active ? FontWeight.w900 : FontWeight.w600,
+                          letterSpacing: 0.2,
+                        )),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
