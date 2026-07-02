@@ -32,13 +32,12 @@ This document outlines the architectural and logic enhancements implemented for 
 
 ---
 
-## 4. Offline Data Persistence & API 2.0
+## 4. Offline Data Persistence & Login
 ### **Implementation Logic:**
-*   **Defensive Sanitization**: `ApiService` includes logic to handle inconsistent JSON responses. It specifically checks if the returned data field is a `List` (`val is List ? val : []`) before parsing, preventing subtype crashes.
-*   **SharedPreferences Caching**: 
-    *   Successfully fetched data is cached using `prefs.setString` with unique keys (`cached_parking_v1`, `cached_receipts_v1`).
-    *   On network failure, the `ApiService` catches the exception and returns the `cached` string, ensuring the UI remains populated.
-*   **Status Interceptor**: Implemented `lastFetchSuccessful` and `_checkStatus(401)` to handle offline banners and auto-logout on session expiration.
+*   **Defensive Sanitization**: `ApiService` includes logic to handle inconsistent JSON responses. It specifically checks if the returned data field is a `List` before parsing, preventing subtype crashes.
+*   **Persistent JSON Caching**: Successfully fetched data is cached using `SharedPreferences`. On network failure, the app fallback to these cached strings, ensuring the portal remains fully populated even without internet.
+*   **Offline Login Fallback**: Enhanced `AuthService.login` to support matching input credentials against the encrypted credentials stored in the **Secure Enclave**. This allows users to access the app while offline if they have successfully logged in at least once before.
+*   **Session Validation Resilience**: Modified the `SplashScreen` and `AuthService.validateToken` logic to ignore connection errors during session validation, preventing users from being automatically logged out when starting the app without mobile data.
 
 ---
 
