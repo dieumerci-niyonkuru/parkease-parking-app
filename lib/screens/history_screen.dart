@@ -149,7 +149,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         child: Row(children: [
                           const Icon(Icons.cloud_off_rounded, color: AppTheme.warning, size: 18),
                           const SizedBox(width: 12),
-                          Expanded(child: Text('Showing cached history. Some records may be missing.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
+                          Expanded(child: Text('Internet connection lost. Showing your saved receipt history.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
                         ]),
                       ),
                     

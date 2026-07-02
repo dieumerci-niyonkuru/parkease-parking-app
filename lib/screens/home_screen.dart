@@ -118,7 +118,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(children: [
                               const Icon(Icons.cloud_off_rounded, color: AppTheme.warning, size: 20),
                               const SizedBox(width: 12),
-                              Expanded(child: Text('Offline Mode: Showing cached data.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
+                              Expanded(child: Text('You are offline. Displaying saved parking hubs from your last visit.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
                             ]),
                           ).animate().fadeIn(),
                         
