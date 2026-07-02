@@ -43,10 +43,13 @@ class _SplashScreenState extends State<SplashScreen>
       ProfileService.load(),
     ]);
 
-    bool isValid = false;
+    bool isValid = true; // Assume valid unless explicitly told otherwise by server
     if (AuthService.isLoggedIn) {
-      isValid = await AuthService.validateToken();
-      if (!isValid) await AuthService.logout();
+      final check = await AuthService.validateToken();
+      if (check == false) {
+        isValid = false;
+        await AuthService.logout();
+      }
     }
 
     await Future.delayed(const Duration(milliseconds: 2600));

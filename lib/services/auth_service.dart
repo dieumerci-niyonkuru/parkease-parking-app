@@ -107,14 +107,17 @@ class AuthService {
   static Future<void> logout() async {
     _token = null;
     _user  = null;
+    // We keep _keyUser and _keyCreds to support the "Offline Login" feature
+    // only the active session token is removed to prevent unauthorized API calls
     await _secure.delete(key: _keyToken);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_keyUser);
   }
 
   // ── Validate Token ────────────────────────────────────────────
-  static Future<bool> validateToken() async {
+  static Future<bool?> validateToken() async {
     if (_token == null) return false;
+    // Allow offline sessions to bypass validation
+    if (_token == "OFFLINE_SESSION") return true;
+    
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/validate'),
@@ -125,7 +128,8 @@ class AuthService {
       final data = jsonDecode(resp.body);
       return resp.statusCode == 200 && data['status'] == 'success';
     } catch (_) {
-      return false; 
+      // Return null to indicate a connection error, not necessarily an invalid token
+      return null;
     }
   }
 
@@ -143,7 +147,7 @@ class AuthService {
         final token = data['token'] as String;
         _token = token;
         
-        // Store credentials for biometrics
+        // Store credentials for biometrics & offline login
         await _secure.write(key: _keyCreds, value: jsonEncode({'username': email, 'password': password}));
 
         // If user object isn't in response, fetch it from /users/me
@@ -161,6 +165,22 @@ class AuthService {
       }
       return {'success': false, 'message': data['message'] ?? 'Login failed'};
     } catch (e) {
+      // ── OFFLINE LOGIN FALLBACK ────────────────────────────────
+      final creds = await _secure.read(key: _keyCreds);
+      if (creds != null) {
+        final Map<String, dynamic> stored = jsonDecode(creds);
+        if (stored['username'] == email && stored['password'] == password) {
+          // Credentials match last successful login - allow offline entry
+          final prefs = await SharedPreferences.getInstance();
+          final rawUser = prefs.getString(_keyUser);
+          if (rawUser != null) {
+            _user = AuthUser.fromJson(jsonDecode(rawUser));
+            // Set a placeholder token to allow the app to enter the dashboard in offline mode
+            _token = "OFFLINE_SESSION";
+            return {'success': true, 'offline': true};
+          }
+        }
+      }
       return {'success': false, 'message': 'Connection error. Check your network.'};
     }
   }
