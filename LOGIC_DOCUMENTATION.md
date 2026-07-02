@@ -1,77 +1,55 @@
 # ITEC Parking Mobile - Implementation Documentation (Version 2.0.26)
 
-This document outlines the architectural and logic enhancements implemented today for the ITEC Parking mobile application. The primary focus was on **brand unification**, **UI stability**, and **enhanced user navigation**.
+This document outlines the architectural and logic enhancements implemented for the ITEC Parking mobile application. The implementation focuses on **brand unification**, **offline resilience**, **security**, and **UI stability**.
 
 ---
 
 ## 1. Brand Identity & Theme Unification
-### **Logic Implemented:**
-*   **Centralized Brand Color**: Standardized the application's primary color to the official ITEC Brown (`#7A5B40`).
-*   **Dynamic Theme Overhaul**: Updated `lib/theme/app_theme.dart` to apply this primary color across all Material components (Buttons, Inputs, Icons, and Progress Indicators).
-*   **Branded Components**: Created a unique `BrandedLoader` widget. This replaces the standard `CircularProgressIndicator` with a localized **ITEC PARKING** spinner, ensuring that the brand is visible even during data retrieval.
+### **Implementation Logic:**
+*   **Primary Brand Color**: Standardized the app's primary palette to **ITEC Brown** (`#7A5B40`). This is defined in `AppTheme` and applied to all Material 3 components.
+*   **Custom Branded Loader**: Developed the `BrandedLoader` widget. It utilizes a `CircularProgressIndicator` with a specific dark-grey color (`#212529`) and a stylized **ITEC PARKING** header with high letter-spacing (4.0).
+*   **Animated Transitions**: Integrated `flutter_animate` to provide fade and slide entries for all major UI cards, ensuring a premium feel.
 
 ---
 
-## 2. Global Layout & Persistence Logic
-### **Logic Implemented:**
-*   **Unified MainLayout**: Moved the header and bottom navigation footer into a single, high-level `MainLayout` container. 
-*   **Fixed Navigation**: By decoupling the Header/Footer from individual screens, we achieved a "fixed" experience where the user navigation remains stationary while content scrolls behind it.
-*   **Stateful Navigation**: Integrated `IndexedStack` to preserve the state of each tab (Home, Lookup, History, Profile) when switching, preventing unnecessary API re-fetching.
+## 2. Navigation & Global Layout
+### **Implementation Logic:**
+*   **Stateful Shell (MainLayout)**: Utilized `IndexedStack` to host the primary app sections (Home, Lookup, History, Profile). This ensures that user state (scroll position, input fields) is preserved when switching tabs.
+*   **Fixed Global Header**: The `AppBar` is centralized in `MainLayout`. It dynamically updates the subtitle (e.g., DASHBOARD, RECEIPTS) based on the active index.
+*   **Universal Search Logic**:
+    *   The header search bar updates a global `searchQuery` in the `AppProvider`.
+    *   **Home Screen**: Filters the `ParkingHub` list in real-time.
+    *   **History Screen**: Filters the `HistoryEntry` list (by plate or site name) in real-time.
 
 ---
 
-## 3. Interactive Header Logic
-### **Logic Implemented:**
-*   **Context-Aware Page Titles**: The header title now dynamically updates based on the active tab (e.g., DASHBOARD, RECEIPTS, MY ACCOUNT).
-*   **Universal Search**: Integrated a global search bar into the header. It communicates with the `AppProvider` to filter lists (Parking Hubs or Receipts) in real-time across different screens.
-*   **Profile Action Menu**: Implemented a `PopupMenuButton` on the profile avatar. This allows users to jump to the Profile page or perform a **Secure Logout** from any screen in the app.
+## 3. Biometric Security Architecture
+### **Implementation Logic:**
+*   **Hardware Integration**: Utilizes `local_auth` for Fingerprint and Face ID.
+*   **Android Compatibility**: Configured `MainActivity.kt` to extend `FlutterFragmentActivity`, enabling the biometric prompt system on Android.
+*   **Secure Enclave Storage**: Login credentials (username/password) are encrypted and stored in the device's **Secure Enclave** using `FlutterSecureStorage` (`_keyCreds`).
+*   **Biometric Login Flow**: Tapping the biometric icon triggers `AuthService.loginWithBiometrics()`, which retrieves the encrypted credentials and performs a secure background authentication.
 
 ---
 
-## 4. Advanced Scrolling & UI Stability
-### **Logic Implemented:**
-*   **Overflow Resolution**: Replaced static `Column` layouts with `CustomScrollView` and `SliverToBoxAdapter`. This ensures that content is automatically "scallable" (scrollable) on devices with different screen sizes.
-*   **Safe-Area Buffering**: Implemented a consistent 120-pixel bottom buffer (`SliverPadding`) on all major lists. This prevents the last item in a list from being hidden by the floating bottom navigation bar.
-*   **Responsive Payment Flow**: Fixed "Bottom Overflow" errors in the Payment screen by wrapping inputs in a `SingleChildScrollView` and optimizing button spacing for mobile viewports.
+## 4. Offline Data Persistence & API 2.0
+### **Implementation Logic:**
+*   **Defensive Sanitization**: `ApiService` includes logic to handle inconsistent JSON responses. It specifically checks if the returned data field is a `List` (`val is List ? val : []`) before parsing, preventing subtype crashes.
+*   **SharedPreferences Caching**: 
+    *   Successfully fetched data is cached using `prefs.setString` with unique keys (`cached_parking_v1`, `cached_receipts_v1`).
+    *   On network failure, the `ApiService` catches the exception and returns the `cached` string, ensuring the UI remains populated.
+*   **Status Interceptor**: Implemented `lastFetchSuccessful` and `_checkStatus(401)` to handle offline banners and auto-logout on session expiration.
 
 ---
 
-## 5. Enhanced Authentication Logic
-### **Logic Implemented:**
-*   **Multi-Identifier Login**: Modified the `AuthService` and `LoginScreen` to accept three different identifiers (**Email, Username, or Phone Number**) in a single field. This removes friction during the sign-in process.
-*   **Future-Proof Branding**: Updated the legal footer to **"© 2026 ITEC Parking · Rwanda"** to align with the roadmap.
-*   **Secure Session Clearing**: Enhanced the logout logic to clear both the local `FlutterSecureStorage` tokens and the in-memory `AppProvider` state simultaneously.
+## 5. UI Stability & UX Optimizations
+### **Implementation Logic:**
+*   **Overflow Resolution**: Replaced fixed-height `Column` and `Container` layouts with `SingleChildScrollView` or `CustomScrollView` (using `SliverToBoxAdapter`).
+*   **Safe-Area Buffering**: Standardized a **120-pixel bottom buffer** (`SliverPadding`) on all major lists to ensure the last item is never obscured by the floating `BottomNavigationBar`.
+*   **Payment Flow Safety**: Added a prominent **"CANCEL & GO BACK"** `OutlinedButton` in the payment portal for immediate exit.
+*   **High-Contrast Inputs**: Standardized all `TextField` components with a white background, dark-grey text, and mono-spaced fonts for plate numbers to ensure maximum readability in low-light conditions.
 
 ---
 
-## 6. API Robustness & Offline Fallbacks
-### **Logic Implemented:**
-*   **Data Structure Sanitization**: Added defensive logic in `ApiService` to handle varied JSON responses. The app now checks if fields like `data`, `parking`, or `receipts` are valid `Lists` before parsing, preventing "TypeError: Instance of _JsonMap is not a subtype of List" crashes.
-*   **Offline Visibility**: Added a persistent notification banner when the app is displaying cached (offline) data, ensuring the user knows their information is currently read-only.
-
----
-
-## 7. Navigation Improvements
-### **Logic Implemented:**
-*   **Back-Navigation Restore**: Added explicit `AppBar` widgets with `Navigator.pop` logic for the Plate Lookup and Payment screens. 
-*   **Cancel & Exit Logic**: Implemented a high-visibility **"CANCEL & GO BACK"** button at the bottom of the payment stack to allow users to exit the transaction safely and quickly.
-
----
-
-## 8. Offline Data Persistence
-### **Logic Implemented:**
-*   **Local JSON Storage**: Integrated `SharedPreferences` to act as a local cache for all retrieved data.
-*   **Persistent Receipts & History**: The app now automatically saves every successfully fetched receipt and parking history entry into the device's internal storage.
-*   **No-Internet Availability**: When the device is offline, the `ApiService` and `HistoryService` fallback to the local cache. Users can now view their full history and previous receipts without an active internet connection.
-*   **Background Updates**: The local cache is automatically updated whenever the user performs a "Pull to Refresh" while online.
-
----
-
-## 9. Biometric Security Integration
-### **Logic Implemented:**
-*   **Biometric Login (Fingerprint & Face ID)**: Integrated the `local_auth` library to allow users to sign in using their device's hardware security features.
-*   **Cross-Platform Support**: Implemented specialized logic for both **Android (Fingerprint)** and **iPhone (Face ID)** to ensure seamless biometric access across all device types.
-*   **Secure Credential Enclave**: User login credentials used for biometrics are encrypted and stored in the device's **Secure Enclave** (`FlutterSecureStorage`), ensuring that sensitive information never leaves the local hardware.
-*   **Fall-Back Logic**: Implemented a graceful fallback mechanism—if biometric authentication fails or is cancelled, the user is automatically prompted to enter their standard password.
-
----
+**Technical Documentation finalized for ITEC Parking Mobile v2.0.26.**
+**Implementation verified against Production Build fa737f3.**

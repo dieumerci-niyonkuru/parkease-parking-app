@@ -1,57 +1,46 @@
-# ITEC Parking Mobile App
+# ITEC Parking Mobile App (v2.0.26)
 
-Official mobile application for the ITEC National Parking Management System. This production-ready app provides drivers with a seamless experience for finding parking hubs, tracking parking history, and performing secure payments.
+Official mobile application for the **ITEC National Parking Management System**. This production-ready application provides a high-security, high-performance portal for vehicle parking management, automated fee lookup, and secure digital payments.
 
 ## 🚀 Key Features
 
-*   **Unified Brand Identity**: Standardized Brownian theme (`#7A5B40`) across all UI components.
-*   **Offline Data Persistence**: Full access to parking receipts and history even without an internet connection using local JSON caching.
-*   **Biometric Security**: Secure login using Fingerprint (Android) and Face ID (iOS).
-*   **Flexible Authentication**: Support for signing in via Email, Username, or Phone Number.
-*   **Real-time Plate Lookup**: Instantly retrieve active parking sessions and amounts due by entering a plate number.
-*   **Secure Payments**: Integrated payment gateway support for MoMo, Airtel Money, and Bank Cards.
-*   **Fixed Global Navigation**: Persistent header and footer architecture for stable navigation while scrolling.
-*   **Real-time Notifications**: Background updates and local notifications for parking status.
+*   **Unified Brand Identity**: Integrated ITEC Brown (`#7A5B40`) theme with custom high-contrast UI components.
+*   **Offline Data Availability**: Robust local caching for Parking Hubs and Receipts ensures data is accessible without internet.
+*   **Biometric Security**: Integrated Fingerprint and Face ID authentication with encrypted credential storage.
+*   **Universal Search**: Global header search that filters parking sites and history records in real-time.
+*   **Flexible Auth**: Support for Login via Email, Username, or Phone Number.
+*   **Fixed Global Navigation**: Persistent header and footer shell for a stable, professional user experience.
+*   **Responsive Payment Portal**: Secure payment flow with support for MoMo, Airtel, and Cards, optimized for all screen sizes.
 
 ## 🛠 Tech Stack
 
-*   **Framework**: Flutter (Dart)
-*   **State Management**: Provider
-*   **Storage**: 
-    *   `shared_preferences` (Offline Cache)
-    *   `flutter_secure_storage` (Encrypted Credentials)
-*   **Security**: `local_auth` (Biometrics)
-*   **API**: ITEC Client API 2.0 Integration
-*   **UI/UX**: Custom Sliver layouts, Flutter Animate, and Google Fonts.
+*   **Framework**: Flutter (v3.0.0+)
+*   **Architecture**: Provider-based State Management with a Stateful Shell (MainLayout).
+*   **Local Storage**: 
+    *   `shared_preferences` (JSON Caching)
+    *   `flutter_secure_storage` (Biometric Enclave)
+*   **Security**: `local_auth` for hardware biometrics.
+*   **UI/UX**: `flutter_animate`, `google_fonts`, and custom Sliver-based layouts.
 
-## 📦 Getting Started
+## 📦 Project Structure & Logic
 
-### Prerequisites
-*   Flutter SDK (v3.0.0+)
-*   Android Studio / VS Code
-*   A physical device or emulator (Physical device recommended for Biometrics)
+For a detailed technical breakdown of the implementation logic, security architecture, and offline fallbacks, please refer to the internal documentation:
+*   [**LOGIC_DOCUMENTATION.md**](./LOGIC_DOCUMENTATION.md)
 
-### Installation
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/dieumerci-niyonkuru/parkease-parking-app.git
-    ```
-2.  Navigate to the project directory:
-    ```bash
-    cd itec_parking_fixed
-    ```
-3.  Install dependencies:
+## 🏗 Setup & Build
+
+1.  **Dependencies**:
     ```bash
     flutter pub get
     ```
-4.  Run the application:
+2.  **Run (Debug)**:
     ```bash
     flutter run
     ```
+3.  **Build (Release APK)**:
+    ```bash
+    flutter build apk --release
+    ```
 
-## 📄 Documentation
-For detailed architectural decisions and logic implementation, please refer to:
-*   [LOGIC_DOCUMENTATION.md](./LOGIC_DOCUMENTATION.md) - Deep dive into brand unification, offline logic, and security integration.
-
-## ⚖️ Legal
-© 2026 ITEC Parking · Rwanda. All rights reserved.
+---
+© 2026 ITEC Parking · Rwanda. Final Production Version.
