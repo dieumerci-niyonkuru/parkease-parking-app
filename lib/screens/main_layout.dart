@@ -61,6 +61,12 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
+  void _triggerHeaderSearch() {
+    if (!_isSearching) {
+      setState(() => _isSearching = true);
+    }
+  }
+
   @override Widget build(BuildContext context) {
     final profile = ProfileService.profile;
 
@@ -237,6 +243,11 @@ class _MainLayoutState extends State<MainLayout> {
                 case 'plate_lookup':
                   builder = PlateLookupScreen(initialPlate: settings.arguments as String);
                   break;
+                case 'trigger_search':
+                  // This is a special trigger to open the search bar
+                  _triggerHeaderSearch();
+                  builder = _pages[index];
+                  break;
                 default:
                   builder = _pages[index];
               }
@@ -260,6 +271,12 @@ class _PremiumBottomNav extends StatelessWidget {
   final int current;
   final void Function(int) onTap;
   const _PremiumBottomNav({required this.current, required this.onTap});
+
+  void _triggerHeaderSearch() {
+    if (!_isSearching) {
+      setState(() => _isSearching = true);
+    }
+  }
 
   @override Widget build(BuildContext context) {
     const items = [

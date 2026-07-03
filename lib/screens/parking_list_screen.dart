@@ -71,12 +71,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                   height: 54,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      context.read<AppProvider>().updateSearchQuery('');
-                      final scaffold = Scaffold.of(context);
-                      // Since we are inside the MainLayout which has the AppBar search,
-                      // we just need to ensure the user knows to use the top search.
-                      // Or we can programmatically trigger the search state in MainLayout.
-                      // For now, let's keep it direct.
+                      Navigator.of(context).pushNamed('trigger_search');
                     },
                     icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
                     label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
