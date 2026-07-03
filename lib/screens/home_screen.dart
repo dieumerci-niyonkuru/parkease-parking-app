@@ -110,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── MAIN CONTENT ─────────────────────────────────────
             SliverToBoxAdapter(
               child: _loading
-                  ? const SizedBox(height: 300, child: BrandedLoader(message: 'Retrieving Parking Hubs...'))
+                  ? const SizedBox(height: 300, child: BrandedLoader(message: 'Retrieving Parking Sites...'))
                   : Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -125,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Row(children: [
                               const Icon(Icons.cloud_off_rounded, color: AppTheme.warning, size: 20),
                               const SizedBox(width: 12),
-                              Expanded(child: Text('You are offline. Displaying saved parking hubs from your last visit.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
+                              Expanded(child: Text('You are offline. Displaying saved parking sites from your last visit.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
                             ]),
                           ).animate().fadeIn(),
                         
@@ -148,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(children: [
                             Expanded(child: _StatCard(icon: Icons.phone_android_rounded, iconBg: AppTheme.primary, label: 'LINKED DEVICES', value: _phones.length.toString())),
                             const SizedBox(width: 16),
-                            Expanded(child: _StatCard(icon: Icons.map_rounded, iconBg: AppTheme.success, label: 'PARKING HUBS', value: _facilities.length.toString())),
+                            Expanded(child: _StatCard(icon: Icons.map_rounded, iconBg: AppTheme.success, label: 'PARKING SITES', value: _facilities.length.toString())),
                           ]).animate().fadeIn().slideY(begin: 0.1),
                           const SizedBox(height: 32),
                         ],

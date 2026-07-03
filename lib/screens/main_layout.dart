@@ -53,7 +53,7 @@ class _MainLayoutState extends State<MainLayout> {
   String get _pageTitle {
     switch (_currentIndex) {
       case 0: return 'DASHBOARD';
-      case 1: return 'PARKING HUBS';
+      case 1: return 'PARKING SITES';
       case 2: return 'PLATE LOOKUP';
       case 3: return 'RECEIPTS';
       case 4: return 'MY ACCOUNT';
@@ -258,7 +258,7 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
-      (Icons.location_city_rounded,   Icons.location_city_outlined,  'Hubs'),
+      (Icons.location_city_rounded,   Icons.location_city_outlined,  'ParkingSites'),
       (Icons.electric_bolt_rounded,   Icons.electric_bolt_outlined,  'Quick Pay'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
       (Icons.account_circle_rounded,  Icons.account_circle_outlined, 'Profile'),

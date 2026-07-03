@@ -247,30 +247,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ]),
                   
-                  const SizedBox(height: 48),
-                  
-                  // ── ASSISTANCE SECTION ──────────────────────────
-                  Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
-                        const SizedBox(height: 24),
-                        const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
-                        const SizedBox(height: 16),
-                        const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
-                        const SizedBox(height: 16),
-                        const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -282,7 +259,7 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             color: AppTheme.primary,
             child: const Center(
-              child: Text('© 2026 ITEC PARKING · RWANDA', style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 2)),
+              child: Text('2026 ITEC Parking . Rwanda', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
             ),
           ),
         ],
