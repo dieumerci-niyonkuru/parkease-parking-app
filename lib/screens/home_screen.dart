@@ -153,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 32),
                         ],
 
-                        Text('Parking Hubs', style: AppTheme.heading3),
+                        const Text('Parking Sites', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 16),
 
                         // ── List of Facilities ────────────────────────
@@ -304,63 +304,60 @@ class _ParkingHubCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppTheme.bgCard,
+          color: const Color(0xFFFFF7F2), // Light peach/cream from mockup
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.border),
+          border: Border.all(color: AppTheme.primary.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           children: [
             Row(
               children: [
-                Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(
-                    color: AppTheme.bgDeep,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.location_city_rounded, color: AppTheme.textPrimary, size: 20),
-                ),
+                const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
                 const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(facility.fullParkName.toUpperCase(), 
-                        style: AppTheme.heading4.copyWith(fontSize: 13, fontWeight: FontWeight.w800)),
-                      Text(facility.address, 
-                        style: AppTheme.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('${facility.ratePerHour.toInt()} RWF', 
-                      style: AppTheme.heading4.copyWith(fontSize: 14)),
-                    const Text('PER HOUR', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w800)),
-                  ],
-                ),
+                const Text('Parking Site', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF212529))),
+                const Spacer(),
+                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textMuted.withOpacity(0.5), size: 16),
               ],
             ),
-            const Divider(height: 24, thickness: 0.5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.check_circle_outline_rounded, color: AppTheme.success, size: 16),
-                    const SizedBox(width: 6),
-                    Text('${facility.parkingLots} slots', style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                Text('VIEW RATES', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 10)),
-              ],
-            ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: 16),
+            _MockupRow('Parking Site', facility.fullParkName.toUpperCase()),
+            _MockupRow('Location', facility.address),
+            _MockupRow('Available Spots', facility.parkingLots.toString(), isHighlight: true),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _MockupRow(String label, String value, {bool isHighlight = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
+          const SizedBox(width: 24),
+          Expanded(
+            child: Text(
+              value, 
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 13, 
+                fontWeight: FontWeight.w800, 
+                color: isHighlight ? const Color(0xFF7A5B40) : Colors.grey.shade800,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
