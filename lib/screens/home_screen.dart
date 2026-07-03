@@ -75,8 +75,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Welcome, ${firstName.toLowerCase()}!', 
+                            'Welcome Back 👋', 
                             style: AppTheme.heading1.copyWith(fontSize: 28, fontWeight: FontWeight.w900, color: const Color(0xFF212529)),
+                          ),
+                          Text(
+                            firstName.toLowerCase(), 
+                            style: AppTheme.heading1.copyWith(fontSize: 28, fontWeight: FontWeight.w900, color: AppTheme.primary),
                           ),
                           const SizedBox(height: 4),
                           Text(

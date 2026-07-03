@@ -210,9 +210,9 @@ class _PremiumBottomNav extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        border: Border(top: BorderSide(color: AppTheme.border.withOpacity(0.5), width: 1)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, -4))],
+        color: AppTheme.primary, // Matches the top bar color
+        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -4))],
       ),
       child: SafeArea(
         child: Padding(
@@ -231,7 +231,7 @@ class _PremiumBottomNav extends StatelessWidget {
                   curve: Curves.easeOutCubic,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: active ? AppTheme.primary.withOpacity(0.12) : Colors.transparent,
+                    color: active ? Colors.white.withOpacity(0.15) : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -239,13 +239,13 @@ class _PremiumBottomNav extends StatelessWidget {
                     children: [
                       Icon(
                         active ? item.$1 : item.$2,
-                        color: active ? AppTheme.primary : AppTheme.textMuted,
+                        color: active ? Colors.white : Colors.white60,
                         size: 24,
                       ),
                       const SizedBox(height: 4),
                       Text(item.$3,
                         style: TextStyle(
-                          color: active ? AppTheme.primary : AppTheme.textMuted,
+                          color: active ? Colors.white : Colors.white60,
                           fontSize: 10,
                           fontWeight: active ? FontWeight.w900 : FontWeight.w600,
                           letterSpacing: 0.2,
