@@ -63,12 +63,14 @@ class AppUtils {
 
     if (h == 0) return 0.0;
 
+    // Use the rate fetched from the API for the base tier (1-4 hours)
     if (h <= 4) {
-      // 0-4 hours = 200 RWF/hr
-      return h * 200.0;
+      return h * ratePerHour;
     } else {
-      // 5+ hours = (Hours - 3) * 1,000 RWF
-      return (h - 3) * 1000.0;
+      // Logic for 5h and above: (h - 3) * (Rate * 5)
+      // Since 1000 is 5x the base rate of 200, we use a proportional multiplier
+      final double tier2Rate = ratePerHour * 5;
+      return (h - 3) * tier2Rate;
     }
   }
 

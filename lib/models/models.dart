@@ -1,3 +1,5 @@
+import '../utils/app_utils.dart';
+
 // ── Parking Facility ──────────────────────────────────────────────
 class ParkingFacility {
   final int parkingId;
@@ -87,8 +89,7 @@ class VehicleRecord {
   }
 
   double get totalAmount {
-    final hours = duration.inMinutes / 60.0;
-    return (hours * ratePerHour).ceilToDouble();
+    return AppUtils.calcAmount(duration, ratePerHour);
   }
 
   String get durationDisplay {
@@ -267,8 +268,7 @@ class HistoryEntry {
 
   double get totalAmount {
     if (amountPaid != null) return amountPaid!;
-    final hours = duration.inMinutes / 60.0;
-    return (hours * ratePerHour).ceilToDouble();
+    return AppUtils.calcAmount(duration, ratePerHour);
   }
 
   String get durationDisplay {

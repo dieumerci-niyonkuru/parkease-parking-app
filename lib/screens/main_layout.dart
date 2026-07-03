@@ -115,6 +115,11 @@ class _MainLayoutState extends State<MainLayout> {
             ),
         actions: [
           IconButton(
+            onPressed: () => Navigator.of(_navigatorKeys[_currentIndex].currentContext ?? context).popUntil((r) => r.isFirst),
+            icon: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
+            tooltip: 'Back to Home',
+          ),
+          IconButton(
             onPressed: () => setState(() => _isSearching = !_isSearching),
             icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: Colors.white),
           ),
