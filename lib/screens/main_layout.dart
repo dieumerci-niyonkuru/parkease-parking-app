@@ -135,7 +135,7 @@ class _MainLayoutState extends State<MainLayout> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 onSelected: (val) async {
                   if (val == 0) {
-                    setState(() => _currentIndex = 3); // Go to profile
+                    setState(() => _currentIndex = 4); // Go to profile (index 4)
                   } else if (val == 1) {
                     // ── LOGOUT CONFIRMATION DIALOG ──────────────────
                     final confirmed = await showDialog<bool>(
@@ -261,7 +261,6 @@ class _PremiumBottomNav extends StatelessWidget {
       (Icons.location_city_rounded,   Icons.location_city_outlined,  'ParkingSites'),
       (Icons.electric_bolt_rounded,   Icons.electric_bolt_outlined,  'Quick Pay'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
-      (Icons.account_circle_rounded,  Icons.account_circle_outlined, 'Profile'),
     ];
 
     return Container(
