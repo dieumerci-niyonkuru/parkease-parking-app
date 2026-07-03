@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
+import '../models/models.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import 'home_screen.dart';
