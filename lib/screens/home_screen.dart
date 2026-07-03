@@ -61,28 +61,34 @@ class _HomeScreenState extends State<HomeScreen> {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
           slivers: [
-            // ── TOP SCROLLABLE HEADER ────────────────────────────
             SliverToBoxAdapter(
               child: Container(
-                color: AppTheme.bgCard,
+                color: AppTheme.bgDeep, // Using the light grey background
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Greeting
+                    // Greeting Section
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                      padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Welcome Back 👋', 
-                            style: AppTheme.heading1.copyWith(fontSize: 28, fontWeight: FontWeight.w900, color: const Color(0xFF212529)),
-                          ),
-                          Text(
-                            firstName.toLowerCase(), 
-                            style: AppTheme.heading1.copyWith(fontSize: 28, fontWeight: FontWeight.w900, color: AppTheme.primary),
+                          Row(
+                            children: [
+                              Text(
+                                'Welcome Back', 
+                                style: AppTheme.heading1.copyWith(fontSize: 32, fontWeight: FontWeight.w900, color: const Color(0xFF212529)),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text('👋', style: TextStyle(fontSize: 28)),
+                            ],
                           ),
                           const SizedBox(height: 4),
+                          Text(
+                            firstName.toLowerCase(), 
+                            style: AppTheme.heading1.copyWith(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.primary),
+                          ),
+                          const SizedBox(height: 8),
                           Text(
                             DateFormat("EEEE, d MMMM").format(DateTime.now()), 
                             style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted, fontSize: 14),
@@ -90,14 +96,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    // Quick Lookup
+                    
+                    // Vehicle Lookup Card
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                       child: const _QuickPayCard(),
-                    ),
-                    Container(
-                      height: 1,
-                      color: AppTheme.border.withOpacity(0.5),
                     ),
                   ],
                 ),
@@ -206,23 +209,30 @@ class _QuickPayCardState extends State<_QuickPayCard> {
 
   @override Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border, width: 1.5),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          )
+        ],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
           const SizedBox(width: 12),
-          Text('VEHICLE LOOKUP', style: AppTheme.heading4.copyWith(letterSpacing: 1)),
+          Text('VEHICLE LOOKUP', style: AppTheme.label.copyWith(color: const Color(0xFF212529), fontWeight: FontWeight.w900, letterSpacing: 1)),
         ]),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Container(
           decoration: BoxDecoration(
             color: AppTheme.bgDeep,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppTheme.border),
           ),
           child: TextField(
@@ -230,7 +240,7 @@ class _QuickPayCardState extends State<_QuickPayCard> {
             textCapitalization: TextCapitalization.characters,
             style: const TextStyle(
               fontFamily: 'monospace', 
-              fontSize: 20, 
+              fontSize: 22, 
               fontWeight: FontWeight.w900, 
               color: AppTheme.textPrimary,
               letterSpacing: 4,
@@ -239,23 +249,24 @@ class _QuickPayCardState extends State<_QuickPayCard> {
               hintText: 'RAC 001 A',
               hintStyle: TextStyle(
                 fontFamily: 'monospace', 
-                fontSize: 20, 
-                color: AppTheme.textHint, 
+                fontSize: 22, 
+                color: AppTheme.textHint.withOpacity(0.5), 
                 letterSpacing: 4,
               ),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
               prefixIcon: Container(
-                margin: const EdgeInsets.all(10), padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-                child: const Text('RW', style: TextStyle(color: AppTheme.primary, fontSize: 10, fontWeight: FontWeight.w900)),
+                margin: const EdgeInsets.all(12), 
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(color: AppTheme.border.withOpacity(0.4), borderRadius: BorderRadius.circular(8)),
+                child: const Text('RW', style: TextStyle(color: AppTheme.textSecond, fontSize: 11, fontWeight: FontWeight.w900)),
               ),
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
         SizedBox(
-          width: double.infinity, height: 54,
+          width: double.infinity, height: 60,
           child: ElevatedButton(
             onPressed: () {
               final plate = _ctrl.text.trim().toUpperCase();
@@ -263,10 +274,10 @@ class _QuickPayCardState extends State<_QuickPayCard> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 0,
             ),
-            child: const Text('SEARCH & PAY', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+            child: const Text('SEARCH & PAY', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
           ),
         ),
       ]),
