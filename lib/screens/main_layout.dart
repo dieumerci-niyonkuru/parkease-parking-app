@@ -53,17 +53,18 @@ class _MainLayoutState extends State<MainLayout> {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgCard,
+        backgroundColor: AppTheme.primary, // Fixed Brand Color on top
         surfaceTintColor: Colors.transparent,
-        elevation: 0,
+        elevation: 4,
         centerTitle: false,
         title: _isSearching 
           ? TextField(
               controller: _searchCtrl,
               autofocus: true,
-              style: AppTheme.body,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: const InputDecoration(
                 hintText: 'Quick search...',
+                hintStyle: TextStyle(color: Colors.white70),
                 border: InputBorder.none,
                 filled: false,
                 contentPadding: EdgeInsets.zero,
@@ -77,7 +78,7 @@ class _MainLayoutState extends State<MainLayout> {
                 Container(
                   width: 32, height: 32,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary,
+                    color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.local_parking_rounded, color: Colors.white, size: 20),
@@ -86,8 +87,8 @@ class _MainLayoutState extends State<MainLayout> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('ITEC PARKING', style: AppTheme.heading4.copyWith(fontSize: 12, letterSpacing: 1.2)),
-                    Text(_pageTitle, style: AppTheme.label.copyWith(fontSize: 9, letterSpacing: 0.5)),
+                    const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 12, letterSpacing: 1.2, fontWeight: FontWeight.w900)),
+                    Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 9, letterSpacing: 0.5)),
                   ],
                 ),
               ],
@@ -95,7 +96,7 @@ class _MainLayoutState extends State<MainLayout> {
         actions: [
           IconButton(
             onPressed: () => setState(() => _isSearching = !_isSearching),
-            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: AppTheme.primary),
+            icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: Colors.white),
           ),
           if (!_isSearching)
             Padding(
@@ -103,24 +104,16 @@ class _MainLayoutState extends State<MainLayout> {
               child: PopupMenuButton<int>(
                 offset: const Offset(0, 48),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                onSelected: (val) async {
-                  if (val == 0) {
-                    setState(() => _currentIndex = 3); // Go to profile
-                  } else if (val == 1) {
-                    await AuthService.logout();
-                    if (mounted) Navigator.of(context).pushReplacementNamed('/login');
-                  }
-                },
-                child: Hero(
+                icon: Hero(
                   tag: 'main-avatar',
                   child: CircleAvatar(
                     radius: 16,
-                    backgroundColor: AppTheme.primary.withOpacity(0.1),
+                    backgroundColor: Colors.white.withOpacity(0.2),
                     backgroundImage: profile.profilePic.isNotEmpty
                         ? FileImage(File(profile.profilePic))
                         : null,
                     child: profile.profilePic.isEmpty
-                        ? const Icon(Icons.person_rounded, color: AppTheme.primary, size: 18)
+                        ? const Icon(Icons.person_rounded, color: Colors.white, size: 18)
                         : null,
                   ),
                 ),

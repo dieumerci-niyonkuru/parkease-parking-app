@@ -172,8 +172,8 @@ class _RecordDetails extends StatelessWidget {
               Navigator.push(context, MaterialPageRoute(builder: (_) => 
                 PaymentScreen(record: record, onPay: onPay)));
             },
-            icon: const Icon(Icons.security_rounded, color: Colors.white),
-            label: const Text('PROCEED TO SECURE PAYMENT', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1)),
+            icon: const Icon(Icons.payment_rounded, color: Colors.white),
+            label: const Text('PAY NOW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary, 
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -185,12 +185,12 @@ class _RecordDetails extends StatelessWidget {
         const SizedBox(height: 32),
         
         // ── VEHICLE & LOCATION DETAILS ──────────────────────────────
-        _DetailCard(title: 'SESSION INFO', items: [
+        _DetailCard(title: 'YOUR PARKING DETAILS', items: [
           _Row('Plate Number', record.plateNumber, isMono: true),
           _Row('Vehicle Type', record.vehicleType),
           _Row('Make & Color', '${record.vehicleMake} (${record.vehicleColor})'),
           _Row('Entry Time', DateFormat('HH:mm (dd MMM)').format(record.entryTime)),
-          _Row('Exit (Current)', DateFormat('HH:mm (dd MMM)').format(DateTime.now())),
+          _Row('Currently Parked For', record.durationDisplay),
         ]).animate().fadeIn(delay: 450.ms),
         
         const SizedBox(height: 16),
