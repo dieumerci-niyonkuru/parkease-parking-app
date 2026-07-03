@@ -39,6 +39,10 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   }
 
   @override Widget build(BuildContext context) {
+    final rate = _pricing != null 
+        ? (double.tryParse(_pricing!['rate']?.toString() ?? '200') ?? 200.0)
+        : widget.facility.ratePerHour;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       body: _loading
@@ -48,73 +52,49 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header Card
+                  // ── SITE HEADER ───────────────────────────────────
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppTheme.bgCard,
-                      borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                      border: Border.all(color: AppTheme.border),
+                      color: const Color(0xFFFFF7F2), // Matching the dashboard card color
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(widget.facility.fullParkName.toUpperCase(), 
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                        const SizedBox(height: 12),
                         Row(children: [
-                          const Icon(Icons.location_on_rounded, color: AppTheme.danger, size: 24),
-                          const SizedBox(width: 12),
-                          Expanded(child: Text(widget.facility.address, style: AppTheme.body)),
+                          const Icon(Icons.location_on_rounded, color: AppTheme.primary, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(widget.facility.address, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700))),
                         ]),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         Row(children: [
-                          const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
-                          const SizedBox(width: 12),
-                          Text('${widget.facility.parkingLots} Available Slots', style: AppTheme.body.copyWith(fontWeight: FontWeight.w700)),
+                          const Icon(Icons.check_circle_rounded, color: AppTheme.success, size: 18),
+                          const SizedBox(width: 8),
+                          Text('${widget.facility.parkingLots} parking spots available', 
+                            style: AppTheme.bodySmall.copyWith(color: AppTheme.success, fontWeight: FontWeight.w800)),
                         ]),
                       ],
                     ),
                   ).animate().fadeIn().slideY(begin: 0.1),
-                  const SizedBox(height: 24),
 
-                  // Pricing Section
-                  Text('PRICING & RATES', style: AppTheme.label.copyWith(letterSpacing: 1.2, color: AppTheme.primary)),
-                  const SizedBox(height: 12),
-                  if (_pricing != null) ...[
-                    _PricingCard(pricing: _pricing!),
-                    const SizedBox(height: 16),
-                  ],
-                  _buildRateList(_pricing != null 
-                    ? (double.tryParse(_pricing!['rate']?.toString() ?? '200') ?? 200.0)
-                    : widget.facility.ratePerHour).animate().fadeIn(delay: 200.ms),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
-                  // Categories Section
-                  if (_categories.isNotEmpty) ...[
-                    Text('VEHICLE CATEGORIES', style: AppTheme.label.copyWith(letterSpacing: 1.2, color: AppTheme.primary)),
-                    const SizedBox(height: 12),
-                    ..._categories.map((c) => _CategoryTile(category: c)),
-                    const SizedBox(height: 24),
-                  ],
+                  // ── PRICING SECTION ───────────────────────────────
+                  const Text('Pricing Information', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                  const SizedBox(height: 20),
 
-                  // Information Box
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
-                    ),
-                    child: Row(children: [
-                      const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 24),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Parking fees are automatically calculated based on your entry time. You can pay your fee using the Quick Pay Portal with your plate number.',
-                          style: AppTheme.bodySmall.copyWith(color: AppTheme.textPrimary, height: 1.4),
-                        ),
-                      ),
-                    ]),
-                  ),
+                  _CategoryPricingCard(
+                    title: 'Small Car',
+                    rate: rate,
+                  ).animate().fadeIn(delay: 200.ms),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -122,95 +102,49 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   }
 }
 
-class _PricingCard extends StatelessWidget {
-  final Map<String, dynamic> pricing;
-  const _PricingCard({required this.pricing});
+class _CategoryPricingCard extends StatelessWidget {
+  final String title;
+  final double rate;
+  const _CategoryPricingCard({required this.title, required this.rate});
 
   @override Widget build(BuildContext context) {
-    final rate = double.tryParse(pricing['rate']?.toString() ?? '200') ?? 200.0;
+    final moneyFmt = NumberFormat('#,###');
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: AppTheme.bgCard, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppTheme.border)),
-      child: Column(children: [
-        _PriceRow('Hourly Rate', '${rate.toInt()} RWF'),
-        if (pricing['grace_period'] != null) _PriceRow('Grace Period', '${pricing['grace_period']} mins'),
-        if (pricing['daily_max'] != null) _PriceRow('Daily Max', '${pricing['daily_max']} RWF'),
-      ]),
-    );
-  }
-}
-
-class _PriceRow extends StatelessWidget {
-  final String label, value;
-  const _PriceRow(this.label, this.value);
-  @override Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(label, style: AppTheme.bodySmall),
-      Text(value, style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.w700)),
-    ]),
-  );
-}
-
-class _CategoryTile extends StatelessWidget {
-  final dynamic category;
-  const _CategoryTile({required this.category});
-
-  @override Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(color: AppTheme.bgCard, borderRadius: BorderRadius.circular(10), border: Border.all(color: AppTheme.border, width: 0.5)),
-    child: Row(children: [
-      const Icon(Icons.category_outlined, color: AppTheme.textMuted, size: 20),
-      const SizedBox(width: 12),
-      Text(category['name'] ?? 'General', style: AppTheme.body.copyWith(fontWeight: FontWeight.w600)),
-      const Spacer(),
-      if (category['multiplier'] != null)
-        Text('x${category['multiplier']}', style: AppTheme.label.copyWith(color: AppTheme.accent)),
-    ]),
-  );
-}
-
-extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
-  Widget _buildRateList(double rate) {
-    return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
+        color: const Color(0xFFFFF7F2),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('RATE BREAKDOWN (24h)', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 1)),
-              const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 16),
-            ],
-          ),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
           const SizedBox(height: 16),
-          Table(
-            children: [
-              TableRow(
-                children: [
-                  Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text('Duration', style: AppTheme.label.copyWith(fontSize: 10))),
-                  Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text('Fee (RWF)', style: AppTheme.label.copyWith(fontSize: 10), textAlign: TextAlign.right)),
-                ],
-              ),
-              const TableRow(children: [Divider(), Divider()]),
-              ...List.generate(25, (i) {
-                final fee = AppUtils.calcAmount(Duration(hours: i), rate);
-                return TableRow(
-                  children: [
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(i == 0 ? '0-1 Hour' : '$i Hours', style: AppTheme.bodySmall)),
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(NumberFormat('#,###').format(fee), style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppTheme.primary), textAlign: TextAlign.right)),
-                  ],
-                );
-              }),
-            ],
+          const Divider(height: 1, thickness: 0.5),
+          const SizedBox(height: 20),
+          _PriceItem('First Hour', '${moneyFmt.format(rate)} Frw'),
+          _PriceItem('Second Hour', '${moneyFmt.format(rate * 2)} Frw'),
+          _PriceItem('Third Hour', '${moneyFmt.format(rate * 3)} Frw'),
+          _PriceItem('Fifth Hour', '${moneyFmt.format((5 - 3) * (rate * 5))} Frw'), // Logic from API for 5h+
+          _PriceItem('Full Day (24h)', '${moneyFmt.format((24 - 3) * (rate * 5))} Frw'),
+          const SizedBox(height: 16),
+          Center(
+            child: Text('View full price list', 
+              style: AppTheme.label.copyWith(color: const Color(0xFF7A5B40), fontWeight: FontWeight.w800, fontSize: 13)),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _PriceItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF212529))),
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF7A5B40))),
         ],
       ),
     );
