@@ -147,16 +147,16 @@ class ApiService {
     return list.map((e) {
       try {
         final hours = double.tryParse(e['hours_parked']?.toString() ?? '0') ?? 0.0;
-        final rate  = double.tryParse(e['rate']?.toString() ?? e['hourly_rate']?.toString() ?? '200') ?? 200.0;
         
-        final duration = Duration(minutes: (hours * 60).round());
-        final calculatedAmount = AppUtils.calcAmount(duration, rate);
-        
-        final total = double.tryParse(
+        // STRICT API PRICING RETRIEVAL
+        // We look for 'amount' or 'total_price' directly from the API response
+        final double total = double.tryParse(
           e['amount']?.toString() ?? 
           e['total_price']?.toString() ?? 
-          calculatedAmount.toString()
-        ) ?? calculatedAmount;
+          '0.0'
+        ) ?? 0.0;
+        
+        final rate = double.tryParse(e['rate']?.toString() ?? e['hourly_rate']?.toString() ?? '0.0') ?? 0.0;
         
         return HistoryEntry(
           slotId:         e['record_id'] ?? e['park_out_receipt_id']?.toString() ?? '',
