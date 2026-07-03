@@ -57,6 +57,39 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
       backgroundColor: AppTheme.bgDeep,
       body: Column(
         children: [
+          // ── SEARCH HEADER ──────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            color: Colors.white,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('PARKING SITE', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Trigger search globally via provider
+                      context.read<AppProvider>().updateSearchQuery('');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Use the search bar in the top header for quick lookups!'), behavior: SnackBarBehavior.floating),
+                      );
+                    },
+                    icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
+                    label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           if (_loading)
             const Expanded(child: BrandedLoader(message: 'Syncing facilities...'))
           else if (filtered.isEmpty)

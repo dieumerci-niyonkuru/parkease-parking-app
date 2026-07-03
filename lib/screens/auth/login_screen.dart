@@ -236,6 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
 
                   _SocialButton(isGoogle: true, label: 'Google Account', color: const Color(0xFF4285F4), icon: Icons.g_mobiledata_rounded, onTap: () => _showComingSoon('Google')),
+                  _SocialButton(label: 'Facebook ID', color: const Color(0xFF1877F2), icon: Icons.facebook_rounded, onTap: () => _showComingSoon('Facebook')),
                   _SocialButton(label: 'Apple ID', color: Colors.black, icon: Icons.apple_rounded, onTap: () => _showComingSoon('Apple')),
                   
                   const SizedBox(height: 32),
