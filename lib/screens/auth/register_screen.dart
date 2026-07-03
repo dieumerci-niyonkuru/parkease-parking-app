@@ -174,11 +174,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   border: Border.all(color: AppTheme.border.withOpacity(0.5)),
                 ),
                 child: Column(children: [
-                  Text('NEED ASSISTANCE?', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                  Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
                   const SizedBox(height: 16),
-                  const _ContactRow(Icons.phone_in_talk_rounded, 'Call Support: +250 788 123 456'),
+                  const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
                   const SizedBox(height: 12),
-                  const _ContactRow(Icons.alternate_email_rounded, 'Email: support@iteccone.com'),
+                  const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
+                  const SizedBox(height: 12),
+                  const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
                 ]),
               ).animate().fadeIn(delay: 600.ms),
 
@@ -421,17 +423,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
 class _ContactRow extends StatelessWidget {
   final IconData icon;
+  final String label;
   final String text;
-  const _ContactRow(this.icon, this.text);
+  const _ContactRow(this.icon, this.label, this.text);
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, size: 16, color: AppTheme.textMuted),
-        const SizedBox(width: 10),
-        Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted)),
+              const SizedBox(height: 2),
+              Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+            ],
+          ),
+        ),
       ],
     );
   }
