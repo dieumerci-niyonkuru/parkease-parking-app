@@ -59,7 +59,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
         children: [
           // ── SEARCH HEADER ──────────────────────────────────
           Container(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
             color: Colors.white,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,21 +68,27 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 54,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Trigger search globally via provider
-                      context.read<AppProvider>().updateSearchQuery('');
+                      // Access the scaffold to open search in header if needed, 
+                      // or just show a prompt to use the top search.
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Use the search bar in the top header for quick lookups!'), behavior: SnackBarBehavior.floating),
+                        SnackBar(
+                          content: const Text('Use the 🔍 icon in the top header to search all sites!', style: TextStyle(fontWeight: FontWeight.bold)),
+                          backgroundColor: AppTheme.primary,
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
                       );
                     },
                     icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
-                    label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                      shadowColor: AppTheme.primary.withOpacity(0.3),
                     ),
                   ),
                 ),
