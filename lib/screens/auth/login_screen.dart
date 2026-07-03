@@ -261,7 +261,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
 
-                      _SocialButton(icon: Icons.g_mobiledata_rounded, label: 'Continue with Google', color: Colors.red.shade700, onTap: () => _showComingSoon('Google')),
+                      _SocialButton(
+                        icon: Icons.g_mobiledata_rounded, 
+                        label: 'Continue with Google', 
+                        color: const Color(0xFF4285F4), 
+                        isGoogle: true,
+                        onTap: () => _showComingSoon('Google')
+                      ),
                       _SocialButton(icon: Icons.apple_rounded, label: 'Continue with Apple', color: Colors.black, onTap: () => _showComingSoon('Apple')),
                       _SocialButton(icon: Icons.facebook_rounded, label: 'Continue with Facebook', color: Colors.blue.shade800, onTap: () => _showComingSoon('Facebook')),
                       _SocialButton(icon: Icons.window_rounded, label: 'Continue with Microsoft', color: Colors.blue.shade600, onTap: () => _showComingSoon('Microsoft')),
@@ -307,8 +313,15 @@ class _SocialButton extends StatelessWidget {
   final String label;
   final Color color;
   final VoidCallback onTap;
+  final bool isGoogle;
 
-  const _SocialButton({required this.icon, required this.label, required this.color, required this.onTap});
+  const _SocialButton({
+    required this.icon, 
+    required this.label, 
+    required this.color, 
+    required this.onTap,
+    this.isGoogle = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -316,14 +329,45 @@ class _SocialButton extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: SizedBox(
         width: double.infinity,
-        height: 50,
-        child: OutlinedButton.icon(
+        height: 52,
+        child: OutlinedButton(
           onPressed: onTap,
-          icon: Icon(icon, color: color, size: 24),
-          label: Text(label, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 13)),
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.grey.shade300),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            backgroundColor: Colors.white,
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isGoogle)
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_\"G\"_logo.svg/1200px-Google_\"G\"_logo.svg.png',
+                    height: 22,
+                    width: 22,
+                    errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
+                  ),
+                )
+              else
+                Icon(icon, color: color, size: 24),
+              const SizedBox(width: 14),
+              Text(
+                label, 
+                style: const TextStyle(
+                  color: Color(0xFF212529), 
+                  fontWeight: FontWeight.w700, 
+                  fontSize: 14,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ),
       ),

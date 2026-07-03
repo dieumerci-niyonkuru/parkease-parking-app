@@ -253,31 +253,62 @@ class _PaymentGrid extends StatelessWidget {
 
   @override Widget build(BuildContext context) {
     final list = [
-      (PayMethod.momo,   'MTN MOMO'),
-      (PayMethod.airtel, 'AIRTEL MONEY'),
-      (PayMethod.card,   'BANK CARD'),
-      (PayMethod.cash,   'CASH PAYMENT'),
+      (PayMethod.momo,   'MTN MOMO',    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MTN_Logo.svg/1200px-MTN_Logo.svg.png'),
+      (PayMethod.airtel, 'AIRTEL MONEY', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Airtel_logo.svg/1200px-Airtel_logo.svg.png'),
+      (PayMethod.card,   'BANK CARD',    null),
+      (PayMethod.cash,   'CASH PAYMENT', null),
     ];
 
     return GridView.count(
       crossAxisCount: 2, shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12, crossAxisSpacing: 12,
-      childAspectRatio: 2.5,
+      mainAxisSpacing: 16, crossAxisSpacing: 16,
+      childAspectRatio: 1.3, // Made taller for better design
       children: list.map((m) {
         final active = selected == m.$1;
         return GestureDetector(
           onTap: () { HapticFeedback.selectionClick(); onSelect(m.$1); },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 250),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: active ? AppTheme.primary.withOpacity(0.1) : AppTheme.bgCard,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: active ? AppTheme.primary : AppTheme.border, width: active ? 2 : 1),
+              color: active ? AppTheme.primary.withOpacity(0.08) : Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: active ? AppTheme.primary : AppTheme.border, 
+                width: active ? 2.5 : 1.5,
+              ),
+              boxShadow: active ? [
+                BoxShadow(color: AppTheme.primary.withOpacity(0.15), blurRadius: 15, offset: const Offset(0, 8))
+              ] : [],
             ),
-            child: Center(
-              child: Text(m.$2, 
-                style: TextStyle(fontSize: 11, fontWeight: active ? FontWeight.w900 : FontWeight.w700, color: active ? AppTheme.primary : AppTheme.textSecond)),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (m.$3 != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(m.$3!, height: 32, width: 32, fit: BoxFit.contain,
+                      errorBuilder: (_,__,___) => Icon(Icons.payment_rounded, color: active ? AppTheme.primary : AppTheme.textMuted),
+                    ),
+                  )
+                else
+                  Icon(
+                    m.$1 == PayMethod.card ? Icons.credit_card_rounded : Icons.payments_rounded,
+                    color: active ? AppTheme.primary : AppTheme.textMuted,
+                    size: 32,
+                  ),
+                const SizedBox(height: 12),
+                Text(m.$2, 
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11, 
+                    fontWeight: FontWeight.w900, 
+                    color: active ? AppTheme.primary : AppTheme.textSecond,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
         );

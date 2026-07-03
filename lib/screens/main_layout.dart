@@ -66,7 +66,17 @@ class _MainLayoutState extends State<MainLayout> {
         backgroundColor: AppTheme.primary, // Fixed Brand Color on top
         surfaceTintColor: Colors.transparent,
         elevation: 4,
-        centerTitle: false,
+        leading: _isSearching 
+          ? null 
+          : Navigator.of(_navigatorKeys[_currentIndex].currentContext ?? context).canPop()
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                onPressed: () {
+                  _navigatorKeys[_currentIndex].currentState?.pop();
+                  setState(() {}); // Refresh to hide back button if needed
+                },
+              )
+            : null,
         title: _isSearching 
           ? TextField(
               controller: _searchCtrl,
