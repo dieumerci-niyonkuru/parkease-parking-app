@@ -110,24 +110,25 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Column(children: [
                     Container(
-                      width: 80, height: 80,
+                      width: 100, height: 100,
                       decoration: BoxDecoration(
-                        gradient: AppTheme.primaryGrad,
-                        borderRadius: BorderRadius.circular(20),
+                        color: const Color(0xFF7A5B40), // Brownish
+                        borderRadius: BorderRadius.circular(28),
                         boxShadow: AppTheme.glowShadow,
                       ),
-                      child: const Icon(Icons.local_parking_rounded,
-                          color: Colors.white, size: 44),
+                      child: const Center(
+                        child: Text('P', style: TextStyle(color: Colors.white, fontSize: 54, fontWeight: FontWeight.w900)),
+                      ),
                     ).animate()
                         .scale(duration: 500.ms, curve: Curves.easeOutBack),
-                    const SizedBox(height: 16),
-                    Text('ITEC Parking',
-                      style: AppTheme.heading1.copyWith(fontSize: 26),
+                    const SizedBox(height: 20),
+                    Text('ITEC PARKING',
+                      style: AppTheme.heading1.copyWith(fontSize: 30, letterSpacing: 2, color: const Color(0xFF212529)),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 200.ms),
-                    const SizedBox(height: 6),
-                    Text('ITEC Parking',
-                      style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+                    const SizedBox(height: 4),
+                    Text('Quickly Pay Parking',
+                      style: AppTheme.label.copyWith(color: AppTheme.textMuted, letterSpacing: 1),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 280.ms),
                   ]),
@@ -147,11 +148,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Welcome Back',
-                          style: AppTheme.heading2,
+                          style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900),
                           textAlign: TextAlign.center),
-                      const SizedBox(height: 4),
-                      Text('Sign in to manage your parking',
-                          style: AppTheme.body,
+                      const SizedBox(height: 6),
+                      Text('Secure Login to your driver portal',
+                          style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
                           textAlign: TextAlign.center),
                       const SizedBox(height: 28),
 

@@ -61,10 +61,13 @@ class AppUtils {
     final double hours = duration.inMinutes / 60.0;
     final int h = hours.ceil();
 
+    if (h == 0) return 0.0;
+
     if (h <= 4) {
-      return (h == 0 ? 1 : h) * 200.0;
+      // 0-4 hours = 200 RWF/hr
+      return h * 200.0;
     } else {
-      // Logic for 5h and above: (h - 3) * 1000
+      // 5+ hours = (Hours - 3) * 1,000 RWF
       return (h - 3) * 1000.0;
     }
   }

@@ -248,6 +248,12 @@ class ApiService {
       
       final f = facilities[plate.hashCode.abs() % facilities.length];
       
+      // Fetch latest pricing for this specific site
+      final pricing = await getPricing(f.recordId);
+      final actualRate = pricing != null 
+          ? (double.tryParse(pricing['rate']?.toString() ?? f.ratePerHour.toString()) ?? f.ratePerHour)
+          : f.ratePerHour;
+
       // Simulate real processing time
       await Future.delayed(const Duration(milliseconds: 1200));
       
@@ -267,7 +273,7 @@ class ApiService {
         vehicleColor:   'Silver',
         vehicleMake:    'Toyota',
         status:         VehicleStatus.parked,
-        ratePerHour:    f.ratePerHour,
+        ratePerHour:    actualRate,
       );
     } catch (_) {
       return null;
