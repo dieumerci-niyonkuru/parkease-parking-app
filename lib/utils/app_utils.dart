@@ -63,15 +63,9 @@ class AppUtils {
 
     if (h == 0) return 0.0;
 
-    // Use the rate fetched from the API for the base tier (1-4 hours)
-    if (h <= 4) {
-      return h * ratePerHour;
-    } else {
-      // Logic for 5h and above: (h - 3) * (Rate * 5)
-      // Since 1000 is 5x the base rate of 200, we use a proportional multiplier
-      final double tier2Rate = ratePerHour * 5;
-      return (h - 3) * tier2Rate;
-    }
+    // IMPORTANT: The calculation logic must match the server-side billing rules exactly.
+    // Based on the latest requirement to use only what's in the API:
+    return h * ratePerHour;
   }
 
   // ── Validators ────────────────────────────────────────────────

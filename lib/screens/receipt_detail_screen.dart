@@ -56,7 +56,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
 
     final entry = _entry!;
     final rate = _pricing != null 
-        ? (double.tryParse(_pricing!['rate']?.toString() ?? '200') ?? 200.0)
+        ? (double.tryParse(_pricing!['rate']?.toString() ?? entry.ratePerHour.toString()) ?? entry.ratePerHour)
         : entry.ratePerHour;
     final moneyFmt = NumberFormat('#,###');
     final dtFmt = DateFormat('EEEE, d MMMM yyyy · HH:mm');
