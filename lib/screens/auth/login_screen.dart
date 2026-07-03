@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
+import '../../services/profile_service.dart';
 import 'register_screen.dart';
 import '../main_layout.dart';
 
@@ -100,8 +101,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override Widget build(BuildContext context) {
-    final profile = ProfileService.profile;
-
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       body: Column(
@@ -300,36 +299,6 @@ class _DividerText extends StatelessWidget {
     Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(text, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted))),
     const Expanded(child: Divider()),
   ]);
-}
-  }
-}
-
-class _ContactRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String text;
-  const _ContactRow(this.icon, this.label, this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: AppTheme.textMuted),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted)),
-              const SizedBox(height: 2),
-              Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _SocialButton extends StatelessWidget {
