@@ -133,66 +133,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primary,
-        elevation: 4,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-          onPressed: () {
-            if (_step > 1) {
-              setState(() => _step--);
-            } else {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: Column(
-          children: [
-            const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.w900)),
-            Text(_stepTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5)),
-          ],
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-          child: Column(
-            children: [
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: _buildCurrentStep(),
-              ),
-              const SizedBox(height: 60),
-              
-              // ── Contact & Help Footer ──────────────────────────
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+      body: Column(
+        children: [
+          // ── BRANDED HEADER ─────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: 24),
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                      onPressed: () {
+                        if (_step > 1) setState(() => _step--);
+                        else Navigator.pop(context);
+                      },
+                    ),
+                    const Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 48), // Balancing for back button
+                          child: Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Column(children: [
-                  Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
-                  const SizedBox(height: 16),
-                  const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
-                  const SizedBox(height: 12),
-                  const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
-                  const SizedBox(height: 12),
-                  const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
-                ]),
-              ).animate().fadeIn(delay: 600.ms),
-
-              const SizedBox(height: 32),
-              Center(
-                child: Text('© 2026 ITEC Parking · Rwanda',
-                  style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold, fontSize: 10)),
-              ).animate().fadeIn(delay: 800.ms),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 4),
+                Text(_stepTitle.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
+              ],
+            ),
           ),
-        ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
+              child: Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildCurrentStep(),
+                  ),
+                  const SizedBox(height: 60),
+                  
+                  // ── ASSISTANCE SECTION ──────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                        const SizedBox(height: 24),
+                        const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
+                        const SizedBox(height: 16),
+                        const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
+                        const SizedBox(height: 16),
+                        const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Center(
+                    child: Text('© 2026 ITEC Parking · Rwanda', style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold, fontSize: 10)),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
+
+          // ── BRANDED FOOTER ─────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            color: AppTheme.primary,
+            child: const Center(
+              child: Text('NATIONAL DRIVER REGISTRATION', style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 2)),
+            ),
+          ),
+        ],
       ),
     );
   }

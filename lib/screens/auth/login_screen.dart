@@ -100,232 +100,207 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override Widget build(BuildContext context) {
+    final profile = ProfileService.profile;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+      body: Column(
+        children: [
+          // ── BRANDED HEADER ─────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: 24),
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Premium Header ───────────────────────────────────────
-                Center(
-                  child: Column(children: [
-                    Container(
-                      width: 100, height: 100,
-                      decoration: BoxDecoration(
-                        color: AppTheme.primary,
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: AppTheme.glowShadow,
-                      ),
-                      child: const Center(
-                        child: Text('P', style: TextStyle(color: Colors.white, fontSize: 54, fontWeight: FontWeight.w900)),
-                      ),
-                    ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
-                    const SizedBox(height: 20),
-                    Text('ITEC PARKING',
-                      style: AppTheme.heading1.copyWith(fontSize: 32, letterSpacing: 3, fontWeight: FontWeight.w900, color: const Color(0xFF212529)),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 200.ms),
-                    const SizedBox(height: 4),
-                    Text('Quickly Pay Parking',
-                      style: AppTheme.label.copyWith(color: AppTheme.textMuted, letterSpacing: 1.5, fontSize: 10),
-                      textAlign: TextAlign.center,
-                    ).animate().fadeIn(delay: 280.ms),
-                  ]),
-                ),
-                const SizedBox(height: 48),
-
-                // ── Card ────────────────────────────────────────
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.bgCard,
-                    borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-                    border: Border.all(color: AppTheme.border, width: 0.5),
-                    boxShadow: AppTheme.subtleShadow,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Welcome Back',
-                          style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900),
-                          textAlign: TextAlign.center),
-                      const SizedBox(height: 6),
-                      Text('Secure Login to your driver portal',
-                          style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
-                          textAlign: TextAlign.center),
-                      const SizedBox(height: 28),
-
-                      // Username / phone / email
-                      Text('Username, Email or Phone', style: AppTheme.label),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _usernameCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                        decoration: const InputDecoration(
-                          hintText: 'Enter username, email or phone',
-                          prefixIcon:
-                              Icon(Icons.person_outline_rounded, size: 20),
-                        ),
-                      ).animate().fadeIn(delay: 350.ms),
-                      const SizedBox(height: 18),
-
-                      // Password
-                      Text('Password', style: AppTheme.label),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: _passwordCtrl,
-                        obscureText: _obscurePassword,
-                        textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => _login(),
-                        style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                        decoration: InputDecoration(
-                          hintText: 'Enter your password',
-                          prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_outlined
-                                  : Icons.visibility_outlined,
-                              color: AppTheme.textMuted, size: 20,
-                            ),
-                            onPressed: () => setState(
-                                () => _obscurePassword = !_obscurePassword),
-                          ),
-                        ),
-                      ).animate().fadeIn(delay: 420.ms),
-                      const SizedBox(height: 28),
-
-                      // Login button
-                      SizedBox(
-                        width: double.infinity, height: 52,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGrad,
-                            borderRadius:
-                                BorderRadius.circular(AppTheme.radiusMd),
-                          ),
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      AppTheme.radiusMd)),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    width: 22, height: 22,
-                                    child: CircularProgressIndicator(
-                                        color: Colors.white, strokeWidth: 2.5),
-                                  )
-                                : Text('Sign In',
-                                    style: AppTheme.heading4
-                                        .copyWith(color: Colors.white, fontSize: 16)),
-                          ),
-                        ),
-                      ).animate().fadeIn(delay: 500.ms),
-
-                      if (_canBio) ...[
-                        const SizedBox(height: 16),
-                        Center(
-                          child: IconButton(
-                            onPressed: _isLoading ? null : _bioLogin,
-                            icon: const Icon(Icons.fingerprint_rounded, size: 48, color: AppTheme.primary),
-                            tooltip: 'Login with Biometrics',
-                          ),
-                        ).animate().fadeIn(delay: 600.ms),
-                        Center(
-                          child: Text('Login with biometrics', 
-                            style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-
-                      const SizedBox(height: 32),
-                      const Row(
-                        children: [
-                          Expanded(child: Divider()),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('OR', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-                          ),
-                          Expanded(child: Divider()),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      _SocialButton(
-                        icon: Icons.g_mobiledata_rounded, 
-                        label: 'Continue with Google', 
-                        color: const Color(0xFF4285F4), 
-                        isGoogle: true,
-                        onTap: () => _showComingSoon('Google')
-                      ),
-                      _SocialButton(icon: Icons.apple_rounded, label: 'Continue with Apple', color: Colors.black, onTap: () => _showComingSoon('Apple')),
-                      _SocialButton(icon: Icons.facebook_rounded, label: 'Continue with Facebook', color: Colors.blue.shade800, onTap: () => _showComingSoon('Facebook')),
-                      _SocialButton(icon: Icons.window_rounded, label: 'Continue with Microsoft', color: Colors.blue.shade600, onTap: () => _showComingSoon('Microsoft')),
-                      _SocialButton(icon: Icons.phone_android_rounded, label: 'Continue with Phone Number', color: AppTheme.primary, onTap: () => _showComingSoon('Phone Number')),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.08),
-                const SizedBox(height: 28),
-
-                // ── Register link ───────────────────────────────
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text("Don't have an account? ", style: AppTheme.body),
-                  GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => const RegisterScreen()),
-                    ),
-                    child: Text('Register here',
-                      style: AppTheme.body.copyWith(
-                        color: AppTheme.primary,
-                        fontWeight: FontWeight.w700,
-                      )),
-                  ),
-                ]).animate().fadeIn(delay: 600.ms),
-
-                const SizedBox(height: 48),
-
-                // ── Contact & Help Footer ──────────────────────────
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-                  ),
-                  child: Column(children: [
-                    Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
-                    const SizedBox(height: 16),
-                    const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
-                    const SizedBox(height: 12),
-                    const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
-                    const SizedBox(height: 12),
-                    const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
-                  ]),
-                ).animate().fadeIn(delay: 800.ms),
-
-                const SizedBox(height: 32),
-                Center(
-                  child: Text('© 2026 ITEC Parking · Rwanda',
-                    style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold, fontSize: 10)),
-                ).animate().fadeIn(delay: 1000.ms),
-                const SizedBox(height: 40),
+                const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
+                const SizedBox(height: 4),
+                Text('National Parking Management System'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
-        ),
+
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(28, 32, 28, 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // ── Logo / Badge ───────────────────────────────────────
+                  Center(
+                    child: Container(
+                      width: 80, height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: AppTheme.cardShadow,
+                        border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+                      ),
+                      child: const Center(
+                        child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 44, fontWeight: FontWeight.w900)),
+                      ),
+                    ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // ── Login Card ────────────────────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                      boxShadow: AppTheme.subtleShadow,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Welcome Back', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
+                        const SizedBox(height: 6),
+                        Text('Secure Login to your driver portal', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+                        const SizedBox(height: 32),
+
+                        Text('Username, Email or Phone', style: AppTheme.label),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _usernameCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.next,
+                          style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
+                          decoration: const InputDecoration(
+                            hintText: 'Enter login ID',
+                            prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        Text('Password', style: AppTheme.label),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _passwordCtrl,
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _login(),
+                          style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
+                          decoration: InputDecoration(
+                            hintText: '••••••••',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                            suffixIcon: IconButton(
+                              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.textMuted, size: 20),
+                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+
+                        SizedBox(
+                          width: double.infinity, height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                : const Text('SIGN IN', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                          ),
+                        ),
+
+                        if (_canBio) ...[
+                          const SizedBox(height: 24),
+                          Center(
+                            child: InkWell(
+                              onTap: _isLoading ? null : _bioLogin,
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(children: [
+                                  const Icon(Icons.fingerprint_rounded, size: 44, color: Color(0xFF7A5B40)),
+                                  const SizedBox(height: 4),
+                                  Text('BIO LOGIN', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 9)),
+                                ]),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05),
+
+                  const SizedBox(height: 32),
+                  const _DividerText(text: 'OR CONTINUE WITH'),
+                  const SizedBox(height: 24),
+
+                  _SocialButton(isGoogle: true, label: 'Google Account', color: const Color(0xFF4285F4), icon: Icons.g_mobiledata_rounded, onTap: () => _showComingSoon('Google')),
+                  _SocialButton(label: 'Apple ID', color: Colors.black, icon: Icons.apple_rounded, onTap: () => _showComingSoon('Apple')),
+                  
+                  const SizedBox(height: 32),
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                    Text("Don't have an account? ", style: AppTheme.body),
+                    GestureDetector(
+                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                      child: Text('Register here', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
+                    ),
+                  ]),
+                  
+                  const SizedBox(height: 48),
+                  
+                  // ── ASSISTANCE SECTION ──────────────────────────
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28),
+                      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                        const SizedBox(height: 24),
+                        const _ContactRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
+                        const SizedBox(height: 16),
+                        const _ContactRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
+                        const SizedBox(height: 16),
+                        const _ContactRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+          ),
+
+          // ── BRANDED FOOTER ─────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            color: AppTheme.primary,
+            child: const Center(
+              child: Text('© 2026 ITEC PARKING · RWANDA', style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 2)),
+            ),
+          ),
+        ],
       ),
     );
+  }
+}
+
+class _DividerText extends StatelessWidget {
+  final String text;
+  const _DividerText({required this.text});
+  @override Widget build(BuildContext context) => Row(children: [
+    const Expanded(child: Divider()),
+    Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Text(text, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted))),
+    const Expanded(child: Divider()),
+  ]);
+}
   }
 }
 
