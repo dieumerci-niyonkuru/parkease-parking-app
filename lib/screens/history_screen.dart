@@ -120,7 +120,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final hasFilter = _from != null || _to != null;
-    final query = context.watch<AppProvider>().searchQuery;
+    final query = context.watch<AppProvider>().searchQuery.toLowerCase().trim();
 
     var displayRecords = query.isEmpty 
       ? _filtered 
@@ -132,154 +132,100 @@ class _HistoryScreenState extends State<HistoryScreen> {
       backgroundColor: AppTheme.bgDeep,
       body: Column(
         children: [
-          // ── FIXED TOP HEADER (Controls & Info) ────────────────────
+          // ── Summary row for Table View ─────────────────────────
+          if (_tableView && !_loading && displayRecords.isNotEmpty)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Row(children: [
+                _SummaryChip(
+                  icon: Icons.payments_rounded,
+                  label: 'TOTAL PAID: RWF ${_moneyFmt.format(displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0)).toInt())}',
+                  color: AppTheme.success,
+                ),
+                const Spacer(),
+                Text('${displayRecords.length} RECEIPTS', style: AppTheme.label.copyWith(fontSize: 10, fontWeight: FontWeight.w900)),
+              ]),
+            ),
+
+          // ── FIXED TOP HEADER (Controls) ─────────────────────────
           Container(
             color: AppTheme.bgCard,
-            child: Column(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
-                if (!ApiService.lastFetchSuccessful)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    color: AppTheme.warning.withOpacity(0.1),
-                    child: Row(children: [
-                      const Icon(Icons.cloud_off_rounded, color: AppTheme.warning, size: 18),
-                      const SizedBox(width: 12),
-                      Expanded(child: Text('Internet connection lost. Showing your saved receipt history.', style: AppTheme.label.copyWith(color: AppTheme.warning, fontWeight: FontWeight.bold))),
-                    ]),
-                  ),
-                
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-                  child: Row(
-                    children: [
-                      _SummaryChip(
-                        icon: Icons.receipt_long_rounded,
-                        label: '${displayRecords.length} records',
-                        color: AppTheme.primary,
-                      ),
-                      const Spacer(),
-                      IconButton(
-                        onPressed: () => setState(() => _tableView = !_tableView),
-                        icon: Icon(
-                          _tableView ? Icons.view_list_rounded : Icons.table_chart_rounded,
-                          color: _tableView ? AppTheme.primary : AppTheme.textMuted,
-                          size: 22,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: _pickRange,
-                        icon: Icon(Icons.date_range_rounded,
-                            color: hasFilter ? AppTheme.primary : AppTheme.textMuted,
-                            size: 22),
-                      ),
-                      IconButton(
-                        onPressed: _load,
-                        icon: const Icon(Icons.refresh_rounded,
-                            color: AppTheme.textMuted, size: 22),
-                      ),
-                    ],
-                  ),
+                _SummaryChip(
+                  icon: _tableView ? Icons.table_chart_rounded : Icons.view_list_rounded,
+                  label: _tableView ? 'TABLE VIEW' : 'CARD VIEW',
+                  color: AppTheme.primary,
                 ),
-
-                if (!hasFilter)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _pickRange,
-                        icon: const Icon(Icons.date_range_rounded, size: 18),
-                        label: const Text('FILTER BY DATE', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.bgDeep,
-                          foregroundColor: AppTheme.primary,
-                          side: const BorderSide(color: AppTheme.primary, width: 1.2),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
-                  ),
-                
-                if (hasFilter)
-                  Container(
-                    color: AppTheme.primary.withOpacity(0.07),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Row(children: [
-                      const Icon(Icons.filter_alt_rounded, color: AppTheme.primary, size: 14),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${_dateFmt.format(_from!)} → ${_dateFmt.format(_to!)}',
-                        style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w700),
-                      ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: _clearFilter,
-                        child: const Icon(Icons.close_rounded, size: 18, color: AppTheme.primary),
-                      ),
-                    ]),
-                  ),
-                
-                Container(height: 1, color: AppTheme.border.withOpacity(0.5)),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => setState(() => _tableView = !_tableView),
+                  icon: Icon(_tableView ? Icons.grid_view_rounded : Icons.table_chart_outlined, color: AppTheme.primary, size: 22),
+                  tooltip: 'Switch View',
+                ),
+                IconButton(
+                  onPressed: _pickRange,
+                  icon: Icon(Icons.calendar_month_rounded, color: hasFilter ? AppTheme.primary : AppTheme.textMuted, size: 22),
+                  tooltip: 'Filter Date',
+                ),
+                IconButton(
+                  onPressed: _load,
+                  icon: const Icon(Icons.sync_rounded, color: AppTheme.textMuted, size: 22),
+                  tooltip: 'Sync History',
+                ),
               ],
             ),
           ),
+          
+          if (hasFilter)
+            Container(
+              color: AppTheme.primary.withOpacity(0.05),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Row(children: [
+                const Icon(Icons.filter_list_rounded, color: AppTheme.primary, size: 14),
+                const SizedBox(width: 8),
+                Text('${_dateFmt.format(_from!)} - ${_dateFmt.format(_to!)}', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                const Spacer(),
+                GestureDetector(onTap: _clearFilter, child: const Icon(Icons.close_rounded, size: 16, color: AppTheme.primary)),
+              ]),
+            ),
 
           // ── SCROLLABLE CONTENT ──────────────────────────────────
           Expanded(
             child: RefreshIndicator(
               color: AppTheme.primary,
               onRefresh: _load,
-              child: CustomScrollView(
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                slivers: [
-                  if (_loading)
-                    const SliverFillRemaining(
-                      child: BrandedLoader(message: 'Retrieving your history...'),
-                    )
-                  else if (displayRecords.isEmpty)
-                    SliverFillRemaining(
-                      child: _EmptyState(hasFilter: hasFilter || query.isNotEmpty),
-                    )
-                  else if (_tableView)
-                    SliverToBoxAdapter(
-                      child: _TableView(entries: displayRecords),
-                    )
-                  else
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (ctx, i) {
-                            final e = displayRecords[i];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).pushNamed(
-                                  'receipt_detail',
-                                  arguments: e,
+              child: _loading
+                  ? const BrandedLoader(message: 'Retrieving official history...')
+                  : displayRecords.isEmpty
+                      ? _EmptyState(hasFilter: hasFilter || query.isNotEmpty)
+                      : _tableView
+                          ? _TableView(entries: displayRecords)
+                          : ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),
+                              itemCount: displayRecords.length,
+                              itemBuilder: (ctx, i) {
+                                final e = displayRecords[i];
+                                return GestureDetector(
+                                  onTap: () => Navigator.of(context).pushNamed('receipt_detail', arguments: e),
+                                  child: _ReceiptCard(
+                                    entry: e,
+                                    dur: _durationStr(e),
+                                    dtFmt: DateFormat('dd MMM yyyy, HH:mm'),
+                                    moneyFmt: _moneyFmt,
+                                  ).animate().fadeIn(delay: Duration(milliseconds: i * 30)).slideY(begin: 0.05),
                                 );
                               },
-                              child: _ReceiptCard(
-                                entry: e,
-                                dur: _durationStr(e),
-                                dtFmt: DateFormat('dd MMM yyyy, HH:mm'),
-                                moneyFmt: _moneyFmt,
-                              ).animate().fadeIn(delay: Duration(milliseconds: i * 40)).slideY(begin: 0.08),
-                            );
-                          },
-                          childCount: displayRecords.length,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+                            ),
             ),
           ),
         ],
       ),
     );
   }
+}
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -303,136 +249,83 @@ class _TableView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      // ── Summary row ────────────────────────────────────────
-      Container(
-        color: AppTheme.bgCard,
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(children: [
-          _SummaryChip(
-            icon: Icons.payments_rounded,
-            label: 'RWF ${_moneyFmt.format(entries.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0)).toInt())} total',
-            color: AppTheme.success,
-          ),
-        ]),
-      ),
-      const Divider(height: 1),
-
       // ── Table header ───────────────────────────────────────
       Container(
         color: AppTheme.bgCard,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(children: [
-          _TH('PLATE',       flex: 3),
+          _TH('PLATE',       flex: 2),
           _TH('ENTRY',       flex: 3),
           _TH('EXIT',        flex: 3),
           _TH('DUR',         flex: 2),
-          _TH('AMOUNT',      flex: 3, right: true),
+          _TH('ACTION',      flex: 2, right: true),
         ]),
       ),
       const Divider(height: 1),
 
       // ── Table rows ─────────────────────────────────────────
       Expanded(
-        child: SingleChildScrollView(
+        child: ListView.builder(
           physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: List.generate(entries.length, (i) {
-              final e   = entries[i];
-              final odd = i % 2 == 1;
-              return GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ReceiptDetailScreen(entry: e))),
-                child: Container(
-                  color: odd
-                      ? AppTheme.bgDeep.withOpacity(0.5)
-                      : AppTheme.bgCard,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 12),
-                  child: Row(children: [
-                    // Plate
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        e.plateNumber,
-                        style: AppTheme.mono.copyWith(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.primary,
-                            letterSpacing: 1),
-                      ),
-                    ),
-                    // Entry time
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        Text(_dateFmt.format(e.entryTime),
-                            style: AppTheme.bodySmall
-                                .copyWith(fontSize: 11)),
-                        Text(_timeFmt.format(e.entryTime),
-                            style: AppTheme.label.copyWith(
-                                color: AppTheme.textMuted,
-                                fontWeight: FontWeight.w700)),
-                      ]),
-                    ),
-                    // Exit time
-                    Expanded(
-                      flex: 3,
-                      child: e.exitTime != null
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                              Text(_dateFmt.format(e.exitTime!),
-                                  style: AppTheme.bodySmall
-                                      .copyWith(fontSize: 11)),
-                              Text(_timeFmt.format(e.exitTime!),
-                                  style: AppTheme.label.copyWith(
-                                      color: AppTheme.textMuted,
-                                      fontWeight: FontWeight.w700)),
-                            ])
-                          : Text('—',
-                              style: AppTheme.bodySmall
-                                  .copyWith(color: AppTheme.textHint)),
-                    ),
-                    // Duration
-                    Expanded(
-                      flex: 2,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(_dur(e),
-                            style: AppTheme.label.copyWith(
-                                color: AppTheme.primary,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 10)),
-                      ),
-                    ),
-                    // Amount
-                    Expanded(
-                      flex: 3,
-                      child: Text(
-                        e.amountPaid != null
-                            ? 'RWF ${_moneyFmt.format(e.amountPaid!.toInt())}'
-                            : '—',
-                        textAlign: TextAlign.right,
-                        style: AppTheme.bodySmall.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: e.amountPaid != null
-                                ? AppTheme.success
-                                : AppTheme.textHint,
-                            fontSize: 12),
-                      ),
-                    ),
+          itemCount: entries.length,
+          itemBuilder: (ctx, i) {
+            final e   = entries[i];
+            final odd = i % 2 == 1;
+            return Container(
+              color: odd ? AppTheme.bgDeep.withOpacity(0.3) : Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(children: [
+                // Plate
+                Expanded(
+                  flex: 2,
+                  child: Text(e.plateNumber, style: AppTheme.mono.copyWith(fontSize: 11, fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                ),
+                // Entry time
+                Expanded(
+                  flex: 3,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(_dateFmt.format(e.entryTime), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+                    Text(_timeFmt.format(e.entryTime), style: AppTheme.label.copyWith(fontSize: 9)),
                   ]),
                 ),
-              );
-            }),
-          ),
+                // Exit time
+                Expanded(
+                  flex: 3,
+                  child: e.exitTime != null
+                    ? Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(_dateFmt.format(e.exitTime!), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
+                        Text(_timeFmt.format(e.exitTime!), style: AppTheme.label.copyWith(fontSize: 9)),
+                      ])
+                    : const Text('Still Parked', style: TextStyle(fontSize: 9, color: AppTheme.warning, fontWeight: FontWeight.bold)),
+                ),
+                // Duration
+                Expanded(
+                  flex: 2,
+                  child: Text(_dur(e), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                ),
+                // Action
+                Expanded(
+                  flex: 2,
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed('receipt_detail', arguments: e);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text('VIEW', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                      ),
+                    ),
+                  ),
+                ),
+              ]),
+            );
+          },
         ),
       ),
     ]);

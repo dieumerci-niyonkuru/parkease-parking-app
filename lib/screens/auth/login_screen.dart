@@ -301,6 +301,34 @@ class _DividerText extends StatelessWidget {
   ]);
 }
 
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String text;
+  const _ContactRow(this.icon, this.label, this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 16, color: AppTheme.textMuted),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted)),
+              const SizedBox(height: 2),
+              Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _SocialButton extends StatelessWidget {
   final IconData icon;
   final String label;

@@ -9,6 +9,7 @@ import '../models/models.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import 'home_screen.dart';
+import 'parking_list_screen.dart';
 import 'plate_lookup_screen.dart';
 import 'history_screen.dart';
 import 'receipt_detail_screen.dart';
@@ -35,6 +36,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   final List<Widget> _pages = [
     const HomeScreen(),
+    const ParkingListScreen(),
     const PlateLookupScreen(initialPlate: ''),
     const HistoryScreen(),
     const ProfileScreen(),
@@ -45,14 +47,16 @@ class _MainLayoutState extends State<MainLayout> {
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
   ];
 
   String get _pageTitle {
     switch (_currentIndex) {
       case 0: return 'DASHBOARD';
-      case 1: return 'PLATE LOOKUP';
-      case 2: return 'RECEIPTS';
-      case 3: return 'MY ACCOUNT';
+      case 1: return 'PARKING HUBS';
+      case 2: return 'PLATE LOOKUP';
+      case 3: return 'RECEIPTS';
+      case 4: return 'MY ACCOUNT';
       default: return 'ITEC PARKING';
     }
   }
@@ -254,6 +258,7 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
+      (Icons.location_city_rounded,   Icons.location_city_outlined,  'Hubs'),
       (Icons.electric_bolt_rounded,   Icons.electric_bolt_outlined,  'Quick Pay'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
       (Icons.account_circle_rounded,  Icons.account_circle_outlined, 'Profile'),

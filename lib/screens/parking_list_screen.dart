@@ -1,204 +1,199 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
+import '../widgets/branded_loader.dart';
 
 class ParkingListScreen extends StatefulWidget {
   const ParkingListScreen({super.key});
   @override State<ParkingListScreen> createState() => _ParkingListScreenState();
 }
 
+import 'package:provider/provider.dart';
+import '../providers/app_provider.dart';
+
 class _ParkingListScreenState extends State<ParkingListScreen> {
   List<ParkingFacility> _all      = [];
-  List<ParkingFacility> _filtered = [];
   bool _loading = true;
-  final _searchCtrl = TextEditingController();
+  
+  // Pagination
+  int _currentPage = 0;
+  final int _pageSize = 5;
 
   @override void initState()  { super.initState(); _load(); }
-  @override void dispose()    { _searchCtrl.dispose(); super.dispose(); }
 
   Future<void> _load() async {
     setState(() => _loading = true);
     final list = await ApiService.getAllParking();
     if (!mounted) return;
-    setState(() { _all = list; _filtered = list; _loading = false; });
-  }
-
-  void _onSearch(String q) {
-    final query = q.toLowerCase().trim();
-    setState(() {
-      _filtered = query.isEmpty
-          ? _all
-          : _all.where((f) =>
-              f.fullParkName.toLowerCase().contains(query) ||
-              f.address.toLowerCase().contains(query)).toList();
+    setState(() { 
+      _all = list; 
+      _loading = false; 
     });
   }
 
   @override Widget build(BuildContext context) {
+    final query = context.watch<AppProvider>().searchQuery.toLowerCase().trim();
+    
+    final filtered = query.isEmpty
+        ? _all
+        : _all.where((f) =>
+            f.fullParkName.toLowerCase().contains(query) ||
+            f.address.toLowerCase().contains(query)).toList();
+
+    final totalPages = (filtered.length / _pageSize).ceil();
+    
+    // Safety check for current page
+    if (_currentPage >= totalPages && totalPages > 0) {
+      _currentPage = totalPages - 1;
+    }
+
+    final start = _currentPage * _pageSize;
+    final end = (start + _pageSize) > filtered.length ? filtered.length : (start + _pageSize);
+    final items = (start < filtered.length) ? filtered.sublist(start, end) : [];
+
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      body: RefreshIndicator(
-        color: AppTheme.primary,
-        onRefresh: _load,
-        child: CustomScrollView(
-          slivers: [
-            SliverAppBar(
-              pinned: true,
-              floating: true,
-              expandedHeight: 0,
-              backgroundColor: AppTheme.bgDeep,
-              automaticallyImplyLeading: false,
-              title: Row(children: [
-                const Icon(Icons.manage_search_rounded,
-                    color: AppTheme.textSecond, size: 20),
-                const SizedBox(width: 8),
-                Text('Parking Locations', style: AppTheme.heading4),
-              ]),
-              bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(60),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                  child: TextField(
-                    controller: _searchCtrl,
-                    onChanged: _onSearch,
-                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                    decoration: InputDecoration(
-                      hintText: 'Search mall or city...',
-                      hintStyle:
-                          AppTheme.body.copyWith(color: AppTheme.textHint),
-                      prefixIcon: const Icon(Icons.search_rounded,
-                          color: AppTheme.textMuted, size: 20),
-                      filled: true,
-                      fillColor: AppTheme.bgCard,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                        borderSide: const BorderSide(color: AppTheme.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                        borderSide: const BorderSide(color: AppTheme.border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                        borderSide:
-                            const BorderSide(color: AppTheme.primary, width: 1.2),
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 14),
-                    ),
-                  ),
+      body: Column(
+        children: [
+          if (_loading)
+            const Expanded(child: BrandedLoader(message: 'Syncing facilities...'))
+          else if (filtered.isEmpty)
+            const Expanded(child: _EmptySearch())
+          else
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _load,
+                color: AppTheme.primary,
+                child: ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                  itemCount: items.length,
+                  itemBuilder: (ctx, i) {
+                    final f = items[i];
+                    return _ParkingSiteCard(
+                      facility: f,
+                      onTap: () => Navigator.of(context).pushNamed('parking_detail', arguments: f),
+                    ).animate().fadeIn(delay: Duration(milliseconds: i * 50)).slideX(begin: 0.05);
+                  },
                 ),
               ),
             ),
 
-            if (_loading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: CircularProgressIndicator(color: AppTheme.primary),
-                ),
-              )
-            else if (_filtered.isEmpty)
-              SliverFillRemaining(
-                child: Center(
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    const Icon(Icons.search_off_rounded,
-                        color: AppTheme.textHint, size: 64),
-                    const SizedBox(height: 16),
-                    Text('No parking locations found',
-                        style: AppTheme.heading4
-                            .copyWith(color: AppTheme.textMuted)),
-                    const SizedBox(height: 8),
-                    Text('Try a different search term', style: AppTheme.body),
-                  ]),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 1,
-                    childAspectRatio: 3.2,
-                    mainAxisSpacing: 12,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (ctx, i) => _ParkingTile(
-                      facility: _filtered[i],
-                    ).animate().fadeIn(delay: Duration(milliseconds: i * 40)).slideY(begin: 0.05),
-                    childCount: _filtered.length,
-                  ),
+          // ── PAGINATION CONTROLS ──────────────────────────────────
+          if (!_loading && filtered.isNotEmpty && totalPages > 1)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _PageButton(
+                      label: 'BACK',
+                      icon: Icons.arrow_back_ios_new_rounded,
+                      onPressed: _currentPage > 0 ? () => setState(() => _currentPage--) : null,
+                    ),
+                    Text('PAGE ${_currentPage + 1} OF $totalPages', 
+                      style: AppTheme.label.copyWith(fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                    _PageButton(
+                      label: 'NEXT',
+                      icon: Icons.arrow_forward_ios_rounded,
+                      isReverse: true,
+                      onPressed: (_currentPage + 1) < totalPages ? () => setState(() => _currentPage++) : null,
+                    ),
+                  ],
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }
 }
 
-// ── Parking Tile ──────────────────────────────────────────────────
-class _ParkingTile extends StatelessWidget {
+class _ParkingSiteCard extends StatelessWidget {
   final ParkingFacility facility;
-  const _ParkingTile({required this.facility});
+  final VoidCallback onTap;
+  const _ParkingSiteCard({required this.facility, required this.onTap});
 
-  @override Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: AppTheme.bgCard,
-      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-      border: Border.all(color: AppTheme.border, width: 0.5),
-      boxShadow: AppTheme.subtleShadow,
-    ),
-    child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-      Expanded(child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Text(
-                  facility.fullParkName.toUpperCase(),
-                  style: AppTheme.heading4.copyWith(fontSize: 12, letterSpacing: 0.2),
-                  maxLines: 2, overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppTheme.border),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text('GENERAL PARK',
-                  style: AppTheme.label.copyWith(color: AppTheme.textMuted, fontSize: 8)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(children: [
-            const Icon(Icons.location_on_rounded, color: AppTheme.danger, size: 13),
-            const SizedBox(width: 4),
-            Expanded(
-              child: Text(facility.address,
-                style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecond, fontSize: 11),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
+  @override Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF7F2),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: AppTheme.primary.withOpacity(0.05)),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.location_city_rounded, color: AppTheme.primary, size: 24),
+                const SizedBox(width: 14),
+                Expanded(child: Text(facility.fullParkName.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF212529)))),
+                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary.withOpacity(0.5), size: 14),
+              ],
             ),
-          ]),
-          const SizedBox(height: 6),
-          Row(children: [
-            const Icon(Icons.directions_car_outlined,
-                color: AppTheme.textMuted, size: 13),
-            const SizedBox(width: 4),
-            Text('${facility.parkingLots} Slots',
-              style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecond, fontSize: 11)),
-          ]),
+            const Divider(height: 24, thickness: 0.5),
+            _Row('LOCATION', facility.address),
+            _Row('AVAILABLE', '${facility.parkingLots} SPOTS', isLast: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _Row(String label, String value, {bool isLast = false}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)),
+          Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
         ],
-      )),
+      ),
+    );
+  }
+}
+
+class _PageButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final bool isReverse;
+
+  const _PageButton({required this.label, required this.icon, this.onPressed, this.isReverse = false});
+
+  @override Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: isReverse ? Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)) : Icon(icon, size: 14),
+      label: isReverse ? Icon(icon, size: 14) : Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+      style: TextButton.styleFrom(
+        foregroundColor: onPressed != null ? AppTheme.primary : Colors.grey.shade400,
+      ),
+    );
+  }
+}
+
+class _EmptySearch extends StatelessWidget {
+  const _EmptySearch();
+  @override Widget build(BuildContext context) => Center(
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Icon(Icons.search_off_rounded, color: AppTheme.textHint.withOpacity(0.3), size: 64),
+      const SizedBox(height: 16),
+      Text('No sites found.', style: AppTheme.heading4.copyWith(color: AppTheme.textMuted)),
     ]),
   );
 }
