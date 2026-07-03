@@ -18,7 +18,9 @@ class ParkingDetailsScreen extends StatefulWidget {
 class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   Map<String, dynamic>? _pricing;
   List<dynamic> _categories = [];
+  List<dynamic> _fullTariffs = [];
   bool _loading = true;
+  bool _showFullList = false;
 
   @override void initState() {
     super.initState();
@@ -29,11 +31,13 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
     final results = await Future.wait([
       ApiService.getPricing(widget.facility.recordId),
       ApiService.getCarCategories(widget.facility.dbId),
+      ApiService.getTariffs(),
     ]);
     if (!mounted) return;
     setState(() {
       _pricing = results[0] as Map<String, dynamic>?;
       _categories = results[1] as List<dynamic>;
+      _fullTariffs = results[2] as List<dynamic>;
       _loading = false;
     });
   }
@@ -103,17 +107,49 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         // Dynamically build cards for each category from the API
                         if (_categories.isEmpty)
                           _CategoryPricingCard(
-                            title: 'General',
-                            rates: _pricing ?? {},
-                          ).animate().fadeIn()
+                          title: 'General',
+                          rates: _pricing ?? {},
+                          onViewFull: () => setState(() => _showFullList = !_showFullList),
+                        ).animate().fadeIn()
                         else
                           ..._categories.map((c) => Padding(
                             padding: const EdgeInsets.only(bottom: 24),
                             child: _CategoryPricingCard(
                               title: c['name'] ?? 'Vehicle',
                               rates: c,
+                              onViewFull: () => setState(() => _showFullList = !_showFullList),
                             ).animate().fadeIn(delay: 200.ms),
                           )),
+
+                        if (_showFullList && _fullTariffs.isNotEmpty) ...[
+                          const Divider(height: 48),
+                          const Text('Comprehensive Price List', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                          const SizedBox(height: 16),
+                          ..._fullTariffs.map((t) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _CategoryPricingCard(
+                              title: t['parking_name'] ?? t['name'] ?? 'Other Site',
+                              rates: t,
+                            ),
+                          )),
+                        ],
+
+                        const SizedBox(height: 40),
+
+                        // ── NAVIGATION ACTIONS ──────────────────────────
+                        Center(
+                          child: OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                            icon: const Icon(Icons.dashboard_rounded, color: Colors.white),
+                            label: const Text('BACK TO DASHBOARD', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white)),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              side: const BorderSide(color: Colors.white24, width: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 40),
                         
@@ -133,7 +169,8 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
 class _CategoryPricingCard extends StatelessWidget {
   final String title;
   final Map<String, dynamic> rates;
-  const _CategoryPricingCard({required this.title, required this.rates});
+  final VoidCallback? onViewFull;
+  const _CategoryPricingCard({required this.title, required this.rates, this.onViewFull});
 
   @override Widget build(BuildContext context) {
     final moneyFmt = NumberFormat('#,###');
@@ -164,11 +201,16 @@ class _CategoryPricingCard extends StatelessWidget {
           _PriceItem('Third Hour', '${moneyFmt.format(p3)} Frw'),
           _PriceItem('Fifth Hour', '${moneyFmt.format(p5)} Frw'),
           _PriceItem('Full Day (24h)', '${moneyFmt.format(pd)} Frw'),
-          const SizedBox(height: 20),
-          Center(
-            child: Text('View full price list', 
-              style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
-          ),
+          if (onViewFull != null) ...[
+            const SizedBox(height: 20),
+            Center(
+              child: TextButton(
+                onPressed: onViewFull,
+                child: Text('View full price list', 
+                  style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 13)),
+              ),
+            ),
+          ],
         ],
       ),
     );

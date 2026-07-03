@@ -288,23 +288,64 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = '$_keyPricingPrefix$recordId';
     try {
-      final resp = await http.get(
-        Uri.parse('$baseUrl/pricing/parking/$recordId'),
+      // Trying the user-provided endpoints in order of priority
+      // 1. GET /parking/{id}/pricing
+      var resp = await http.get(
+        Uri.parse('$baseUrl/parking/$recordId/pricing'),
         headers: AuthService.authHeaders,
       ).timeout(timeout);
+
+      // 2. Fallback to GET /parking/{id}/rates if 404 or empty
+      if (resp.statusCode != 200) {
+        resp = await http.get(
+          Uri.parse('$baseUrl/parking/$recordId/rates'),
+          headers: AuthService.authHeaders,
+        ).timeout(timeout);
+      }
 
       _checkStatus(resp.statusCode);
 
       if (resp.statusCode == 200) {
         await prefs.setString(cacheKey, resp.body);
-        return jsonDecode(resp.body);
+        final data = jsonDecode(resp.body);
+        // Extract the inner data if the API wraps it in a 'data' or 'pricing' key
+        return data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
       }
     } catch (_) {}
 
     // Offline fallback
     final cached = prefs.getString(cacheKey);
-    if (cached != null) return jsonDecode(cached);
+    if (cached != null) {
+      final data = jsonDecode(cached);
+      return data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
+    }
     return null;
+  }
+
+  // ── Get All Tariffs / Full Price List ─────────────────────────
+  static Future<List<dynamic>> getTariffs() async {
+    final List<String> paths = [
+      '/parking/pricing',
+      '/pricing',
+      '/tariffs',
+      '/parking/rates',
+    ];
+
+    for (final path in paths) {
+      try {
+        final resp = await http.get(
+          Uri.parse('$baseUrl$path'),
+          headers: AuthService.authHeaders,
+        ).timeout(timeout);
+
+        if (resp.statusCode == 200) {
+          final data = jsonDecode(resp.body);
+          final val = data['tariffs'] ?? data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
+          if (val is List) return val;
+        }
+      } catch (_) {}
+    }
+    return [];
   }
 
   // ── Get Car Categories ────────────────────────────────────────
