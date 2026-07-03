@@ -110,29 +110,28 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // ── Logo ───────────────────────────────────────
+                // ── Premium Header ───────────────────────────────────────
                 Center(
                   child: Column(children: [
                     Container(
                       width: 100, height: 100,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF7A5B40), // Brownish
+                        color: AppTheme.primary,
                         borderRadius: BorderRadius.circular(28),
                         boxShadow: AppTheme.glowShadow,
                       ),
                       child: const Center(
                         child: Text('P', style: TextStyle(color: Colors.white, fontSize: 54, fontWeight: FontWeight.w900)),
                       ),
-                    ).animate()
-                        .scale(duration: 500.ms, curve: Curves.easeOutBack),
+                    ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                     const SizedBox(height: 20),
                     Text('ITEC PARKING',
-                      style: AppTheme.heading1.copyWith(fontSize: 30, letterSpacing: 2, color: const Color(0xFF212529)),
+                      style: AppTheme.heading1.copyWith(fontSize: 32, letterSpacing: 3, fontWeight: FontWeight.w900, color: const Color(0xFF212529)),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 200.ms),
                     const SizedBox(height: 4),
                     Text('Quickly Pay Parking',
-                      style: AppTheme.label.copyWith(color: AppTheme.textMuted, letterSpacing: 1),
+                      style: AppTheme.label.copyWith(color: AppTheme.textMuted, letterSpacing: 1.5, fontSize: 10),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 280.ms),
                   ]),
@@ -294,16 +293,56 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ]).animate().fadeIn(delay: 600.ms),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 48),
+
+                // ── Contact & Help Footer ──────────────────────────
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                  ),
+                  child: Column(children: [
+                    Text('NEED ASSISTANCE?', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                    const SizedBox(height: 16),
+                    const _ContactRow(Icons.phone_in_talk_rounded, 'Call Support: +250 788 123 456'),
+                    const SizedBox(height: 12),
+                    const _ContactRow(Icons.alternate_email_rounded, 'Email: support@iteccone.com'),
+                    const SizedBox(height: 12),
+                    const _ContactRow(Icons.language_rounded, 'Website: www.iteccone.com'),
+                  ]),
+                ).animate().fadeIn(delay: 800.ms),
+
+                const SizedBox(height: 32),
                 Center(
                   child: Text('© 2026 ITEC Parking · Rwanda',
-                    style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold)),
-                ).animate().fadeIn(delay: 700.ms),
+                    style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold, fontSize: 10)),
+                ).animate().fadeIn(delay: 1000.ms),
+                const SizedBox(height: 40),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _ContactRow(this.icon, this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 16, color: AppTheme.textMuted),
+        const SizedBox(width: 10),
+        Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }

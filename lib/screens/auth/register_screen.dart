@@ -134,10 +134,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+        backgroundColor: AppTheme.primary,
+        elevation: 4,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
           onPressed: () {
             if (_step > 1) {
               setState(() => _step--);
@@ -146,17 +147,61 @@ class _RegisterScreenState extends State<RegisterScreen> {
             }
           },
         ),
+        title: Column(
+          children: [
+            const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 14, letterSpacing: 2, fontWeight: FontWeight.w900)),
+            Text(_stepTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5)),
+          ],
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: _buildCurrentStep(),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+          child: Column(
+            children: [
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildCurrentStep(),
+              ),
+              const SizedBox(height: 60),
+              
+              // ── Contact & Help Footer ──────────────────────────
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                ),
+                child: Column(children: [
+                  Text('NEED ASSISTANCE?', style: AppTheme.label.copyWith(letterSpacing: 2, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                  const SizedBox(height: 16),
+                  const _ContactRow(Icons.phone_in_talk_rounded, 'Call Support: +250 788 123 456'),
+                  const SizedBox(height: 12),
+                  const _ContactRow(Icons.alternate_email_rounded, 'Email: support@iteccone.com'),
+                ]),
+              ).animate().fadeIn(delay: 600.ms),
+
+              const SizedBox(height: 32),
+              Center(
+                child: Text('© 2026 ITEC Parking · Rwanda',
+                  style: AppTheme.label.copyWith(color: AppTheme.textHint, fontWeight: FontWeight.bold, fontSize: 10)),
+              ).animate().fadeIn(delay: 800.ms),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  String get _stepTitle {
+    switch (_step) {
+      case 1: return 'ACCOUNT INITIALIZATION';
+      case 2: return 'SECURITY VERIFICATION';
+      case 3: return 'PROFILE COMPLETION';
+      default: return 'REGISTRATION';
+    }
   }
 
   Widget _buildCurrentStep() {
@@ -370,6 +415,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
               )
             : Text(text, style: AppTheme.heading4.copyWith(color: Colors.white)),
       ),
+    );
+  }
+}
+
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _ContactRow(this.icon, this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(icon, size: 16, color: AppTheme.textMuted),
+        const SizedBox(width: 10),
+        Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w600)),
+      ],
     );
   }
 }
