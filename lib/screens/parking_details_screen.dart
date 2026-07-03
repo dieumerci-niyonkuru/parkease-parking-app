@@ -139,7 +139,12 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         // ── NAVIGATION ACTIONS ──────────────────────────
                         Center(
                           child: OutlinedButton.icon(
-                            onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                            onPressed: () {
+                              final nav = Navigator.of(context);
+                              if (nav.canPop()) {
+                                nav.pop();
+                              }
+                            },
                             icon: const Text('🏠', style: TextStyle(fontSize: 18)),
                             label: const Text('BACK TO DASHBOARD', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white)),
                             style: OutlinedButton.styleFrom(

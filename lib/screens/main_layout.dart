@@ -119,7 +119,13 @@ class _MainLayoutState extends State<MainLayout> {
             ),
         actions: [
           IconButton(
-            onPressed: () => Navigator.of(_navigatorKeys[_currentIndex].currentContext ?? context).popUntil((r) => r.isFirst),
+            onPressed: () {
+              final nav = _navigatorKeys[_currentIndex].currentState;
+              if (nav != null && nav.canPop()) {
+                nav.popUntil((r) => r.isFirst);
+              }
+              setState(() {});
+            },
             icon: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
             tooltip: 'Back to Home',
           ),

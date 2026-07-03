@@ -71,16 +71,12 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                   height: 54,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // Access the scaffold to open search in header if needed, 
-                      // or just show a prompt to use the top search.
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: const Text('Use the 🔍 icon in the top header to search all sites!', style: TextStyle(fontWeight: FontWeight.bold)),
-                          backgroundColor: AppTheme.primary,
-                          behavior: SnackBarBehavior.floating,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                      );
+                      context.read<AppProvider>().updateSearchQuery('');
+                      final scaffold = Scaffold.of(context);
+                      // Since we are inside the MainLayout which has the AppBar search,
+                      // we just need to ensure the user knows to use the top search.
+                      // Or we can programmatically trigger the search state in MainLayout.
+                      // For now, let's keep it direct.
                     },
                     icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
                     label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),

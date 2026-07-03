@@ -342,7 +342,7 @@ class _SocialButton extends StatelessWidget {
             children: [
               if (isGoogle)
                 Image.network(
-                  'https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png',
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png',
                   height: 24,
                   width: 24,
                   errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
