@@ -341,18 +341,11 @@ class _SocialButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isGoogle)
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.network(
-                    'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_\"G\"_logo.svg/1200px-Google_\"G\"_logo.svg.png',
-                    height: 22,
-                    width: 22,
-                    errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
-                  ),
+                Image.network(
+                  'https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png',
+                  height: 24,
+                  width: 24,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
                 )
               else
                 Icon(icon, color: color, size: 24),
