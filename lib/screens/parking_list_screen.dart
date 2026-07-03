@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
+import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
 
 class ParkingListScreen extends StatefulWidget {
   const ParkingListScreen({super.key});
   @override State<ParkingListScreen> createState() => _ParkingListScreenState();
 }
-
-import 'package:provider/provider.dart';
-import '../providers/app_provider.dart';
 
 class _ParkingListScreenState extends State<ParkingListScreen> {
   List<ParkingFacility> _all      = [];
