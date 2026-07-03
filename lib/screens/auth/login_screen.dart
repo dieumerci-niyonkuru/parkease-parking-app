@@ -95,6 +95,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  void _showComingSoon(String platform) {
+    _showSnack('Social login via $platform is coming soon!', isError: false);
+  }
+
   @override Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
@@ -243,6 +247,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.bold)),
                         ),
                       ],
+
+                      const SizedBox(height: 32),
+                      const Row(
+                        children: [
+                          Expanded(child: Divider()),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                            child: Text('OR', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+                          ),
+                          Expanded(child: Divider()),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      _SocialButton(icon: Icons.g_mobiledata_rounded, label: 'Continue with Google', color: Colors.red.shade700, onTap: () => _showComingSoon('Google')),
+                      _SocialButton(icon: Icons.apple_rounded, label: 'Continue with Apple', color: Colors.black, onTap: () => _showComingSoon('Apple')),
+                      _SocialButton(icon: Icons.facebook_rounded, label: 'Continue with Facebook', color: Colors.blue.shade800, onTap: () => _showComingSoon('Facebook')),
+                      _SocialButton(icon: Icons.window_rounded, label: 'Continue with Microsoft', color: Colors.blue.shade600, onTap: () => _showComingSoon('Microsoft')),
+                      _SocialButton(icon: Icons.phone_android_rounded, label: 'Continue with Phone Number', color: AppTheme.primary, onTap: () => _showComingSoon('Phone Number')),
                     ],
                   ),
                 ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.08),
@@ -272,6 +295,35 @@ class _LoginScreenState extends State<LoginScreen> {
                 ).animate().fadeIn(delay: 700.ms),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SocialButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _SocialButton({required this.icon, required this.label, required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SizedBox(
+        width: double.infinity,
+        height: 50,
+        child: OutlinedButton.icon(
+          onPressed: onTap,
+          icon: Icon(icon, color: color, size: 24),
+          label: Text(label, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600, fontSize: 13)),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Colors.grey.shade300),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
