@@ -104,6 +104,43 @@ class _MainLayoutState extends State<MainLayout> {
               child: PopupMenuButton<int>(
                 offset: const Offset(0, 48),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                onSelected: (val) async {
+                  if (val == 0) {
+                    setState(() => _currentIndex = 3); // Go to profile
+                  } else if (val == 1) {
+                    // ── LOGOUT CONFIRMATION DIALOG ──────────────────
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: AppTheme.bgCard,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                        title: Text('Sign Out', style: AppTheme.heading3),
+                        content: const Text('Are you sure you want to exit the ITEC Portal?', style: TextStyle(fontSize: 14)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, false),
+                            child: Text('CANCEL', style: AppTheme.label.copyWith(color: AppTheme.textMuted)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(ctx, true),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.danger,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Text('SIGN OUT'),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirmed == true) {
+                      await AuthService.logout();
+                      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+                    }
+                  }
+                },
                 icon: Hero(
                   tag: 'main-avatar',
                   child: CircleAvatar(
