@@ -41,11 +41,6 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   @override Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      appBar: AppBar(
-        backgroundColor: AppTheme.bgDeep,
-        title: Text(widget.facility.fullParkName, style: AppTheme.heading4),
-        centerTitle: true,
-      ),
       body: _loading
           ? const BrandedLoader(message: 'Loading rates...')
           : SingleChildScrollView(

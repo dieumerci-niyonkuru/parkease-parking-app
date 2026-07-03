@@ -62,16 +62,6 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
     final provider = context.watch<AppProvider>();
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      appBar: AppBar(
-        backgroundColor: AppTheme.bgDeep,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('Lookup & Pay', style: AppTheme.heading4.copyWith(letterSpacing: 1.2, color: AppTheme.primary)),
-        centerTitle: true,
-      ),
       body: Column(children: [
         // ── Search Bar ──────────────────────────────────────────────
         Padding(

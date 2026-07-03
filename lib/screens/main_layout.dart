@@ -10,6 +10,8 @@ import '../services/profile_service.dart';
 import 'home_screen.dart';
 import 'plate_lookup_screen.dart';
 import 'history_screen.dart';
+import 'receipt_detail_screen.dart';
+import 'parking_details_screen.dart';
 import 'profile_screen.dart';
 
 class MainLayout extends StatefulWidget {
@@ -35,6 +37,13 @@ class _MainLayoutState extends State<MainLayout> {
     const PlateLookupScreen(initialPlate: ''),
     const HistoryScreen(),
     const ProfileScreen(),
+  ];
+
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
+    GlobalKey<NavigatorState>(),
   ];
 
   String get _pageTitle {
@@ -182,7 +191,33 @@ class _MainLayoutState extends State<MainLayout> {
       ),
       body: IndexedStack(
         index: _currentIndex,
-        children: _pages,
+        children: List.generate(_pages.length, (index) {
+          return Navigator(
+            key: _navigatorKeys[index],
+            onGenerateInitialRoutes: (navigator, initialRoute) {
+              return [
+                MaterialPageRoute(builder: (context) => _pages[index]),
+              ];
+            },
+            onGenerateRoute: (settings) {
+              Widget builder;
+              switch (settings.name) {
+                case 'receipt_detail':
+                  builder = ReceiptDetailScreen(entry: settings.arguments as HistoryEntry);
+                  break;
+                case 'parking_detail':
+                  builder = ParkingDetailsScreen(facility: settings.arguments as ParkingFacility);
+                  break;
+                case 'plate_lookup':
+                  builder = PlateLookupScreen(initialPlate: settings.arguments as String);
+                  break;
+                default:
+                  builder = _pages[index];
+              }
+              return MaterialPageRoute(builder: (context) => builder);
+            },
+          );
+        }),
       ),
       bottomNavigationBar: _PremiumBottomNav(
         current: _currentIndex,

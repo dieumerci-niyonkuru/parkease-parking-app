@@ -173,7 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: FadeInAnimation(
                                     child: _ParkingHubCard(
                                       facility: f,
-                                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ParkingDetailsScreen(facility: f))),
+                                      onTap: () {
+                                        Navigator.of(context).pushNamed(
+                                          'parking_detail',
+                                          arguments: f,
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -270,7 +275,12 @@ class _QuickPayCardState extends State<_QuickPayCard> {
           child: ElevatedButton(
             onPressed: () {
               final plate = _ctrl.text.trim().toUpperCase();
-              if (plate.isNotEmpty) Navigator.push(context, MaterialPageRoute(builder: (_) => PlateLookupScreen(initialPlate: plate)));
+              if (plate.isNotEmpty) {
+                Navigator.of(context).pushNamed(
+                  'plate_lookup',
+                  arguments: plate,
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primary,

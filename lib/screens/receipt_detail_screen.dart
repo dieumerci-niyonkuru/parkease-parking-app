@@ -63,16 +63,6 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      appBar: AppBar(
-        backgroundColor: AppTheme.bgDeep,
-        elevation: 0,
-        title: Text('RECEIPT DETAILS', style: AppTheme.heading4.copyWith(letterSpacing: 1.5, color: AppTheme.primary)),
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary, size: 20),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(

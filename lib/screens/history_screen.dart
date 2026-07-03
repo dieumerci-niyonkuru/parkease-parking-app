@@ -254,7 +254,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           (ctx, i) {
                             final e = displayRecords[i];
                             return GestureDetector(
-                              onTap: () => Navigator.push(ctx, MaterialPageRoute(builder: (_) => ReceiptDetailScreen(entry: e))),
+                              onTap: () {
+                                Navigator.of(context).pushNamed(
+                                  'receipt_detail',
+                                  arguments: e,
+                                );
+                              },
                               child: _ReceiptCard(
                                 entry: e,
                                 dur: _durationStr(e),
