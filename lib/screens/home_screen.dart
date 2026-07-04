@@ -249,12 +249,11 @@ class _QuickPayCardState extends State<_QuickPayCard> {
               letterSpacing: 2,
             ),
             decoration: InputDecoration(
-              hintText: 'Type Park number (Example: RAC 001 A)',
+              hintText: 'RAC 001 A',
               hintStyle: TextStyle(
-                fontSize: 14, 
-                color: Colors.grey.shade400, 
-                letterSpacing: 0,
-                fontWeight: FontWeight.w500,
+                fontSize: 20, 
+                color: Colors.black.withOpacity(0.1), 
+                letterSpacing: 2,
               ),
               border: InputBorder.none,
               prefixIcon: Container(

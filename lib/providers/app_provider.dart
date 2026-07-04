@@ -66,8 +66,16 @@ class AppProvider extends ChangeNotifier {
   String _searchQuery = '';
   String get searchQuery => _searchQuery;
 
+  bool _isSearchActive = false;
+  bool get isSearchActive => _isSearchActive;
+
   void updateSearchQuery(String q) {
     _searchQuery = q.trim().toLowerCase();
+    notifyListeners();
+  }
+
+  void setSearchActive(bool active) {
+    _isSearchActive = active;
     notifyListeners();
   }
 

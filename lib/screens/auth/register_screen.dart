@@ -204,7 +204,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text(_stepTitle.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
+                Text('Smart Parking Solutions'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -231,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             color: AppTheme.primary,
             child: const Center(
-              child: Text('2026 ITEC Parking . Rwanda', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              child: Text('2026 ITEC Parking . Smart Parking Solutions', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
             ),
           ),
         ],

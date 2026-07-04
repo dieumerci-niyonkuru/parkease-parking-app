@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
                 const SizedBox(height: 4),
-                Text('National Parking Management System'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
+                Text('Smart Parking Solutions'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 8),
                 const Text('Rwanda\'s most advanced digital parking portal', style: TextStyle(color: Colors.white54, fontSize: 10, fontStyle: FontStyle.italic)),
                 const SizedBox(height: 16),
@@ -388,7 +388,7 @@ class _LoginScreenState extends State<LoginScreen> {
               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, -4))],
             ),
             child: const Center(
-              child: Text('2026 ITEC Parking . Rwanda', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+              child: Text('2026 ITEC Parking . Smart Parking Solutions', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
             ),
           ),
         ],

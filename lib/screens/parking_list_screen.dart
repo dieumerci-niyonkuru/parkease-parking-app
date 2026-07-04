@@ -34,8 +34,9 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
   }
 
   @override Widget build(BuildContext context) {
-    final query = context.watch<AppProvider>().searchQuery.toLowerCase().trim();
-    final isSearching = query.isNotEmpty;
+    final provider = context.watch<AppProvider>();
+    final query = provider.searchQuery.toLowerCase().trim();
+    final isSearching = provider.isSearchActive || query.isNotEmpty;
     
     final filtered = query.isEmpty
         ? _all

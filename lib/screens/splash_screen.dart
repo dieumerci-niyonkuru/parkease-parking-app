@@ -15,13 +15,11 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
-  late Animation<double>    _progress;
-  String _step = 'Initializing System...';
+  String _step = 'Initializing...';
 
   @override void initState() {
     super.initState();
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 2500));
-    _progress = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
     _ctrl.addListener(() {
       if (!mounted) return;
       final v = _ctrl.value;
@@ -29,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen>
         if (v < 0.25)       _step = 'Securing Connection...';
         else if (v < 0.5)   _step = 'Retrieving Parking Sites...';
         else if (v < 0.75)  _step = 'Validating Driver Session...';
-        else                _step = 'ITEC System Online';
+        else                _step = 'Smart Parking Solutions';
       });
     });
     _ctrl.forward();
@@ -43,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
       ProfileService.load(),
     ]);
 
-    bool isValid = true; // Assume valid unless explicitly told otherwise by server
+    bool isValid = true; 
     if (AuthService.isLoggedIn) {
       final check = await AuthService.validateToken();
       if (check == false) {
@@ -52,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
     }
 
-    await Future.delayed(const Duration(milliseconds: 2600));
+    await Future.delayed(const Duration(milliseconds: 2800));
     if (!mounted) return;
     
     Navigator.pushReplacement(
@@ -70,83 +68,69 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.bgDeep,
+      backgroundColor: AppTheme.primary, // Brand Brown Background
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.bgDeep, AppTheme.primary.withOpacity(0.05)],
-            begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          ),
+          color: AppTheme.primary,
         ),
         child: Column(children: [
           const Spacer(flex: 3),
 
-          // ── ITEC BRANDING BADGE ────────────────────────────────────
-          Stack(alignment: Alignment.center, children: [
-            Container(
-              width: 140, height: 140,
+          // ── BRANDING BADGE (Large white square with P) ─────────────
+          Hero(
+            tag: 'logo',
+            child: Container(
+              width: 120, height: 120,
               decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))
+                ],
               ),
-            ).animate(onPlay: (c) => c.repeat()).scale(begin: const Offset(1,1), end: const Offset(1.2, 1.2), duration: 1500.ms, curve: Curves.easeInOut).fadeOut(),
-            
-            Hero(
-              tag: 'logo',
-              child: Container(
-                width: 100, height: 100,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGrad,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: AppTheme.glowShadow,
-                ),
-                child: const Icon(Icons.local_parking_rounded, color: Colors.white, size: 56),
+              child: const Center(
+                child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 64, fontWeight: FontWeight.w900)),
               ),
-            ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.elasticOut),
-          ]),
+            ),
+          ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.easeOutBack),
 
           const SizedBox(height: 32),
-          Text('ITEC PARKING',
-            style: AppTheme.heading1.copyWith(fontSize: 32, letterSpacing: 2, color: AppTheme.primary),
-          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
+          const Text('ITEC PARKING',
+            style: TextStyle(color: Colors.white, fontSize: 28, letterSpacing: 4, fontWeight: FontWeight.w900),
+          ).animate().fadeIn(delay: 300.ms),
           
-          Text('RWA',
-            style: AppTheme.label.copyWith(letterSpacing: 4, color: AppTheme.textMuted, fontWeight: FontWeight.w900),
+          const SizedBox(height: 4),
+          const Text('Smart Parking Solutions',
+            style: TextStyle(color: Colors.white70, letterSpacing: 1.5, fontSize: 12, fontWeight: FontWeight.w700),
           ).animate().fadeIn(delay: 500.ms),
 
           const Spacer(flex: 2),
 
-          // ── LOADING SYSTEM ─────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 60),
-            child: Column(children: [
-              const SizedBox(
-                width: 40,
-                child: LinearProgressIndicator(
-                  backgroundColor: Colors.transparent,
-                  valueColor: AlwaysStoppedAnimation(Color(0xFF7A5B40)),
-                  minHeight: 2,
-                ),
+          // ── LOADING INDICATOR ──────────────────────────────────────
+          Column(children: [
+            const SizedBox(
+              width: 40, height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
-              const SizedBox(height: 24),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(_step.toUpperCase(),
-                  key: ValueKey(_step),
-                  style: AppTheme.label.copyWith(
-                    color: const Color(0xFF7A5B40), 
-                    fontWeight: FontWeight.w900, 
-                    letterSpacing: 2,
-                    fontSize: 10,
-                  )),
-              ),
-            ]),
-          ).animate().fadeIn(delay: 700.ms),
+            ),
+            const SizedBox(height: 32),
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Text(_step,
+                key: ValueKey(_step),
+                style: const TextStyle(
+                  color: Colors.white70, 
+                  fontWeight: FontWeight.w800, 
+                  letterSpacing: 1,
+                  fontSize: 11,
+                )),
+            ),
+          ]).animate().fadeIn(delay: 700.ms),
 
-          const SizedBox(height: 80),
-          Text('© 2024 ITEC RWANDA', style: AppTheme.label.copyWith(fontSize: 8, color: AppTheme.textHint)),
-          const SizedBox(height: 32),
+          const SizedBox(height: 64),
         ]),
       ),
     );

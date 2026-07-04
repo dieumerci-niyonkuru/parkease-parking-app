@@ -53,7 +53,7 @@ class _MainLayoutState extends State<MainLayout> {
   String get _pageTitle {
     switch (_currentIndex) {
       case 0: return 'DASHBOARD';
-      case 1: return 'PARKING SITES';
+      case 1: return 'PARKING SITE';
       case 2: return 'PLATE LOOKUP';
       case 3: return 'RECEIPTS';
       case 4: return 'MY ACCOUNT';
@@ -64,6 +64,7 @@ class _MainLayoutState extends State<MainLayout> {
   void _triggerHeaderSearch() {
     if (!_isSearching) {
       setState(() => _isSearching = true);
+      context.read<AppProvider>().setSearchActive(true);
     }
   }
 
@@ -108,10 +109,12 @@ class _MainLayoutState extends State<MainLayout> {
                 Container(
                   width: 32, height: 32,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.local_parking_rounded, color: Colors.white, size: 20),
+                  child: const Center(
+                    child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
+                  ),
                 ),
                 const SizedBox(width: 12),
                 Column(
@@ -140,7 +143,12 @@ class _MainLayoutState extends State<MainLayout> {
             tooltip: 'Back to Home',
           ),
           IconButton(
-            onPressed: () => setState(() => _isSearching = !_isSearching),
+            onPressed: () {
+              setState(() {
+                _isSearching = !_isSearching;
+                context.read<AppProvider>().setSearchActive(_isSearching);
+              });
+            },
             icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: Colors.white),
           ),
           if (!_isSearching)
