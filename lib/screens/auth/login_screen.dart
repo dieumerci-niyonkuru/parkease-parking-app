@@ -97,7 +97,22 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _showComingSoon(String platform) {
-    _showSnack('Social login via $platform is coming soon!', isError: false);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 12),
+            Expanded(child: Text('$platform login is coming soon to the portal!', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12))),
+          ],
+        ),
+        backgroundColor: AppTheme.primary,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
   }
 
   @override Widget build(BuildContext context) {
@@ -261,19 +276,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     icon: Icons.window_rounded, 
                     onTap: () => _showComingSoon('Microsoft')
                   ),
-                  _SocialButton(
-                    label: 'Continue with Phone Number', 
-                    color: AppTheme.primary, 
-                    icon: Icons.phone_android_rounded, 
-                    onTap: () => _showComingSoon('Phone Number')
-                  ),
-                  _SocialButton(
-                    isGuest: true,
-                    label: 'Continue as Guest', 
-                    color: const Color(0xFF5F6368), 
-                    icon: Icons.person_outline_rounded, 
-                    onTap: () => _goToMain()
-                  ),
                   
                   const SizedBox(height: 32),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -379,10 +381,11 @@ class _SocialButton extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isGoogle)
                 Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png',
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
                   height: 22,
                   width: 22,
                   errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
@@ -399,15 +402,13 @@ class _SocialButton extends StatelessWidget {
               else
                 Icon(icon, color: color, size: 24),
               const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  label, 
-                  style: const TextStyle(
-                    color: Color(0xFF3C4043), 
-                    fontWeight: FontWeight.w700, 
-                    fontSize: 14,
-                    letterSpacing: 0.1,
-                  ),
+              Text(
+                label, 
+                style: const TextStyle(
+                  color: Color(0xFF3C4043), 
+                  fontWeight: FontWeight.w700, 
+                  fontSize: 14,
+                  letterSpacing: 0.1,
                 ),
               ),
             ],
