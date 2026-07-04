@@ -171,7 +171,7 @@ class _ParkingSiteCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.location_city_rounded, color: AppTheme.primary, size: 24),
+                const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
                 const SizedBox(width: 14),
                 Expanded(child: Text(facility.fullParkName.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF212529)))),
                 Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary.withOpacity(0.5), size: 14),
