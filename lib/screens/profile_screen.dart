@@ -110,7 +110,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     if (confirmed == true) {
       await AuthService.logout();
-      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
     }
   }
 

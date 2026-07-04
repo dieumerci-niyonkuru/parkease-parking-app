@@ -34,15 +34,50 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  void _showSnack(String msg, {bool isError = true}) {
+  Future<void> _showSnack(String msg, {bool isError = true}) async {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: isError ? AppTheme.danger : AppTheme.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd)),
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+              color: isError ? AppTheme.danger : AppTheme.success,
+              size: 64,
+            ),
+            const SizedBox(height: 24),
+            Text(isError ? 'ERROR' : 'SUCCESS', 
+              style: AppTheme.heading3.copyWith(
+                letterSpacing: 2, 
+                color: isError ? AppTheme.danger : AppTheme.success
+              )),
+            const SizedBox(height: 12),
+            Text(
+              msg,
+              textAlign: TextAlign.center,
+              style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isError ? AppTheme.danger : AppTheme.success,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('OK', style: TextStyle(fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -96,21 +131,42 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _showComingSoon(String platform) {
+  Future<void> _showComingSoon(String platform) async {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 18),
-            const SizedBox(width: 12),
-            Expanded(child: Text('$platform login is coming soon to the portal!', style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12))),
+            const SizedBox(height: 16),
+            const Icon(Icons.auto_awesome_rounded, color: AppTheme.primary, size: 64),
+            const SizedBox(height: 24),
+            Text('COMING SOON', style: AppTheme.heading3.copyWith(letterSpacing: 2, color: AppTheme.primary)),
+            const SizedBox(height: 12),
+            Text(
+              '$platform login is currently under development and will be available in the next update!',
+              textAlign: TextAlign.center,
+              style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('UNDERSTOOD', style: TextStyle(fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
-        backgroundColor: AppTheme.primary,
-        behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }
@@ -401,10 +457,10 @@ class _SocialButton extends StatelessWidget {
             children: [
               if (isGoogle)
                 Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
-                  height: 22,
-                  width: 22,
-                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/1024px-Google_Chrome_icon_%28February_2022%29.svg.png',
+                  height: 24,
+                  width: 24,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
                 )
               else if (isMicrosoft)
                 Image.network(

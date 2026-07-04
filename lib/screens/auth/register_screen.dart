@@ -42,12 +42,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  void _showSnack(String msg, {bool isError = true}) {
+  Future<void> _showSnack(String msg, {bool isError = true}) async {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: isError ? AppTheme.danger : AppTheme.success,
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 16),
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+              color: isError ? AppTheme.danger : AppTheme.success,
+              size: 64,
+            ),
+            const SizedBox(height: 24),
+            Text(isError ? 'ERROR' : 'SUCCESS', 
+              style: AppTheme.heading3.copyWith(
+                letterSpacing: 2, 
+                color: isError ? AppTheme.danger : AppTheme.success
+              )),
+            const SizedBox(height: 12),
+            Text(
+              msg,
+              textAlign: TextAlign.center,
+              style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isError ? AppTheme.danger : AppTheme.success,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text('OK', style: TextStyle(fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
