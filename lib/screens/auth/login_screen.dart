@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Text('Secure Login to your driver portal', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
                         const SizedBox(height: 32),
 
-                        Text('Username, Email or Phone', style: AppTheme.label),
+                        Text('Email or Phone Number', style: AppTheme.label),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _usernameCtrl,
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           textInputAction: TextInputAction.next,
                           style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
                           decoration: const InputDecoration(
-                            hintText: 'Enter login ID',
+                            hintText: 'Enter email or phone number',
                             prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
                           ),
                         ),
@@ -374,9 +374,9 @@ class _SocialButton extends StatelessWidget {
         child: OutlinedButton(
           onPressed: onTap,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.grey.shade200, width: 1.5),
+            side: BorderSide(color: Colors.grey.shade200, width: 1),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            backgroundColor: Colors.white,
+            backgroundColor: const Color(0xFFFFF7F2), // Light cream matching dashboard cards
             elevation: 0,
             padding: const EdgeInsets.symmetric(horizontal: 20),
           ),
@@ -385,8 +385,9 @@ class _SocialButton extends StatelessWidget {
             children: [
               if (isGoogle)
                 Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1024px-Google_2015_logo.svg.png',
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
                   height: 22,
+                  width: 22,
                   errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
                 )
               else if (isMicrosoft)
