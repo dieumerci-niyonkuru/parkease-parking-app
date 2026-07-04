@@ -385,9 +385,8 @@ class _SocialButton extends StatelessWidget {
             children: [
               if (isGoogle)
                 Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/1024px-Google_%22G%22_logo.svg.png',
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/1024px-Google_2015_logo.svg.png',
                   height: 22,
-                  width: 22,
                   errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
                 )
               else if (isMicrosoft)
