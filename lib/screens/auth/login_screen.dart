@@ -138,157 +138,168 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
 
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(28, 32, 28, 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ── Logo / Badge ───────────────────────────────────────
-                  Center(
-                    child: Container(
-                      width: 80, height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: AppTheme.cardShadow,
-                        border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
-                      ),
-                      child: const Center(
-                        child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 44, fontWeight: FontWeight.w900)),
-                      ),
-                    ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // ── Login Card ────────────────────────────────────────
-                  Container(
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
-                      boxShadow: AppTheme.subtleShadow,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Welcome Back', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
-                        const SizedBox(height: 6),
-                        Text('Secure Login to your driver portal', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
-                        const SizedBox(height: 32),
-
-                        Text('Email or Phone Number', style: AppTheme.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _usernameCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
-                          decoration: const InputDecoration(
-                            hintText: 'Enter email or phone number',
-                            prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        Text('Password', style: AppTheme.label),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _passwordCtrl,
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => _login(),
-                          style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-                            suffixIcon: IconButton(
-                              icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.textMuted, size: 20),
-                              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 32, 28, 40),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // ── Logo / Badge ───────────────────────────────────────
+                            Center(
+                              child: Container(
+                                width: 80, height: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: AppTheme.cardShadow,
+                                  border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+                                ),
+                                child: const Center(
+                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 44, fontWeight: FontWeight.w900)),
+                                ),
+                              ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
+                            const SizedBox(height: 32),
 
-                        SizedBox(
-                          width: double.infinity, height: 56,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primary,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-                                : const Text('SIGN IN', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
-                          ),
-                        ),
-
-                        if (_canBio) ...[
-                          const SizedBox(height: 24),
-                          Center(
-                            child: InkWell(
-                              onTap: _isLoading ? null : _bioLogin,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(children: [
-                                  const Icon(Icons.fingerprint_rounded, size: 44, color: Color(0xFF7A5B40)),
-                                  const SizedBox(height: 4),
-                                  Text('BIO LOGIN', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 9)),
-                                ]),
+                            // ── Login Card ────────────────────────────────────────
+                            Container(
+                              padding: const EdgeInsets.all(28),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(28),
+                                border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                                boxShadow: AppTheme.subtleShadow,
                               ),
+                              child: Column(
+                                children: [
+                                  Text('Welcome Back', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
+                                  const SizedBox(height: 6),
+                                  Text('Secure Login to your driver portal', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+                                  const SizedBox(height: 32),
+
+                                  Align(alignment: Alignment.centerLeft, child: Text('Email or Phone Number', style: AppTheme.label)),
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    controller: _usernameCtrl,
+                                    keyboardType: TextInputType.emailAddress,
+                                    textInputAction: TextInputAction.next,
+                                    textAlign: TextAlign.center,
+                                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
+                                    decoration: const InputDecoration(
+                                      hintText: 'Enter email or phone number',
+                                      prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  Align(alignment: Alignment.centerLeft, child: Text('Password', style: AppTheme.label)),
+                                  const SizedBox(height: 8),
+                                  TextField(
+                                    controller: _passwordCtrl,
+                                    obscureText: _obscurePassword,
+                                    textInputAction: TextInputAction.done,
+                                    onSubmitted: (_) => _login(),
+                                    textAlign: TextAlign.center,
+                                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w700),
+                                    decoration: InputDecoration(
+                                      hintText: '••••••••',
+                                      prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(_obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.textMuted, size: 20),
+                                        onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 32),
+
+                                  SizedBox(
+                                    width: double.infinity, height: 56,
+                                    child: ElevatedButton(
+                                      onPressed: _isLoading ? null : _login,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppTheme.primary,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      child: _isLoading
+                                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                                          : const Text('SIGN IN', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
+                                    ),
+                                  ),
+
+                                  if (_canBio) ...[
+                                    const SizedBox(height: 24),
+                                    Center(
+                                      child: InkWell(
+                                        onTap: _isLoading ? null : _bioLogin,
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Column(children: [
+                                            const Icon(Icons.fingerprint_rounded, size: 44, color: Color(0xFF7A5B40)),
+                                            const SizedBox(height: 4),
+                                            Text('BIO LOGIN', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 9)),
+                                          ]),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05),
+
+                            const SizedBox(height: 32),
+                            const _DividerText(text: 'OR CONTINUE WITH'),
+                            const SizedBox(height: 24),
+
+                            _SocialButton(
+                              isGoogle: true, 
+                              label: 'Continue with Google', 
+                              color: const Color(0xFF4285F4), 
+                              icon: Icons.g_mobiledata_rounded, 
+                              onTap: () => _showComingSoon('Google')
                             ),
-                          ),
-                        ],
-                      ],
+                            _SocialButton(
+                              label: 'Continue with Apple', 
+                              color: Colors.black, 
+                              icon: Icons.apple_rounded, 
+                              onTap: () => _showComingSoon('Apple')
+                            ),
+                            _SocialButton(
+                              label: 'Continue with Facebook', 
+                              color: const Color(0xFF1877F2), 
+                              icon: Icons.facebook_rounded, 
+                              onTap: () => _showComingSoon('Facebook')
+                            ),
+                            _SocialButton(
+                              isMicrosoft: true,
+                              label: 'Continue with Microsoft', 
+                              color: const Color(0xFF00A4EF), 
+                              icon: Icons.window_rounded, 
+                              onTap: () => _showComingSoon('Microsoft')
+                            ),
+                            
+                            const SizedBox(height: 32),
+                            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                              Text("Don't have an account? ", style: AppTheme.body),
+                              GestureDetector(
+                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                                child: Text('Register here', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
+                              ),
+                            ]),
+                          ],
+                        ),
+                      ),
                     ),
-                  ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.05),
-
-                  const SizedBox(height: 32),
-                  const _DividerText(text: 'OR CONTINUE WITH'),
-                  const SizedBox(height: 24),
-
-                  _SocialButton(
-                    isGoogle: true, 
-                    label: 'Continue with Google', 
-                    color: const Color(0xFF4285F4), 
-                    icon: Icons.g_mobiledata_rounded, 
-                    onTap: () => _showComingSoon('Google')
                   ),
-                  _SocialButton(
-                    label: 'Continue with Apple', 
-                    color: Colors.black, 
-                    icon: Icons.apple_rounded, 
-                    onTap: () => _showComingSoon('Apple')
-                  ),
-                  _SocialButton(
-                    label: 'Continue with Facebook', 
-                    color: const Color(0xFF1877F2), 
-                    icon: Icons.facebook_rounded, 
-                    onTap: () => _showComingSoon('Facebook')
-                  ),
-                  _SocialButton(
-                    isMicrosoft: true,
-                    label: 'Continue with Microsoft', 
-                    color: const Color(0xFF00A4EF), 
-                    icon: Icons.window_rounded, 
-                    onTap: () => _showComingSoon('Microsoft')
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                    Text("Don't have an account? ", style: AppTheme.body),
-                    GestureDetector(
-                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                      child: Text('Register here', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
-                    ),
-                  ]),
-                  
-                  const SizedBox(height: 80),
-                ],
-              ),
+                );
+              }
             ),
           ),
 
