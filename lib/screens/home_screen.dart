@@ -63,37 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
           slivers: [
             SliverToBoxAdapter(
               child: Container(
-                color: AppTheme.bgDeep, // Using the light grey background
-                child: Column(
+                color: AppTheme.bgDeep,
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Greeting Section
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Welcome Back', 
-                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF212529)),
-                          ),
-                          Text(
-                            firstName.toLowerCase(), 
-                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.primary, height: 1.2),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            DateFormat("EEEE, d MMMM").format(DateTime.now()), 
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                    
                     // Vehicle Lookup Card
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                      child: const _QuickPayCard(),
+                      padding: EdgeInsets.fromLTRB(24, 24, 24, 24),
+                      child: _QuickPayCard(),
                     ),
                   ],
                 ),

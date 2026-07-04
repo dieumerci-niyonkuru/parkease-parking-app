@@ -70,6 +70,9 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override Widget build(BuildContext context) {
     final profile = ProfileService.profile;
+    final user = AuthService.user;
+    final firstName = user?.names.split(' ').first ?? 'Driver';
+    final dateStr = DateFormat("EEEE, d MMMM").format(DateTime.now());
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
@@ -77,17 +80,8 @@ class _MainLayoutState extends State<MainLayout> {
         backgroundColor: AppTheme.primary, // Fixed Brand Color on top
         surfaceTintColor: Colors.transparent,
         elevation: 4,
-        leading: _isSearching 
-          ? null 
-          : Navigator.of(_navigatorKeys[_currentIndex].currentContext ?? context).canPop()
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-                onPressed: () {
-                  _navigatorKeys[_currentIndex].currentState?.pop();
-                  setState(() {}); // Refresh to hide back button if needed
-                },
-              )
-            : null,
+        leadingWidth: 0,
+        automaticallyImplyLeading: false,
         title: _isSearching 
           ? TextField(
               controller: _searchCtrl,
@@ -117,13 +111,23 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
-                    Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
-                  ],
-                ),
+                if (_currentIndex == 0)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Welcome Back', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                      Text(firstName.toLowerCase(), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.1)),
+                      Text(dateStr, style: const TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w600)),
+                    ],
+                  )
+                else
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
+                      Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
               ],
             ),
         actions: [
