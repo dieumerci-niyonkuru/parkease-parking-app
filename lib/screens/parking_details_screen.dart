@@ -43,6 +43,10 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   }
 
   @override Widget build(BuildContext context) {
+    final rate = _pricing != null 
+        ? (double.tryParse(_pricing!['rate']?.toString() ?? widget.facility.ratePerHour.toString()) ?? widget.facility.ratePerHour)
+        : widget.facility.ratePerHour;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
@@ -84,7 +88,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         ]),
                         const SizedBox(height: 8),
                         Row(children: [
-                          const Icon(Icons.local_parking_rounded, color: AppTheme.primary, size: 18),
+                          const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 18),
                           const SizedBox(width: 8),
                           Text('${widget.facility.parkingLots} parking spots available', 
                             style: AppTheme.bodySmall.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800)),
@@ -104,29 +108,11 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         const Text('Pricing Information', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 24),
 
-                        // Dynamically build cards for each category from the API
-                        if (_categories.isEmpty)
-                          _CategoryPricingCard(
+                        _CategoryPricingCard(
                           title: 'General',
                           rates: _pricing ?? {},
-                          onViewFull: () => setState(() => _showFullList = !_showFullList),
-                        ).animate().fadeIn()
-                        else
-                          ..._categories.map((c) => Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: _CategoryPricingCard(
-                              title: c['name'] ?? 'Vehicle',
-                              rates: c,
-                              onViewFull: () => setState(() => _showFullList = !_showFullList),
-                            ).animate().fadeIn(delay: 200.ms),
-                          )),
-
-                        if (_showFullList) ...[
-                          const Divider(height: 48),
-                          const Text('Comprehensive 24h Price List', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
-                          const SizedBox(height: 16),
-                          _buildFullRateBreakdown(rate),
-                        ],
+                          onViewFull: () => _showFullPriceList(context, rate),
+                        ).animate().fadeIn(),
 
                         const SizedBox(height: 40),
 
@@ -174,12 +160,8 @@ class _CategoryPricingCard extends StatelessWidget {
   @override Widget build(BuildContext context) {
     final moneyFmt = NumberFormat('#,###');
     
-    // Reterive prices directly from API keys
-    final p1 = double.tryParse(rates['first_hour']?.toString() ?? rates['rate']?.toString() ?? '300') ?? 300.0;
-    final p2 = double.tryParse(rates['second_hour']?.toString() ?? (p1 * 1.6).toString()) ?? 500.0;
-    final p3 = double.tryParse(rates['third_hour']?.toString() ?? (p1 * 2.3).toString()) ?? 700.0;
-    final p5 = double.tryParse(rates['fifth_hour']?.toString() ?? '2000') ?? 2000.0;
-    final pd = double.tryParse(rates['full_day']?.toString() ?? rates['daily_max']?.toString() ?? '20000') ?? 20000.0;
+    // Reterive prices directly from API keys or use the 200 Frw example from user
+    final rate = double.tryParse(rates['rate']?.toString() ?? '200') ?? 200.0;
 
     return Container(
       padding: const EdgeInsets.all(28),
@@ -195,11 +177,11 @@ class _CategoryPricingCard extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(height: 1, thickness: 0.5),
           const SizedBox(height: 24),
-          _PriceItem('First Hour', '${moneyFmt.format(p1)} Frw'),
-          _PriceItem('Second Hour', '${moneyFmt.format(p2)} Frw'),
-          _PriceItem('Third Hour', '${moneyFmt.format(p3)} Frw'),
-          _PriceItem('Fifth Hour', '${moneyFmt.format(p5)} Frw'),
-          _PriceItem('Full Day (24h)', '${moneyFmt.format(pd)} Frw'),
+          _PriceItem('1 Hours', '${moneyFmt.format(rate)}'),
+          _PriceItem('2 Hours', '${moneyFmt.format(rate * 2)}'),
+          _PriceItem('3 Hours', '${moneyFmt.format(rate * 3)}'),
+          _PriceItem('4 Hours', '${moneyFmt.format(rate * 4)}'),
+          _PriceItem('5 Hours', '${moneyFmt.format(rate * 5)}'),
           if (onViewFull != null) ...[
             const SizedBox(height: 20),
             Center(
@@ -227,6 +209,36 @@ class _CategoryPricingCard extends StatelessWidget {
       ),
     );
   }
+}
+
+extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
+  Future<void> _showFullPriceList(BuildContext context, double rate) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Price List', style: TextStyle(fontWeight: FontWeight.w900)),
+            IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: _buildFullRateBreakdown(rate),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFullRateBreakdown(double rate) {
     final moneyFmt = NumberFormat('#,###');
     return Container(

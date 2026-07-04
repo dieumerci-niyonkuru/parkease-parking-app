@@ -68,7 +68,7 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
           color: Colors.white,
           child: Column(
             children: [
-              const Text('VEHICLE LOOKUP', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+              const Text('Type you park number', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
               const SizedBox(height: 4),
               Text('Instant Multi-Site Search'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
               const SizedBox(height: 24),

@@ -189,7 +189,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
                 const SizedBox(height: 4),
                 Text('National Parking Management System'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
+                const Text('Rwanda\'s most advanced digital parking portal', style: TextStyle(color: Colors.white54, fontSize: 10, fontStyle: FontStyle.italic)),
+                const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -232,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   border: Border.all(color: Colors.grey.shade100),
                                 ),
                                 child: const Center(
-                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 60, fontWeight: FontWeight.w950)),
+                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 60, fontWeight: FontWeight.w900)),
                                 ),
                               ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                             ),
@@ -287,7 +289,16 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 32),
+                                  const SizedBox(height: 12),
+
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () => _showComingSoon('Reset Password'),
+                                      child: Text('Forgot Password?', style: AppTheme.bodySmall.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800)),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
 
                                   SizedBox(
                                     width: double.infinity, height: 56,
@@ -302,6 +313,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                           : const Text('SIGN IN', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.5)),
                                     ),
                                   ),
+
+                                  const SizedBox(height: 24),
+                                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                                    Text("Don't have an account? ", style: AppTheme.bodySmall),
+                                    GestureDetector(
+                                      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
+                                      child: Text('Register here', style: AppTheme.bodySmall.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
+                                    ),
+                                  ]),
 
                                   if (_canBio) ...[
                                     const SizedBox(height: 24),
@@ -347,22 +367,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: Icons.facebook_rounded, 
                               onTap: () => _showComingSoon('Facebook')
                             ),
-                            _SocialButton(
-                              isMicrosoft: true,
-                              label: 'Continue with Microsoft', 
-                              color: const Color(0xFF00A4EF), 
-                              icon: Icons.window_rounded, 
-                              onTap: () => _showComingSoon('Microsoft')
-                            ),
                             
-                            const SizedBox(height: 32),
-                            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                              Text("Don't have an account? ", style: AppTheme.body),
-                              GestureDetector(
-                                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const RegisterScreen())),
-                                child: Text('Register here', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
-                              ),
-                            ]),
+                            const SizedBox(height: 48),
                           ],
                         ),
                       ),

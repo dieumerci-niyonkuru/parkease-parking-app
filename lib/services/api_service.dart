@@ -241,11 +241,12 @@ class ApiService {
   // ── Lookup Vehicle by Plate ───────────────────────────────────
   static Future<VehicleRecord?> lookupVehicle(String plate) async {
     try {
-      // In a real production system, this would call a specific lookup endpoint.
-      // Based on provided API, we simulate by finding in a facility.
+      // Trying to find the vehicle in the system via a global search or per site
       final facilities = await getAllParking();
       if (facilities.isEmpty) return null;
-      
+
+      // We'll try to find if the plate exists in any active session
+      // For now, we simulate by finding in a facility if no direct API exists
       final f = facilities[plate.hashCode.abs() % facilities.length];
       
       // Fetch latest pricing for this specific site
@@ -254,10 +255,7 @@ class ApiService {
           ? (double.tryParse(pricing['rate']?.toString() ?? f.ratePerHour.toString()) ?? f.ratePerHour)
           : f.ratePerHour;
 
-      // Simulate real processing time
-      await Future.delayed(const Duration(milliseconds: 1200));
-      
-      final hoursParked = 1.0 + (plate.length % 5);
+      await Future.delayed(const Duration(milliseconds: 1000));
       
       return VehicleRecord(
         slotId:         f.recordId,
@@ -265,13 +263,13 @@ class ApiService {
         ownerName:      'Vehicle Owner',
         ownerPhone:     '+250 7XX XXX XXX',
         ownerEmail:     '',
-        entryTime:      DateTime.now().subtract(Duration(minutes: (hoursParked * 60).round())),
+        entryTime:      DateTime.now().subtract(const Duration(hours: 2)),
         spotNumber:     'P-${(plate.hashCode.abs() % 40) + 1}',
         parkingName:    f.fullParkName,
         parkingAddress: f.address,
         vehicleType:    'Sedan',
-        vehicleColor:   'Silver',
-        vehicleMake:    'Toyota',
+        vehicleColor:   '—',
+        vehicleMake:    '—',
         status:         VehicleStatus.parked,
         ratePerHour:    actualRate,
       );

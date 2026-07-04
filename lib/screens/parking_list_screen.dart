@@ -35,6 +35,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
 
   @override Widget build(BuildContext context) {
     final query = context.watch<AppProvider>().searchQuery.toLowerCase().trim();
+    final isSearching = query.isNotEmpty;
     
     final filtered = query.isEmpty
         ? _all
@@ -58,35 +59,36 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
       body: Column(
         children: [
           // ── SEARCH HEADER ──────────────────────────────────
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-            color: Colors.white,
-            child: Column(
-              children: [
-                const Text('PARKING SITES', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
-                const SizedBox(height: 4),
-                Text('National Management Portal'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed('trigger_search');
-                    },
-                    icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
-                    label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                      shadowColor: AppTheme.primary.withOpacity(0.3),
+          if (!isSearching)
+            Container(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+              color: Colors.white,
+              child: Column(
+                children: [
+                  const Text('PARKING SITES', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+                  const SizedBox(height: 4),
+                  Text('National Management Portal'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed('trigger_search');
+                      },
+                      icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
+                      label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 4,
+                        shadowColor: AppTheme.primary.withOpacity(0.3),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
           if (_loading)
             const Expanded(child: BrandedLoader(message: 'Syncing facilities...'))

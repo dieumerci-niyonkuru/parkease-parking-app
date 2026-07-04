@@ -279,7 +279,7 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
-      (Icons.location_city_rounded,   Icons.location_city_outlined,  'ParkingSites'),
+      (Icons.directions_car_rounded,  Icons.directions_car_outlined, 'ParkingSites'),
       (Icons.electric_bolt_rounded,   Icons.electric_bolt_outlined,  'Quick Pay'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
     ];

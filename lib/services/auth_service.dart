@@ -234,6 +234,32 @@ class AuthService {
     }
   }
 
+  // ── Register: step 2.5 — verify reclaim OTP ──────────────────
+  static Future<Map<String, dynamic>> verifyReclaimOtp(String verificationPayload, String otp) async {
+    try {
+      final resp = await http.post(
+        Uri.parse('$_base/auth/register/verify-reclaim-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'verification_payload': verificationPayload,
+          'otp': otp,
+        }),
+      ).timeout(_timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        return {
+          'success': true,
+          'registration_token': data['registration_token'],
+          'phone_number': data['phone_number'],
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error.'};
+    }
+  }
+
   // ── Register: step 3 — complete profile ──────────────────────
   static Future<Map<String, dynamic>> completeRegister({
     required String registrationToken,

@@ -229,7 +229,7 @@ class _QuickPayCardState extends State<_QuickPayCard> {
         Row(children: [
           const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 22),
           const SizedBox(width: 12),
-          const Text('VEHICLE LOOKUP', style: TextStyle(color: Color(0xFF212529), fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
+          const Text('Type you park number', style: TextStyle(color: Color(0xFF212529), fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
         ]),
         const SizedBox(height: 20),
         Container(
@@ -249,7 +249,7 @@ class _QuickPayCardState extends State<_QuickPayCard> {
               letterSpacing: 2,
             ),
             decoration: InputDecoration(
-              hintText: 'Type here your Parking number',
+              hintText: 'Type Park number (Example: RAC 001 A)',
               hintStyle: TextStyle(
                 fontSize: 14, 
                 color: Colors.grey.shade400, 
