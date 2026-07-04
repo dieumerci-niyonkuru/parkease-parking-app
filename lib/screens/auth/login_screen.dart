@@ -235,9 +235,45 @@ class _LoginScreenState extends State<LoginScreen> {
                   const _DividerText(text: 'OR CONTINUE WITH'),
                   const SizedBox(height: 24),
 
-                  _SocialButton(isGoogle: true, label: 'Google Account', color: const Color(0xFF4285F4), icon: Icons.g_mobiledata_rounded, onTap: () => _showComingSoon('Google')),
-                  _SocialButton(label: 'Facebook ID', color: const Color(0xFF1877F2), icon: Icons.facebook_rounded, onTap: () => _showComingSoon('Facebook')),
-                  _SocialButton(label: 'Apple ID', color: Colors.black, icon: Icons.apple_rounded, onTap: () => _showComingSoon('Apple')),
+                  _SocialButton(
+                    isGoogle: true, 
+                    label: 'Continue with Google', 
+                    color: const Color(0xFF4285F4), 
+                    icon: Icons.g_mobiledata_rounded, 
+                    onTap: () => _showComingSoon('Google')
+                  ),
+                  _SocialButton(
+                    label: 'Continue with Apple', 
+                    color: Colors.black, 
+                    icon: Icons.apple_rounded, 
+                    onTap: () => _showComingSoon('Apple')
+                  ),
+                  _SocialButton(
+                    label: 'Continue with Facebook', 
+                    color: const Color(0xFF1877F2), 
+                    icon: Icons.facebook_rounded, 
+                    onTap: () => _showComingSoon('Facebook')
+                  ),
+                  _SocialButton(
+                    isMicrosoft: true,
+                    label: 'Continue with Microsoft', 
+                    color: const Color(0xFF00A4EF), 
+                    icon: Icons.window_rounded, 
+                    onTap: () => _showComingSoon('Microsoft')
+                  ),
+                  _SocialButton(
+                    label: 'Continue with Phone Number', 
+                    color: AppTheme.primary, 
+                    icon: Icons.phone_android_rounded, 
+                    onTap: () => _showComingSoon('Phone Number')
+                  ),
+                  _SocialButton(
+                    isGuest: true,
+                    label: 'Continue as Guest', 
+                    color: const Color(0xFF5F6368), 
+                    icon: Icons.person_outline_rounded, 
+                    onTap: () => _goToMain()
+                  ),
                   
                   const SizedBox(height: 32),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
@@ -313,6 +349,8 @@ class _SocialButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
   final bool isGoogle;
+  final bool isMicrosoft;
+  final bool isGuest;
 
   const _SocialButton({
     required this.icon, 
@@ -320,43 +358,56 @@ class _SocialButton extends StatelessWidget {
     required this.color, 
     required this.onTap,
     this.isGoogle = false,
+    this.isMicrosoft = false,
+    this.isGuest = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 10),
       child: SizedBox(
         width: double.infinity,
         height: 52,
         child: OutlinedButton(
           onPressed: onTap,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Colors.grey.shade300, width: 1.5),
+            side: BorderSide(color: Colors.grey.shade200, width: 1.5),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             backgroundColor: Colors.white,
             elevation: 0,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isGoogle)
                 Image.network(
                   'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png',
-                  height: 24,
-                  width: 24,
-                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
+                  height: 22,
+                  width: 22,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
                 )
+              else if (isMicrosoft)
+                Image.network(
+                  'https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Microsoft_logo.svg/1024px-Microsoft_logo.svg.png',
+                  height: 18,
+                  width: 18,
+                  errorBuilder: (context, error, stackTrace) => Icon(icon, color: color, size: 22),
+                )
+              else if (isGuest)
+                const Icon(Icons.account_circle_outlined, color: Color(0xFF5F6368), size: 24)
               else
                 Icon(icon, color: color, size: 24),
-              const SizedBox(width: 14),
-              Text(
-                label, 
-                style: const TextStyle(
-                  color: Color(0xFF212529), 
-                  fontWeight: FontWeight.w700, 
-                  fontSize: 14,
-                  letterSpacing: 0.2,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label, 
+                  style: const TextStyle(
+                    color: Color(0xFF3C4043), 
+                    fontWeight: FontWeight.w700, 
+                    fontSize: 14,
+                    letterSpacing: 0.1,
+                  ),
                 ),
               ),
             ],

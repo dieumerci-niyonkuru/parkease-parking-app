@@ -272,12 +272,6 @@ class _PremiumBottomNav extends StatelessWidget {
   final void Function(int) onTap;
   const _PremiumBottomNav({required this.current, required this.onTap});
 
-  void _triggerHeaderSearch() {
-    if (!_isSearching) {
-      setState(() => _isSearching = true);
-    }
-  }
-
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
