@@ -92,15 +92,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _initiateRegistration() async {
     final phone = _phoneCtrl.text.trim();
-    final username = _usernameCtrl.text.trim();
-    if (phone.isEmpty || username.isEmpty) {
-      _showSnack('Please enter your phone number and username');
+    if (phone.isEmpty) {
+      _showSnack('Please enter your phone number');
       return;
     }
 
     setState(() => _isLoading = true);
     final fullPhone = '$_countryCode$phone';
-    final result = await AuthService.initiateRegister(fullPhone, username: username);
+    final result = await AuthService.initiateRegister(fullPhone);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -118,14 +117,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _verifyOtp() async {
     final otp = _otpCtrl.text.trim();
-    final phone = '$_countryCode${_phoneCtrl.text.trim()}';
     if (otp.length < 4) {
       _showSnack('Please enter a valid OTP');
       return;
     }
 
     setState(() => _isLoading = true);
-    final result = await AuthService.verifyOtp(phone, otp);
+    final result = await AuthService.verifyOtp(_verificationPayload, otp);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -142,18 +140,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _completeRegistration() async {
     final names = _namesCtrl.text.trim();
+    final email = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
 
-    if (names.isEmpty || password.isEmpty) {
+    if (names.isEmpty || email.isEmpty || password.isEmpty) {
       _showSnack('Please fill in all fields');
       return;
     }
 
     setState(() => _isLoading = true);
     final result = await AuthService.completeRegister(
-      username: _usernameCtrl.text.trim(),
+      registrationToken: _registrationToken,
+      names: names,
+      email: email,
       password: password,
-      otherInfo: names,
     );
     
     if (!mounted) return;
@@ -316,18 +316,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 20),
-
-        Text('Username', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _usernameCtrl,
-          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'Choose a username',
-            prefixIcon: Icon(Icons.alternate_email_rounded, size: 20),
-          ),
-        ),
         const SizedBox(height: 32),
 
         _buildPrimaryButton(
@@ -405,6 +393,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
           decoration: const InputDecoration(
             hintText: 'John Doe',
             prefixIcon: Icon(Icons.person_outline, size: 20),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        Text('Email Address', style: AppTheme.label),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _emailCtrl,
+          keyboardType: TextInputType.emailAddress,
+          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(
+            hintText: 'john.doe@example.com',
+            prefixIcon: Icon(Icons.email_outlined, size: 20),
           ),
         ),
         const SizedBox(height: 20),
