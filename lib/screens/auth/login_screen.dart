@@ -154,15 +154,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             // ── Logo / Badge ───────────────────────────────────────
                             Center(
                               child: Container(
-                                width: 80, height: 80,
+                                width: 90, height: 90,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: AppTheme.cardShadow,
-                                  border: Border.all(color: AppTheme.primary.withOpacity(0.1)),
+                                  borderRadius: BorderRadius.circular(24),
+                                  boxShadow: [
+                                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))
+                                  ],
+                                  border: Border.all(color: Colors.grey.shade100),
                                 ),
                                 child: const Center(
-                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 44, fontWeight: FontWeight.w900)),
+                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 50, fontWeight: FontWeight.w900)),
                                 ),
                               ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                             ),
@@ -306,10 +308,13 @@ class _LoginScreenState extends State<LoginScreen> {
           // ── BRANDED FOOTER ─────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            color: AppTheme.primary,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, -4))],
+            ),
             child: const Center(
-              child: Text('2026 ITEC Parking . Rwanda', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              child: Text('2026 ITEC Parking . Rwanda', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
             ),
           ),
         ],

@@ -126,9 +126,13 @@ class _MainLayoutState extends State<MainLayout> {
         actions: [
           IconButton(
             onPressed: () {
-              final nav = _navigatorKeys[_currentIndex].currentState;
-              if (nav != null && nav.canPop()) {
-                nav.popUntil((r) => r.isFirst);
+              if (_currentIndex != 0) {
+                setState(() => _currentIndex = 0);
+              } else {
+                final nav = _navigatorKeys[0].currentState;
+                if (nav != null && nav.canPop()) {
+                  nav.popUntil((r) => r.isFirst);
+                }
               }
               setState(() {});
             },
