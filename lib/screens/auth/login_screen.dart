@@ -179,16 +179,28 @@ class _LoginScreenState extends State<LoginScreen> {
           // ── BRANDED HEADER ─────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: 24),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: 0),
             decoration: BoxDecoration(
               color: AppTheme.primary,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 12, offset: const Offset(0, 4))],
             ),
             child: Column(
               children: [
                 const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
                 const SizedBox(height: 4),
                 Text('National Parking Management System'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 24),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  ),
+                  child: const Center(
+                    child: Text('SIGN IN', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900, letterSpacing: 2)),
+                  ),
+                ),
               ],
             ),
           ),
@@ -210,17 +222,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             // ── Logo / Badge ───────────────────────────────────────
                             Center(
                               child: Container(
-                                width: 90, height: 90,
+                                width: 100, height: 100,
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
-                                    BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 8))
+                                    BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 24, offset: const Offset(0, 12))
                                   ],
                                   border: Border.all(color: Colors.grey.shade100),
                                 ),
                                 child: const Center(
-                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 50, fontWeight: FontWeight.w900)),
+                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 60, fontWeight: FontWeight.w950)),
                                 ),
                               ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                             ),
