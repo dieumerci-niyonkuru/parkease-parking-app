@@ -59,16 +59,17 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
         children: [
           // ── SEARCH HEADER ──────────────────────────────────
           Container(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
             color: Colors.white,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('PARKING SITE', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
-                const SizedBox(height: 16),
+                const Text('PARKING SITES', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text('National Management Portal'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
-                  height: 54,
+                  height: 56,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       Navigator.of(context).pushNamed('trigger_search');
@@ -77,7 +78,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> {
                     label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                       elevation: 4,
                       shadowColor: AppTheme.primary.withOpacity(0.3),
                     ),

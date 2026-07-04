@@ -130,8 +130,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           physics: const BouncingScrollPhysics(),
           slivers: [
             SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+                color: Colors.white,
+                child: Column(
+                  children: [
+                    const Text('MY ACCOUNT', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+                    const SizedBox(height: 4),
+                    Text('Driver Profile Settings'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+                  ],
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   
                   // ── PROFILE HEADER (Simplified) ───────────────────────

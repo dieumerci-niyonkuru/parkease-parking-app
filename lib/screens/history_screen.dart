@@ -124,19 +124,37 @@ class _HistoryScreenState extends State<HistoryScreen> {
       backgroundColor: AppTheme.bgDeep,
       body: Column(
         children: [
+          // ── HEADER ──────────────────────────────────────────
+          Container(
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+            color: Colors.white,
+            child: Column(
+              children: [
+                const Text('RECEIPT HISTORY', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+                const SizedBox(height: 4),
+                Text('Official Parking Records'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+              ],
+            ),
+          ),
+
           if (_tableView && !_loading && displayRecords.isNotEmpty)
             Container(
               color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Row(children: [
-                _SummaryChip(
-                  icon: Icons.payments_rounded,
-                  label: 'TOTAL PAID: RWF ${_moneyFmt.format(displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0)).toInt())}',
-                  color: AppTheme.success,
-                ),
-                const Spacer(),
-                Text('${displayRecords.length} RECEIPTS', style: AppTheme.label.copyWith(fontSize: 10, fontWeight: FontWeight.w900)),
-              ]),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+              child: Column(
+                children: [
+                  Row(children: [
+                    _SummaryChip(
+                      icon: Icons.payments_rounded,
+                      label: 'TOTAL PAID: RWF ${_moneyFmt.format(displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0)).toInt())}',
+                      color: AppTheme.success,
+                    ),
+                    const Spacer(),
+                    Text('${displayRecords.length} RECEIPTS', style: AppTheme.label.copyWith(fontSize: 10, fontWeight: FontWeight.w900)),
+                  ]),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
 
           Container(

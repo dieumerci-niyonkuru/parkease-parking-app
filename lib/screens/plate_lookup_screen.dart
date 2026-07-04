@@ -22,7 +22,6 @@ class PlateLookupScreen extends StatefulWidget {
 class _PlateLookupScreenState extends State<PlateLookupScreen> {
   final _plateCtrl = TextEditingController();
   VehicleRecord? _record;
-  bool _loading = false;
   String? _error;
 
   @override void initState() {
@@ -63,43 +62,51 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       body: Column(children: [
-        // ── Search Bar ──────────────────────────────────────────────
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.primary.withOpacity(0.4), width: 1.5),
-              boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))],
-            ),
-            child: Row(children: [
+        // ── Search Header ──────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+          color: Colors.white,
+          child: Column(
+            children: [
+              const Text('VEHICLE LOOKUP', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+              const SizedBox(height: 4),
+              Text('Instant Multi-Site Search'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+              const SizedBox(height: 24),
               Container(
-                margin: const EdgeInsets.all(10), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: AppTheme.bgDeep, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppTheme.border)),
-                child: Text('RW', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _plateCtrl,
-                  textCapitalization: TextCapitalization.characters,
-                  textInputAction: TextInputAction.search,
-                  onSubmitted: (_) => _search(),
-                  style: AppTheme.mono.copyWith(fontSize: 20, color: const Color(0xFF2D2018), fontWeight: FontWeight.w900),
-                  decoration: InputDecoration(
-                    hintText: 'RAC 001 A',
-                    hintStyle: AppTheme.mono.copyWith(fontSize: 20, color: Colors.black.withOpacity(0.2)),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgDeep,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1.5),
                 ),
+                child: Row(children: [
+                  Container(
+                    margin: const EdgeInsets.all(10), padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppTheme.border)),
+                    child: Text('RW', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
+                  ),
+                  Expanded(
+                    child: TextField(
+                      controller: _plateCtrl,
+                      textCapitalization: TextCapitalization.characters,
+                      textInputAction: TextInputAction.search,
+                      textAlign: TextAlign.center,
+                      onSubmitted: (_) => _search(),
+                      style: AppTheme.mono.copyWith(fontSize: 20, color: const Color(0xFF2D2018), fontWeight: FontWeight.w900, letterSpacing: 2),
+                      decoration: InputDecoration(
+                        hintText: 'RAC 001 A',
+                        hintStyle: AppTheme.mono.copyWith(fontSize: 20, color: Colors.black.withOpacity(0.1), letterSpacing: 2),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.search_rounded, color: AppTheme.primary, size: 28),
+                    onPressed: _search,
+                  ),
+                  const SizedBox(width: 8),
+                ]),
               ),
-              IconButton(
-                icon: const Icon(Icons.search_rounded, color: AppTheme.primary, size: 28),
-                onPressed: _search,
-              ),
-              const SizedBox(width: 8),
-            ]),
+            ],
           ),
         ),
 

@@ -93,7 +93,7 @@ class _MainLayoutState extends State<MainLayout> {
               autofocus: true,
               style: const TextStyle(color: Colors.white, fontSize: 14),
               decoration: const InputDecoration(
-                hintText: 'Quick search...',
+                hintText: 'Type search here...',
                 hintStyle: TextStyle(color: Colors.white70),
                 border: InputBorder.none,
                 filled: false,
