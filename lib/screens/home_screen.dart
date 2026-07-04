@@ -69,28 +69,22 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Greeting Section
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
+                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Welcome Back', 
-                                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Color(0xFF212529)),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text('👋', style: TextStyle(fontSize: 24)),
-                            ],
+                          const Text(
+                            'Welcome Back', 
+                            style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF212529)),
                           ),
                           Text(
                             firstName.toLowerCase(), 
-                            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppTheme.primary, height: 1.1),
+                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.primary, height: 1.2),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             DateFormat("EEEE, d MMMM").format(DateTime.now()), 
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -227,9 +221,9 @@ class _QuickPayCardState extends State<_QuickPayCard> {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 22),
+          const Icon(Icons.directions_car_rounded, color: Color(0xFF7A5B40), size: 22),
           const SizedBox(width: 12),
-          const Text('Type you park number', style: TextStyle(color: Color(0xFF212529), fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5)),
+          const Text('Type you park number', style: TextStyle(color: Color(0xFF212529), fontWeight: FontWeight.w900, fontSize: 13)),
         ]),
         const SizedBox(height: 20),
         Container(
@@ -252,14 +246,13 @@ class _QuickPayCardState extends State<_QuickPayCard> {
               hintText: 'RAC 001 A',
               hintStyle: TextStyle(
                 fontSize: 20, 
-                color: Colors.black.withOpacity(0.1), 
+                color: Colors.grey.shade200, 
                 letterSpacing: 2,
               ),
               border: InputBorder.none,
-              prefixIcon: Container(
-                margin: const EdgeInsets.only(right: 12), 
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                child: const Text('🔍', style: TextStyle(fontSize: 18)),
+              prefixIcon: const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: Text('🔍', style: TextStyle(fontSize: 20)),
               ),
               prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
             ),

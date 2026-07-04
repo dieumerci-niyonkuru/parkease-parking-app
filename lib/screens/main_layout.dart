@@ -120,8 +120,8 @@ class _MainLayoutState extends State<MainLayout> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 12, letterSpacing: 1.2, fontWeight: FontWeight.w900)),
-                    Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 9, letterSpacing: 0.5)),
+                    const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
+                    Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
                   ],
                 ),
               ],
