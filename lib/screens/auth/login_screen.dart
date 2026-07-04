@@ -189,8 +189,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
                 const SizedBox(height: 4),
                 Text('Smart Parking Solutions'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 8),
-                const Text('Rwanda\'s most advanced digital parking portal', style: TextStyle(color: Colors.white54, fontSize: 10, fontStyle: FontStyle.italic)),
                 const SizedBox(height: 16),
                 Container(
                   width: double.infinity,
@@ -350,7 +348,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                             _SocialButton(
                               isGoogle: true, 
-                              label: 'Continue with Google', 
+                              label: 'Continue with Google',
                               color: const Color(0xFF4285F4), 
                               icon: Icons.g_mobiledata_rounded, 
                               onTap: () => _showComingSoon('Google')
@@ -388,7 +386,7 @@ class _LoginScreenState extends State<LoginScreen> {
               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, -4))],
             ),
             child: const Center(
-              child: Text('2026 ITEC Parking . Smart Parking Solutions', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
+              child: Text('Copyright © 2026 ITEC Parking', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 1.5)),
             ),
           ),
         ],
@@ -474,11 +472,11 @@ class _SocialButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (isGoogle)
-                Image.network(
-                  'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/1024px-Google_Chrome_icon_%28February_2022%29.svg.png',
-                  height: 24,
-                  width: 24,
-                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 28),
+                Image.asset(
+                  'assets/images/app_photos/google_logo.png',
+                  height: 22,
+                  width: 22,
+                  errorBuilder: (context, error, stackTrace) => Icon(Icons.g_mobiledata_rounded, color: color, size: 26),
                 )
               else if (isMicrosoft)
                 Image.network(

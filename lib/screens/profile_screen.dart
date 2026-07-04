@@ -111,7 +111,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirmed == true) {
       await AuthService.logout();
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+        // Use rootNavigator: true to ensure we escape the nested navigator and reach the root /login route
+        Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil('/login', (route) => false);
       }
     }
   }

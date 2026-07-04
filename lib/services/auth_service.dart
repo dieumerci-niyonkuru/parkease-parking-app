@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 
+import 'api_service.dart';
+
 class AuthUser {
   final int id;
   final String names;
@@ -310,6 +312,8 @@ class AuthService {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_keyUser, jsonEncode(user.toJson()));
         return user;
+      } else if (resp.statusCode == 401) {
+        ApiService.onSessionExpired?.call();
       }
     } catch (_) {}
     return _user;

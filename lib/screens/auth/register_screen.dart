@@ -231,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             padding: const EdgeInsets.symmetric(vertical: 20),
             color: AppTheme.primary,
             child: const Center(
-              child: Text('2026 ITEC Parking . Smart Parking Solutions', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              child: Text('Copyright © 2026 ITEC Parking', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
             ),
           ),
         ],

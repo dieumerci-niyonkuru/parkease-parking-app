@@ -190,7 +190,9 @@ class _MainLayoutState extends State<MainLayout> {
 
                     if (confirmed == true) {
                       await AuthService.logout();
-                      if (mounted) Navigator.of(context).pushReplacementNamed('/login');
+                      if (mounted) {
+                        Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil('/login', (route) => false);
+                      }
                     }
                   }
                 },

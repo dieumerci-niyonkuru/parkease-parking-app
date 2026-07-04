@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Greeting Section
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -77,20 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               const Text(
                                 'Welcome Back', 
-                                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF212529)),
+                                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Color(0xFF212529)),
                               ),
                               const SizedBox(width: 8),
-                              const Text('👋', style: TextStyle(fontSize: 26)),
+                              const Text('👋', style: TextStyle(fontSize: 24)),
                             ],
                           ),
                           Text(
                             firstName.toLowerCase(), 
-                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: AppTheme.primary, height: 1.2),
+                            style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppTheme.primary, height: 1.1),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
                           Text(
                             DateFormat("EEEE, d MMMM").format(DateTime.now()), 
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13, fontWeight: FontWeight.w500),
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 12, fontWeight: FontWeight.w500),
                           ),
                         ],
                       ),
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     
                     // Vehicle Lookup Card
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
                       child: const _QuickPayCard(),
                     ),
                   ],
