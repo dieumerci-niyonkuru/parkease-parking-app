@@ -63,8 +63,7 @@ class AppUtils {
 
     if (h == 0) return 0.0;
 
-    // IMPORTANT: The calculation logic must match the server-side billing rules exactly.
-    // Based on the latest requirement to use only what's in the API:
+    // Standard linear billing rule as requested in the latest mockup
     return h * ratePerHour;
   }
 

@@ -121,17 +121,11 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                             ).animate().fadeIn(delay: 200.ms),
                           )),
 
-                        if (_showFullList && _fullTariffs.isNotEmpty) ...[
+                        if (_showFullList) ...[
                           const Divider(height: 48),
-                          const Text('Comprehensive Price List', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                          const Text('Comprehensive 24h Price List', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                           const SizedBox(height: 16),
-                          ..._fullTariffs.map((t) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _CategoryPricingCard(
-                              title: t['parking_name'] ?? t['name'] ?? 'Other Site',
-                              rates: t,
-                            ),
-                          )),
+                          _buildFullRateBreakdown(rate),
                         ],
 
                         const SizedBox(height: 40),
@@ -230,6 +224,33 @@ class _CategoryPricingCard extends StatelessWidget {
           Text(label, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Color(0xFF212529))),
           Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF7A5B40))),
         ],
+      ),
+    );
+  }
+  Widget _buildFullRateBreakdown(double rate) {
+    final moneyFmt = NumberFormat('#,###');
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7F2),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        children: List.generate(25, (i) {
+          final double amount = i * rate;
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(i == 0 ? '0-1 Hour' : '$i Hours', 
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey)),
+                Text('${moneyFmt.format(amount)}', 
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF7A5B40))),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
