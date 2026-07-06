@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
