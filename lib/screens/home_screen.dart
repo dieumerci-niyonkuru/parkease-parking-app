@@ -223,7 +223,7 @@ class _QuickPayCardState extends State<_QuickPayCard> {
               hintText: 'RAC 001 A',
               hintStyle: TextStyle(
                 fontSize: 20, 
-                color: Colors.grey.shade200, 
+                color: Colors.grey.shade400, // Brighter for better readability
                 letterSpacing: 2,
               ),
               border: InputBorder.none,

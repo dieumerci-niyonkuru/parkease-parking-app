@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
@@ -111,23 +112,17 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                if (_currentIndex == 0)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('Welcome Back', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
-                      Text(firstName.toLowerCase(), style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.1)),
-                      Text(dateStr, style: const TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w600)),
-                    ],
-                  )
-                else
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 13, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
-                      Text(_pageTitle, style: const TextStyle(color: Colors.white70, fontSize: 10, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
-                    ],
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(_currentIndex == 0 ? 'Welcome Back' : _pageTitle, 
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                    Text(firstName, 
+                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, height: 1.1)),
+                    Text(dateStr, 
+                      style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w600, letterSpacing: 0.2)),
+                  ],
+                ),
               ],
             ),
         actions: [

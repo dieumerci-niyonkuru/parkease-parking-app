@@ -101,18 +101,48 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Widget build(BuildContext context) {
     if (_done && _receipt != null) return _ReceiptView(record: _receipt!);
 
+    final user = AuthService.user;
+    final firstName = user?.names.split(' ').first ?? 'Driver';
+    final dateStr = DateFormat("EEEE, d MMMM").format(DateTime.now());
+
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
-        backgroundColor: AppTheme.bgDeep,
-        elevation: 0,
+        backgroundColor: AppTheme.primary, // Brand Background
         surfaceTintColor: Colors.transparent,
-        title: Text('SECURE PAYMENT', style: AppTheme.heading4.copyWith(letterSpacing: 1.5, fontSize: 13, color: AppTheme.primary)),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppTheme.primary),
-          onPressed: () => Navigator.pop(context),
+        elevation: 4,
+        leadingWidth: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('SECURE PAYMENT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
+                Text(firstName, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, height: 1.1)),
+                Text(dateStr, style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w600, letterSpacing: 0.2)),
+              ],
+            ),
+          ],
         ),
+        actions: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+            tooltip: 'Cancel Payment',
+          ),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

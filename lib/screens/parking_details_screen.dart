@@ -49,17 +49,6 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
-      appBar: AppBar(
-        backgroundColor: AppTheme.primary,
-        elevation: 4,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(widget.facility.fullParkName.toUpperCase(), 
-          style: const TextStyle(color: Colors.white, fontSize: 14, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
-      ),
       body: _loading
           ? const BrandedLoader(message: 'Loading real-time rates...')
           : SingleChildScrollView(

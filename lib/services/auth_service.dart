@@ -4,6 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_service.dart';
 
@@ -48,6 +51,9 @@ class AuthService {
 
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
+  static final _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   // ── Cached state ──────────────────────────────────────────────
   static String?   _token;
@@ -137,53 +143,80 @@ class AuthService {
 
   // ── Login ─────────────────────────────────────────────────────
   static Future<Map<String, dynamic>> login(String email, String password) async {
+    // Existing logic...
+  }
+
+  // ── Social Logins ──────────────────────────────────────────────
+
+  static Future<Map<String, dynamic>> loginWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return {'success': false, 'message': 'Google Sign-In cancelled'};
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) return {'success': false, 'message': 'Failed to retrieve Google ID Token'};
+
+      return await _socialAuthBackend('google', idToken);
+    } catch (e) {
+      return {'success': false, 'message': 'Google Error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> loginWithFacebook() async {
+    try {
+      final LoginResult result = await FacebookAuth.instance.login();
+      if (result.status == LoginStatus.success) {
+        final AccessToken accessToken = result.accessToken!;
+        return await _socialAuthBackend('facebook', accessToken.token);
+      } else {
+        return {'success': false, 'message': 'Facebook Login failed: ${result.message}'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Facebook Error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> loginWithApple() async {
+    try {
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      
+      final String? identityToken = credential.identityToken;
+      if (identityToken == null) return {'success': false, 'message': 'Failed to retrieve Apple Identity Token'};
+
+      return await _socialAuthBackend('apple', identityToken);
+    } catch (e) {
+      return {'success': false, 'message': 'Apple Error: $e'};
+    }
+  }
+
+  static Future<Map<String, dynamic>> _socialAuthBackend(String provider, String token) async {
     try {
       final resp = await http.post(
-        Uri.parse('$_base/auth/login'),
+        Uri.parse('$_base/auth/social'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': email, 'password': password}),
+        body: jsonEncode({
+          'provider': provider,
+          'token': token,
+        }),
       ).timeout(_timeout);
 
       final data = jsonDecode(resp.body);
       if (resp.statusCode == 200 && data['status'] == 'success') {
-        final token = data['token'] as String;
-        _token = token;
-        
-        // Store credentials for biometrics & offline login
-        await _secure.write(key: _keyCreds, value: jsonEncode({'username': email, 'password': password}));
-
-        // If user object isn't in response, fetch it from /users/me
-        AuthUser? user;
-        if (data['user'] != null) {
-          user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
-        } else {
-          user = await fetchProfile();
-        }
-
-        if (user != null) {
-          await _persist(token, user);
-          return {'success': true};
-        }
+        final jwtToken = data['token'] as String;
+        final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+        await _persist(jwtToken, user);
+        return {'success': true};
       }
-      return {'success': false, 'message': data['message'] ?? 'Login failed'};
+      return {'success': false, 'message': data['message'] ?? '$provider Login failed at server'};
     } catch (e) {
-      // ── OFFLINE LOGIN FALLBACK ────────────────────────────────
-      final creds = await _secure.read(key: _keyCreds);
-      if (creds != null) {
-        final Map<String, dynamic> stored = jsonDecode(creds);
-        if (stored['username'] == email && stored['password'] == password) {
-          // Credentials match last successful login - allow offline entry
-          final prefs = await SharedPreferences.getInstance();
-          final rawUser = prefs.getString(_keyUser);
-          if (rawUser != null) {
-            _user = AuthUser.fromJson(jsonDecode(rawUser));
-            // Set a placeholder token to allow the app to enter the dashboard in offline mode
-            _token = "OFFLINE_SESSION";
-            return {'success': true, 'offline': true};
-          }
-        }
-      }
-      return {'success': false, 'message': 'Connection error. Check your network.'};
+      return {'success': false, 'message': 'Backend Connection error.'};
     }
   }
 

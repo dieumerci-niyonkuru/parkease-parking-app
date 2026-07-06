@@ -131,6 +131,34 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _socialLogin(String platform) async {
+    setState(() => _isLoading = true);
+    Map<String, dynamic> result;
+
+    switch (platform) {
+      case 'Google':
+        result = await AuthService.loginWithGoogle();
+        break;
+      case 'Facebook':
+        result = await AuthService.loginWithFacebook();
+        break;
+      case 'Apple':
+        result = await AuthService.loginWithApple();
+        break;
+      default:
+        result = {'success': false, 'message': 'Unknown platform'};
+    }
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      _goToMain();
+    } else {
+      _showSnack(result['message'] ?? '$platform Login failed');
+    }
+  }
+
   Future<void> _showComingSoon(String platform) async {
     if (!mounted) return;
     await showDialog(
@@ -351,19 +379,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               label: 'Continue with Google',
                               color: const Color(0xFF4285F4), 
                               icon: Icons.g_mobiledata_rounded, 
-                              onTap: () => _showComingSoon('Google')
+                              onTap: () => _socialLogin('Google')
                             ),
                             _SocialButton(
                               label: 'Continue with Apple', 
                               color: Colors.black, 
                               icon: Icons.apple_rounded, 
-                              onTap: () => _showComingSoon('Apple')
+                              onTap: () => _socialLogin('Apple')
                             ),
                             _SocialButton(
                               label: 'Continue with Facebook', 
                               color: const Color(0xFF1877F2), 
                               icon: Icons.facebook_rounded, 
-                              onTap: () => _showComingSoon('Facebook')
+                              onTap: () => _socialLogin('Facebook')
                             ),
                             
                             const SizedBox(height: 48),
