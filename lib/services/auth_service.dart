@@ -52,7 +52,7 @@ class AuthService {
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
   static final _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? '634863333333-xxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com' : null,
+    clientId: kIsWeb ? '1053355555555-google-apps-default-id.apps.googleusercontent.com' : null,
     scopes: ['email', 'profile'],
   );
 
