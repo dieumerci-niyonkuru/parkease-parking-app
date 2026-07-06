@@ -132,6 +132,52 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _socialLogin(String platform) async {
+    // ── WEB AUTHORIZATION SIMULATION ───────────────────────────
+    if (kIsWeb) {
+      final selectedAccount = await showDialog<String>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+          title: Column(
+            children: [
+              Image.asset(
+                platform == 'Google' ? 'assets/images/app_photos/google_logo.png' : 'assets/images/app_photos/google_logo.png', // Fallback to logo
+                height: 32,
+                errorBuilder: (_,__,___) => Icon(Icons.account_circle_outlined, color: AppTheme.primary, size: 32),
+              ),
+              const SizedBox(height: 16),
+              const Text('Choose an account', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text('to continue to ITEC Parking', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Divider(),
+              _AccountTile(
+                name: 'Roger Driver',
+                email: 'roger.driver@itec.rw',
+                onTap: () => Navigator.pop(ctx, 'roger.driver@itec.rw'),
+              ),
+              _AccountTile(
+                name: 'Guest User',
+                email: 'guest.test@gmail.com',
+                onTap: () => Navigator.pop(ctx, 'guest.test@gmail.com'),
+              ),
+              const Divider(),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('USE ANOTHER ACCOUNT', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 10)),
+              ),
+            ],
+          ),
+        ),
+      );
+
+      if (selectedAccount == null) return;
+    }
+
     setState(() => _isLoading = true);
     Map<String, dynamic> result;
 
@@ -457,6 +503,25 @@ class _ContactRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AccountTile extends StatelessWidget {
+  final String name, email;
+  final VoidCallback onTap;
+  const _AccountTile({required this.name, required this.email, required this.onTap});
+
+  @override Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      leading: CircleAvatar(
+        backgroundColor: AppTheme.primary.withOpacity(0.1),
+        child: Text(name[0], style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
+      ),
+      title: Text(name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+      subtitle: Text(email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      trailing: const Icon(Icons.chevron_right_rounded, size: 18),
     );
   }
 }
