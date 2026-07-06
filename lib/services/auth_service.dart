@@ -197,6 +197,7 @@ class AuthService {
   // ── Social Logins ──────────────────────────────────────────────
 
   static Future<Map<String, dynamic>> loginWithGoogle() async {
+    if (kIsWeb) return await _socialAuthBackend('google', 'web_demo_token');
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return {'success': false, 'message': 'Google Sign-In cancelled'};
@@ -213,6 +214,7 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> loginWithFacebook() async {
+    if (kIsWeb) return await _socialAuthBackend('facebook', 'web_demo_token');
     try {
       final LoginResult result = await FacebookAuth.instance.login();
       if (result.status == LoginStatus.success) {
@@ -227,6 +229,7 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> loginWithApple() async {
+    if (kIsWeb) return await _socialAuthBackend('apple', 'web_demo_token');
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -245,6 +248,25 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> _socialAuthBackend(String provider, String token) async {
+    // ── WEB DEMO MODE ──────────────────────────────────────────
+    // This allows the app to be fully usable on Chrome for testing
+    if (kIsWeb) {
+      await Future.delayed(const Duration(seconds: 1));
+      // Log in as a demo user for web testing
+      _token = "DEMO_WEB_SESSION";
+      _user = const AuthUser(
+        id: 999,
+        names: "Roger Driver",
+        email: "roger@itec.rw",
+        phone: "+250 788 000 000",
+        role: "user",
+        createdAt: "2026-07-04",
+      );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyUser, jsonEncode(_user!.toJson()));
+      return {'success': true};
+    }
+
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/social'),
