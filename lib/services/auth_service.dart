@@ -52,6 +52,7 @@ class AuthService {
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
   static final _googleSignIn = GoogleSignIn(
+    clientId: kIsWeb ? '634863333333-xxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com' : null,
     scopes: ['email', 'profile'],
   );
 
@@ -143,7 +144,54 @@ class AuthService {
 
   // ── Login ─────────────────────────────────────────────────────
   static Future<Map<String, dynamic>> login(String email, String password) async {
-    // Existing logic...
+    try {
+      final resp = await http.post(
+        Uri.parse('$_base/auth/login'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'username': email, 'password': password}),
+      ).timeout(_timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        final token = data['token'] as String;
+        _token = token;
+        
+        // Store credentials for biometrics & offline login
+        await _secure.write(key: _keyCreds, value: jsonEncode({'username': email, 'password': password}));
+
+        // If user object isn't in response, fetch it from /users/me
+        AuthUser? user;
+        if (data['user'] != null) {
+          user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+        } else {
+          user = await fetchProfile();
+        }
+
+        if (user != null) {
+          await _persist(token, user);
+          return {'success': true};
+        }
+      }
+      return {'success': false, 'message': data['message'] ?? 'Login failed'};
+    } catch (e) {
+      // ── OFFLINE LOGIN FALLBACK ────────────────────────────────
+      final creds = await _secure.read(key: _keyCreds);
+      if (creds != null) {
+        final Map<String, dynamic> stored = jsonDecode(creds);
+        if (stored['username'] == email && stored['password'] == password) {
+          // Credentials match last successful login - allow offline entry
+          final prefs = await SharedPreferences.getInstance();
+          final rawUser = prefs.getString(_keyUser);
+          if (rawUser != null) {
+            _user = AuthUser.fromJson(jsonDecode(rawUser));
+            // Set a placeholder token to allow the app to enter the dashboard in offline mode
+            _token = "OFFLINE_SESSION";
+            return {'success': true, 'offline': true};
+          }
+        }
+      }
+      return {'success': false, 'message': 'Connection error. Check your network.'};
+    }
   }
 
   // ── Social Logins ──────────────────────────────────────────────
