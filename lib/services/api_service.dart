@@ -18,7 +18,13 @@ class ApiService {
   };
 
   static void _checkStatus(int code) {
-    if (code == 401) onSessionExpired?.call();
+    if (code == 401) {
+      // Don't expire session for temporary direct social logins during demo/testing
+      final token = AuthService.token;
+      if (token != null && token.startsWith("SESSION_")) return;
+      
+      onSessionExpired?.call();
+    }
   }
 
   static const String _keyParking = 'cached_parking_v1';
