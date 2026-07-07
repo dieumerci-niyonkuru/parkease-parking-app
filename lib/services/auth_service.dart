@@ -215,6 +215,13 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> loginWithFacebook() async {
+    // ── WEB DIRECT AUTHORIZATION FOR FACEBOOK ──────────────────
+    if (kIsWeb) {
+      return await _socialAuthBackend('facebook', 'web_demo_token', 
+        name: "Roger Facebook", 
+        email: "roger.fb@itec.rw"
+      );
+    }
     try {
       final LoginResult result = await FacebookAuth.instance.login();
       if (result.status == LoginStatus.success) {
