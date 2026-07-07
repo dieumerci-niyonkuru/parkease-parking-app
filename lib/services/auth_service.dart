@@ -248,20 +248,11 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> _socialAuthBackend(String provider, String token) async {
-    if (kIsWeb) {
-      await Future.delayed(const Duration(seconds: 1));
-      _token = "DEMO_WEB_SESSION";
-      _user = const AuthUser(
-        id: 999,
-        names: "Roger Driver",
-        email: "roger@itec.rw",
-        phone: "", // Forces the Complete Profile Screen to show
-        role: "user",
-        createdAt: "2026-07-04",
-      );
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_keyUser, jsonEncode(_user!.toJson()));
-      return {'success': true};
+    // ── LIVE GOOGLE/FACEBOOK/APPLE LOGIC ───────────────────────
+    // This now attempts to authenticate with your REAL accounts
+    if (kIsWeb && token == 'web_demo_token') {
+       // Optional fallback for internal testing only
+       return {'success': true};
     }
 
     try {
