@@ -150,6 +150,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center, 
                   children: [
+                    if (user?.phone == null || user!.phone.isEmpty || user.phone == '+250 7XX XXX XXX' || user.phone == '—')
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.orange.shade200),
+                        ),
+                        child: Column(
+                          children: [
+                            const Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                                SizedBox(width: 12),
+                                Text('Incomplete Profile', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.orange)),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            const Text('Link your phone number to enable payments and receipts.', style: TextStyle(fontSize: 12)),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  // This would open a phone entry dialog
+                                },
+                                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                                child: const Text('SET PHONE NUMBER', style: TextStyle(fontWeight: FontWeight.w900)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   
                   // ── PROFILE HEADER (Simplified) ───────────────────────
                   Center(

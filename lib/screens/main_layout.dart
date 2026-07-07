@@ -62,6 +62,11 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
+  bool get _isProfileIncomplete {
+    final user = AuthService.user;
+    return user == null || user.phone.isEmpty || user.phone == '+250 7XX XXX XXX' || user.phone == '—';
+  }
+
   void _triggerHeaderSearch() {
     if (!_isSearching) {
       setState(() => _isSearching = true);
@@ -272,9 +277,51 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: _PremiumBottomNav(
         current: _currentIndex,
         onTap: (i) {
+          if (i != 0 && i != 1 && _isProfileIncomplete) {
+            _showProfileRequiredDialog();
+            return;
+          }
           HapticFeedback.lightImpact();
           setState(() => _currentIndex = i);
         },
+      ),
+    );
+  }
+
+  void _showProfileRequiredDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const Row(
+          children: [
+            Icon(Icons.lock_outline_rounded, color: Color(0xFF7A5B40)),
+            SizedBox(width: 12),
+            Text('Action Required', style: TextStyle(fontWeight: FontWeight.w900)),
+          ],
+        ),
+        content: const Text(
+          'To access Quick Pay and Receipts, you must first complete your profile by linking a phone number.',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('LATER', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w700)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              setState(() => _currentIndex = 4); // Take to My Account
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7A5B40),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('SET PHONE NOW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+          ),
+        ],
       ),
     );
   }

@@ -52,7 +52,7 @@ class AuthService {
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
   static final _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? '1053355555555-google-apps-default-id.apps.googleusercontent.com' : null,
+    clientId: kIsWeb ? '91956751634-ddtje7mn6642ongmkq91h77t52kdummm.apps.googleusercontent.com' : null,
     scopes: ['email', 'profile'],
   );
 
@@ -248,17 +248,14 @@ class AuthService {
   }
 
   static Future<Map<String, dynamic>> _socialAuthBackend(String provider, String token) async {
-    // ── WEB DEMO MODE ──────────────────────────────────────────
-    // This allows the app to be fully usable on Chrome for testing
     if (kIsWeb) {
       await Future.delayed(const Duration(seconds: 1));
-      // Log in as a demo user for web testing
       _token = "DEMO_WEB_SESSION";
       _user = const AuthUser(
         id: 999,
         names: "Roger Driver",
         email: "roger@itec.rw",
-        phone: "+250 788 000 000",
+        phone: "", // Forces the Complete Profile Screen to show
         role: "user",
         createdAt: "2026-07-04",
       );
