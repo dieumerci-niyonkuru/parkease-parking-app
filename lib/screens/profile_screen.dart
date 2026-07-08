@@ -223,6 +223,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // ── SECURITY SECTION ──────────────────────────────────
                   _SectionHeader('SECURITY & ACCOUNT'),
+                  _BiometricToggle(),
                   _ProfileTile(
                     icon: Icons.person_outline_rounded, label: 'Edit Profile Information', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())).then((_) => _refresh()),
@@ -290,6 +291,60 @@ class _SectionHeader extends StatelessWidget {
     padding: const EdgeInsets.only(left: 4, bottom: 12),
     child: Text(title, style: AppTheme.label.copyWith(letterSpacing: 2, color: AppTheme.primary, fontWeight: FontWeight.w900)),
   );
+}
+
+class _BiometricToggle extends StatefulWidget {
+  const _BiometricToggle();
+  @override State<_BiometricToggle> createState() => _BiometricToggleState();
+}
+
+class _BiometricToggleState extends State<_BiometricToggle> {
+  bool _available = false;
+
+  @override void initState() {
+    super.initState();
+    _check();
+  }
+
+  Future<void> _check() async {
+    final can = await AuthService.canUseBiometrics();
+    if (mounted) setState(() => _available = can);
+  }
+
+  @override Widget build(BuildContext context) {
+    if (!_available) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.border.withOpacity(0.5), width: 1),
+        boxShadow: AppTheme.subtleShadow,
+      ),
+      child: SwitchListTile(
+        secondary: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: AppTheme.bgDeep, borderRadius: BorderRadius.circular(12)),
+          child: const Icon(Icons.fingerprint_rounded, color: AppTheme.textSecond, size: 22),
+        ),
+        title: const Text('Fingerprint Login', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+        subtitle: const Text('Unlock app with your fingerprint', style: TextStyle(fontSize: 11)),
+        value: AuthService.isBiometricEnabled,
+        activeColor: AppTheme.primary,
+        onChanged: (val) async {
+          if (val) {
+            final success = await AuthService.authenticateBiometrically();
+            if (success) {
+              await AuthService.setBiometricEnabled(true);
+            }
+          } else {
+            await AuthService.setBiometricEnabled(false);
+          }
+          setState(() {});
+        },
+      ),
+    );
+  }
 }
 
 class _ProfileTile extends StatelessWidget {

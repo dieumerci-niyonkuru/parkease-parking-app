@@ -129,10 +129,45 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      _goToMain();
+      if (_canBio && !AuthService.isBiometricEnabled) {
+        _promptEnableBio();
+      } else {
+        _goToMain();
+      }
     } else {
       _showSnack(result['message'] ?? 'Login failed');
     }
+  }
+
+  Future<void> _promptEnableBio() async {
+    final enabled = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const Text('Enable Fingerprint?', style: TextStyle(fontWeight: FontWeight.w900)),
+        content: const Text('Would you like to enable fingerprint login for faster access next time?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('NOT NOW', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w700)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('YES, ENABLE', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+          ),
+        ],
+      ),
+    );
+
+    if (enabled == true) {
+      await AuthService.setBiometricEnabled(true);
+    }
+    _goToMain();
   }
 
   Future<void> _socialLogin(String platform) async {
@@ -385,12 +420,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               icon: Icons.g_mobiledata_rounded, 
                               onTap: () => _socialLogin('Google')
                             ),
-                            _SocialButton(
-                              label: 'Continue with Apple', 
-                              color: Colors.black, 
-                              icon: Icons.apple_rounded, 
-                              onTap: () => _socialLogin('Apple')
-                            ),
+
                             _SocialButton(
                               label: 'Continue with Facebook', 
                               color: const Color(0xFF1877F2), 

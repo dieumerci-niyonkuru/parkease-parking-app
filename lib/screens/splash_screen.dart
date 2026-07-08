@@ -42,22 +42,34 @@ class _SplashScreenState extends State<SplashScreen>
     ]);
 
     bool isValid = true; 
+    bool bioSuccess = false;
+
     if (AuthService.isLoggedIn) {
       final check = await AuthService.validateToken();
       if (check == false) {
         isValid = false;
         await AuthService.logout();
       }
+    } else if (AuthService.isBiometricEnabled && await AuthService.canUseBiometrics() && await AuthService.hasStoredCredentials()) {
+      // ── BIOMETRIC LOGIN FLOW ──────────────────────────────
+      setState(() => _step = 'Biometric Login...'.toUpperCase());
+      bioSuccess = await AuthService.authenticateBiometrically();
+      if (bioSuccess) {
+        final result = await AuthService.loginWithBiometrics();
+        if (result['success'] != true) {
+          bioSuccess = false;
+        }
+      }
     }
 
-    await Future.delayed(const Duration(milliseconds: 2800));
+    await Future.delayed(const Duration(milliseconds: 2000));
     if (!mounted) return;
     
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         pageBuilder: (_, __, ___) =>
-            (AuthService.isLoggedIn && isValid) ? const MainLayout() : const LoginScreen(),
+            (AuthService.isLoggedIn && (isValid || bioSuccess)) ? const MainLayout() : const LoginScreen(),
         transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
         transitionDuration: const Duration(milliseconds: 600),
       ),

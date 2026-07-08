@@ -48,6 +48,7 @@ class AuthService {
   static const String _keyToken = 'jwt_token';
   static const String _keyUser  = 'auth_user';
   static const String _keyCreds = 'biometric_credentials';
+  static const String _keyBioEnabled = 'biometric_enabled';
 
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
@@ -59,12 +60,25 @@ class AuthService {
   // ── Cached state ──────────────────────────────────────────────
   static String?   _token;
   static AuthUser? _user;
+  static bool      _bioEnabled = false;
 
   static String?   get token => _token;
   static AuthUser? get user  => _user;
   static bool      get isLoggedIn => _token != null && _user != null;
+  static bool      get isBiometricEnabled => _bioEnabled;
 
   // ── Biometrics ────────────────────────────────────────────────
+  static Future<void> setBiometricEnabled(bool enabled) async {
+    _bioEnabled = enabled;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyBioEnabled, enabled);
+  }
+
+  static Future<bool> hasStoredCredentials() async {
+    final creds = await _secure.read(key: _keyCreds);
+    return creds != null;
+  }
+
   static Future<bool> canUseBiometrics() async {
     if (kIsWeb) return false;
     final bool canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
@@ -99,6 +113,7 @@ class AuthService {
   static Future<void> restore() async {
     _token = await _secure.read(key: _keyToken);
     final prefs = await SharedPreferences.getInstance();
+    _bioEnabled = prefs.getBool(_keyBioEnabled) ?? false;
     final raw = prefs.getString(_keyUser);
     if (raw != null) {
       try { _user = AuthUser.fromJson(jsonDecode(raw)); } catch (_) {}
