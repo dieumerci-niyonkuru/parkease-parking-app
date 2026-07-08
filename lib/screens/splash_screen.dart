@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: Column(children: [
           const Spacer(flex: 3),
 
-          // ── BRANDING BADGE (Large white square with P) ─────────────
+          // ── BRANDING BADGE (Large white square with Logo) ──────────
           Hero(
             tag: 'logo',
             child: Container(
@@ -101,8 +101,12 @@ class _SplashScreenState extends State<SplashScreen>
                   BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))
                 ],
               ),
-              child: const Center(
-                child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 64, fontWeight: FontWeight.w900)),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/app_photos/itec_logo_strong.png',
+                  width: 80, height: 80,
+                  errorBuilder: (_,__,___) => const Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 64, fontWeight: FontWeight.w900)),
+                ),
               ),
             ),
           ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.easeOutBack),

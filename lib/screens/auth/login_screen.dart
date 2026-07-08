@@ -298,8 +298,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ],
                                   border: Border.all(color: Colors.grey.shade100),
                                 ),
-                                child: const Center(
-                                  child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 60, fontWeight: FontWeight.w900)),
+                                child: Center(
+                                  child: Image.asset(
+                                    'assets/images/app_photos/itec_logo_strong.png',
+                                    width: 60, height: 60,
+                                    errorBuilder: (_,__,___) => const Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 60, fontWeight: FontWeight.w900)),
+                                  ),
                                 ),
                               ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
                             ),

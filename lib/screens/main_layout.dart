@@ -112,8 +112,12 @@ class _MainLayoutState extends State<MainLayout> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Center(
-                    child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/app_photos/itec_logo_strong.png',
+                      width: 20, height: 20,
+                      errorBuilder: (_,__,___) => const Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 12),
