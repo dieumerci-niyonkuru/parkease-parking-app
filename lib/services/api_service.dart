@@ -292,27 +292,18 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     final cacheKey = '$_keyPricingPrefix$recordId';
     try {
-      // Trying the user-provided endpoints in order of priority
-      // 1. GET /parking/{id}/pricing
-      var resp = await http.get(
-        Uri.parse('$baseUrl/parking/$recordId/pricing'),
+      // API 2.0 path: GET /pricing/parking/{recordId}
+      final resp = await http.get(
+        Uri.parse('$baseUrl/pricing/parking/$recordId'),
         headers: AuthService.authHeaders,
       ).timeout(timeout);
-
-      // 2. Fallback to GET /parking/{id}/rates if 404 or empty
-      if (resp.statusCode != 200) {
-        resp = await http.get(
-          Uri.parse('$baseUrl/parking/$recordId/rates'),
-          headers: AuthService.authHeaders,
-        ).timeout(timeout);
-      }
 
       _checkStatus(resp.statusCode);
 
       if (resp.statusCode == 200) {
         await prefs.setString(cacheKey, resp.body);
         final data = jsonDecode(resp.body);
-        // Extract the inner data if the API wraps it in a 'data' or 'pricing' key
+        // Extract the inner data if the API wraps it
         return data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
       }
     } catch (_) {}

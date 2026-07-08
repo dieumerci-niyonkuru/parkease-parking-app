@@ -293,13 +293,14 @@ class AuthService {
   }
 
   // ── Register: step 1 — send OTP ──────────────────────────────
-  static Future<Map<String, dynamic>> initiateRegister(String phone) async {
+  static Future<Map<String, dynamic>> initiateRegister(String phone, String username) async {
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/register/initiate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phone': phone,
+          'username': username,
         }),
       ).timeout(_timeout);
 
@@ -307,7 +308,7 @@ class AuthService {
       if (resp.statusCode == 200 && data['status'] == 'success') {
         return {
           'success': true,
-          'verification_payload': data['verification_payload'],
+          'message': data['message'] ?? 'OTP sent',
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
@@ -317,13 +318,13 @@ class AuthService {
   }
 
   // ── Register: step 2 — verify OTP ────────────────────────────
-  static Future<Map<String, dynamic>> verifyOtp(String verificationPayload, String otp) async {
+  static Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/register/verify-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'verification_payload': verificationPayload,
+          'phone': phone,
           'otp': otp,
         }),
       ).timeout(_timeout);
@@ -332,7 +333,7 @@ class AuthService {
       if (resp.statusCode == 200 && data['status'] == 'success') {
         return {
           'success': true,
-          'registration_token': data['registration_token'],
+          'message': data['message'] ?? 'OTP verified',
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
@@ -342,13 +343,13 @@ class AuthService {
   }
 
   // ── Register: step 2.5 — verify reclaim OTP ──────────────────
-  static Future<Map<String, dynamic>> verifyReclaimOtp(String verificationPayload, String otp) async {
+  static Future<Map<String, dynamic>> verifyReclaimOtp(String phone, String otp) async {
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/register/verify-reclaim-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'verification_payload': verificationPayload,
+          'phone': phone,
           'otp': otp,
         }),
       ).timeout(_timeout);
@@ -357,8 +358,7 @@ class AuthService {
       if (resp.statusCode == 200 && data['status'] == 'success') {
         return {
           'success': true,
-          'registration_token': data['registration_token'],
-          'phone_number': data['phone_number'],
+          'message': data['message'] ?? 'OTP verified for reclaim',
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
@@ -369,28 +369,25 @@ class AuthService {
 
   // ── Register: step 3 — complete profile ──────────────────────
   static Future<Map<String, dynamic>> completeRegister({
-    required String registrationToken,
-    required String names,
-    required String email,
+    required String username,
     required String password,
+    Map<String, dynamic>? otherInfo,
   }) async {
     try {
       final resp = await http.post(
         Uri.parse('$_base/auth/register/complete'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'registration_token': registrationToken,
-          'names': names,
-          'email': email,
+          'username': username,
           'password': password,
+          ...?otherInfo,
         }),
       ).timeout(_timeout);
 
       final data = jsonDecode(resp.body);
       if ((resp.statusCode == 200 || resp.statusCode == 201) && data['status'] == 'success') {
-        final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
-        await _persist(data['token'] as String, user);
-        return {'success': true};
+        // According to API 2.0, login usually follows registration
+        return {'success': true, 'message': data['message'] ?? 'Registration complete'};
       }
       return {'success': false, 'message': data['message'] ?? 'Registration failed'};
     } catch (e) {
