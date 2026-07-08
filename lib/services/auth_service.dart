@@ -124,6 +124,12 @@ class AuthService {
     _token = token;
     _user  = user;
     await _secure.write(key: _keyToken, value: token);
+    
+    // Automatically enable biometrics on first persistent login
+    if (!_bioEnabled) {
+      await setBiometricEnabled(true);
+    }
+
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyUser, jsonEncode(user.toJson()));
   }

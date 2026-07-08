@@ -92,14 +92,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _initiateRegistration() async {
     final phone = _phoneCtrl.text.trim();
+    final username = _usernameCtrl.text.trim();
     if (phone.isEmpty) {
       _showSnack('Please enter your phone number');
+      return;
+    }
+    if (username.isEmpty) {
+      _showSnack('Please enter a username');
       return;
     }
 
     setState(() => _isLoading = true);
     final fullPhone = '$_countryCode$phone';
-    final result = await AuthService.initiateRegister(fullPhone);
+    final result = await AuthService.initiateRegister(fullPhone, username);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -123,7 +128,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     setState(() => _isLoading = true);
-    final result = await AuthService.verifyOtp(_verificationPayload, otp);
+    final fullPhone = '$_countryCode${_phoneCtrl.text.trim()}';
+    final result = await AuthService.verifyOtp(fullPhone, otp);
     
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -150,10 +156,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
     final result = await AuthService.completeRegister(
-      registrationToken: _registrationToken,
-      names: names,
-      email: email,
+      username: _usernameCtrl.text.trim(),
       password: password,
+      otherInfo: {
+        'names': names,
+        'email': email,
+      },
     );
     
     if (!mounted) return;
@@ -277,7 +285,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
           style: AppTheme.body,
           textAlign: TextAlign.start,
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 32),
+
+        Text('Username', style: AppTheme.label),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _usernameCtrl,
+          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
+          decoration: const InputDecoration(
+            hintText: 'e.g. john_doe',
+            prefixIcon: Icon(Icons.account_circle_outlined, size: 20),
+          ),
+        ),
+        const SizedBox(height: 20),
 
         Text('Phone Number', style: AppTheme.label),
         const SizedBox(height: 8),
