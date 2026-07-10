@@ -14,12 +14,24 @@ class ApiService {
 
   static void _checkStatus(int code) {
     if (code == 401) {
-      // Don't expire session for temporary direct social logins during demo/testing
-      final token = AuthService.token;
-      if (token != null && token.startsWith("SESSION_")) return;
-      
       onSessionExpired?.call();
     }
+  }
+
+  // ── Generic HTTP Helpers ──────────────────────────────────────
+  static Future<http.Response> post(String path, {Map<String, dynamic>? body}) {
+    return http.post(
+      Uri.parse('$baseUrl$path'),
+      headers: {...AuthService.authHeaders, 'Content-Type': 'application/json'},
+      body: body != null ? jsonEncode(body) : '{}',
+    ).timeout(timeout);
+  }
+
+  static Future<http.Response> get(String path) {
+    return http.get(
+      Uri.parse('$baseUrl$path'),
+      headers: AuthService.authHeaders,
+    ).timeout(timeout);
   }
 
   static const String _keyParking = 'cached_parking_v1';
@@ -386,27 +398,18 @@ class ApiService {
 
   // ── Get All Tariffs / Full Price List ─────────────────────────
   static Future<List<dynamic>> getTariffs() async {
-    final List<String> paths = [
-      '/parking/pricing',
-      '/pricing',
-      '/tariffs',
-      '/parking/rates',
-    ];
+    try {
+      final resp = await http.get(
+        Uri.parse('$baseUrl/pricing'),
+        headers: AuthService.authHeaders,
+      ).timeout(timeout);
 
-    for (final path in paths) {
-      try {
-        final resp = await http.get(
-          Uri.parse('$baseUrl$path'),
-          headers: AuthService.authHeaders,
-        ).timeout(timeout);
-
-        if (resp.statusCode == 200) {
-          final data = jsonDecode(resp.body);
-          final val = data['tariffs'] ?? data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
-          if (val is List) return val;
-        }
-      } catch (_) {}
-    }
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+        final val = data['tariffs'] ?? data['data'] ?? data['pricing'] ?? data['rates'] ?? data;
+        if (val is List) return val;
+      }
+    } catch (_) {}
     return [];
   }
 

@@ -64,38 +64,38 @@ class AppTheme {
   static const double radiusXxl  = 28.0;
 
   // ── Typography ────────────────────────────────────────────────
-  static TextStyle heading1 = GoogleFonts.inter(
+  static final TextStyle heading1 = GoogleFonts.inter(
     fontSize: 28, fontWeight: FontWeight.w800,
     color: textPrimary, letterSpacing: -0.5,
   );
-  static TextStyle heading2 = GoogleFonts.inter(
+  static final TextStyle heading2 = GoogleFonts.inter(
     fontSize: 22, fontWeight: FontWeight.w700,
     color: textPrimary, letterSpacing: -0.3,
   );
-  static TextStyle heading3 = GoogleFonts.inter(
+  static final TextStyle heading3 = GoogleFonts.inter(
     fontSize: 18, fontWeight: FontWeight.w600,
     color: textPrimary, letterSpacing: -0.2,
   );
-  static TextStyle heading4 = GoogleFonts.inter(
+  static final TextStyle heading4 = GoogleFonts.inter(
     fontSize: 15, fontWeight: FontWeight.w600,
     color: textPrimary,
   );
-  static TextStyle body = GoogleFonts.inter(
+  static final TextStyle body = GoogleFonts.inter(
     fontSize: 14, fontWeight: FontWeight.w500, color: textSecond,
   );
-  static TextStyle bodySmall = GoogleFonts.inter(
+  static final TextStyle bodySmall = GoogleFonts.inter(
     fontSize: 12, fontWeight: FontWeight.w400, color: textSecond,
   );
-  static TextStyle label = GoogleFonts.inter(
+  static final TextStyle label = GoogleFonts.inter(
     fontSize: 11, fontWeight: FontWeight.w600,
     color: textMuted, letterSpacing: 0.8,
   );
-  static TextStyle mono = const TextStyle(
+  static const TextStyle mono = TextStyle(
     fontFamily: 'monospace',
     fontSize: 18, fontWeight: FontWeight.w700,
     color: textPrimary, letterSpacing: 2.0,
   );
-  static TextStyle monoLarge = const TextStyle(
+  static const TextStyle monoLarge = TextStyle(
     fontFamily: 'monospace',
     fontSize: 26, fontWeight: FontWeight.w700,
     color: primary, letterSpacing: 3.0,

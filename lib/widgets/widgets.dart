@@ -70,7 +70,14 @@ class _GradientButtonState extends State<GradientButton>
           width: widget.isFullWidth ? double.infinity : null,
           height: widget.height,
           decoration: BoxDecoration(
-            color: widget.colors?.first ?? AppTheme.primary,
+            gradient: widget.colors != null && widget.colors!.length >= 2
+                ? LinearGradient(colors: widget.colors!)
+                : null,
+            color: widget.colors != null && widget.colors!.length < 2
+                ? widget.colors?.first
+                : widget.colors == null
+                    ? AppTheme.primary
+                    : null,
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             boxShadow: widget.onTap != null ? AppTheme.glowShadow : [],
           ),
@@ -701,7 +708,7 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
 
   void _update() {
     _duration = DateTime.now().difference(widget.record.entryTime);
-    _amount = ( _duration.inMinutes / 60.0 * widget.record.ratePerHour).ceilToDouble();
+    _amount = widget.record.totalAmount;
     _durationStr = _formatDuration(_duration);
   }
 

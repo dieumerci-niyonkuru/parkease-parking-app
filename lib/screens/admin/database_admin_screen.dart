@@ -39,25 +39,30 @@ class _DatabaseAdminScreenState extends State<DatabaseAdminScreen> {
 
   Future<void> _runQuery(int dbId) async {
     final ctrl = TextEditingController(text: 'SELECT * FROM park_in');
-    final query = await showDialog<String>(
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Execute Query'),
-        content: TextField(
-          controller: ctrl,
-          maxLines: 5,
-          decoration: const InputDecoration(hintText: 'Enter SQL query'),
+        title: const Text('Confirm Query'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Execute a custom SQL query? This action may modify data.'),
+            const SizedBox(height: 12),
+            TextField(controller: ctrl, maxLines: 5, decoration: const InputDecoration(hintText: 'Enter SQL query')),
+          ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
-          ElevatedButton(onPressed: () => Navigator.pop(ctx, ctrl.text), child: const Text('RUN')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('CANCEL')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('RUN')),
         ],
       ),
     );
-    if (query == null || query.isEmpty) return;
+    if (confirmed != true) return;
     if (!mounted) return;
 
     showDialog(context: context, barrierDismissible: false, builder: (_) => const Center(child: CircularProgressIndicator()));
+    final query = ctrl.text.trim();
     final result = await ApiService.executeQuery(dbId, query);
     if (mounted) Navigator.pop(context);
 
@@ -185,7 +190,6 @@ class _DatabaseAdminScreenState extends State<DatabaseAdminScreen> {
                         ]),
                         const SizedBox(height: 12),
                         Text('Database: ${db.databaseName}', style: AppTheme.bodySmall),
-                        Text('Username: ${db.username}', style: AppTheme.bodySmall),
                         const SizedBox(height: 12),
                         Row(children: [
                           Expanded(

@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:http/http.dart' as http;
 import '../../theme/app_theme.dart';
-import '../../services/auth_service.dart';
+import '../../services/api_service.dart';
 import '../../utils/app_utils.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -27,11 +26,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() { _fieldError = null; _isLoading = true; });
 
     try {
-      final resp = await http.post(
-        Uri.parse('${AuthService.baseUrl}/auth/password/reset'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'username': username}),
-      ).timeout(const Duration(seconds: 12));
+      final resp = await ApiService.post('/auth/password/reset', body: {'username': username});
 
       if (!mounted) return;
       setState(() => _isLoading = false);

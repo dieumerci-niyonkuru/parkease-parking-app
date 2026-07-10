@@ -144,7 +144,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     if (_done && _receipt != null) return _ReceiptView(record: _receipt!);
 
     final user = AuthService.user;
-    final firstName = user?.names.split(' ').first ?? 'Driver';
+    final firstName = user?.names.split(' ').firstOrNull ?? 'Driver';
     final dateStr = DateFormat("EEEE, d MMMM").format(DateTime.now());
 
     return Scaffold(
@@ -309,8 +309,8 @@ class _PaymentGrid extends StatelessWidget {
 
   @override Widget build(BuildContext context) {
     final list = [
-      (PayMethod.momo,   'MTN MOMO',    'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MTN_Logo.svg/1200px-MTN_Logo.svg.png'),
-      (PayMethod.airtel, 'AIRTEL MONEY', 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Airtel_logo.svg/1200px-Airtel_logo.svg.png'),
+      (PayMethod.momo,   'MTN MOMO',    null),
+      (PayMethod.airtel, 'AIRTEL MONEY', null),
       (PayMethod.card,   'BANK CARD',    null),
       (PayMethod.cash,   'CASH PAYMENT', null),
     ];
@@ -341,19 +341,14 @@ class _PaymentGrid extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (m.$3 != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(m.$3!, height: 32, width: 32, fit: BoxFit.contain,
-                      errorBuilder: (_,__,___) => Icon(Icons.payment_rounded, color: active ? AppTheme.primary : AppTheme.textMuted),
-                    ),
-                  )
-                else
-                  Icon(
-                    m.$1 == PayMethod.card ? Icons.credit_card_rounded : Icons.payments_rounded,
-                    color: active ? AppTheme.primary : AppTheme.textMuted,
-                    size: 32,
-                  ),
+                Icon(
+                  m.$1 == PayMethod.momo ? Icons.phone_iphone_rounded
+                      : m.$1 == PayMethod.airtel ? Icons.phone_iphone_rounded
+                      : m.$1 == PayMethod.card ? Icons.credit_card_rounded
+                      : Icons.payments_rounded,
+                  color: active ? AppTheme.primary : AppTheme.textMuted,
+                  size: 32,
+                ),
                 const SizedBox(height: 12),
                 Text(m.$2, 
                   textAlign: TextAlign.center,

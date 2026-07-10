@@ -245,6 +245,12 @@ class VehicleRecord {
     'ratePerHour':    ratePerHour,
     'amountPaid':     amountPaid,
     'receiptNumber':  receiptNumber,
+    'dbId':           dbId,
+    'pInId':          pInId,
+    'paymentType':    paymentType,
+    'payable':        payable,
+    'blockMessage':   blockMessage,
+    'amountOwed':     amountOwed,
   };
 }
 

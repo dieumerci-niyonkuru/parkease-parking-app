@@ -4,7 +4,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/history_service.dart';
 import '../services/notification_service.dart';
-import '../main.dart';
+import '../app_navigation.dart';
 
 class AppProvider extends ChangeNotifier {
   AppProvider() {
@@ -19,10 +19,10 @@ class AppProvider extends ChangeNotifier {
     await AuthService.logout();
     
     // Use the global navigator key to go back to login
-    ITECParkingApp.navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
+    AppNavigation.navigatorKey.currentState?.pushNamedAndRemoveUntil('/login', (route) => false);
     
     // Show a snackbar or dialog if possible (navigator might be null if not yet built)
-    final context = ITECParkingApp.navigatorKey.currentContext;
+    final context = AppNavigation.navigatorKey.currentContext;
     if (context != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

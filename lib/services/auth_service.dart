@@ -47,7 +47,8 @@ class AuthService {
   static const String _keyUser  = 'auth_user';
   static const String _keyCreds = 'biometric_credentials';
   static const String _keyBioEnabled = 'biometric_enabled';
-  static const String internalSecret = 'd1d0f4ba3676ee56f9d1f3c8de0623e295104d915602b7b667f89c9b48e6771d';
+  // NOTE: Do not expose secrets in client code. This is a legacy placeholder.
+  static String get internalSecret => '';
 
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
@@ -111,7 +112,7 @@ class AuthService {
     _bioEnabled = prefs.getBool(_keyBioEnabled) ?? false;
     final raw = prefs.getString(_keyUser);
     if (raw != null) {
-      try { _user = AuthUser.fromJson(jsonDecode(raw)); } catch (_) {}
+      try { _user = AuthUser.fromJson(jsonDecode(raw)); } catch (e) { _user = null; }
     }
   }
 
@@ -351,7 +352,9 @@ class AuthService {
       } else if (resp.statusCode == 401) {
         ApiService.onSessionExpired?.call();
       }
-    } catch (_) {}
+    } catch (_) {
+      // Token validation failed — return current cached user
+    }
     return _user;
   }
 
@@ -461,7 +464,9 @@ class AuthService {
           return AuthUser.fromJson(userData);
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // User fetch failed
+    }
     return null;
   }
 

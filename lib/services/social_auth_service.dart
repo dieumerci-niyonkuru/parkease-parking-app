@@ -33,7 +33,7 @@ class SocialAuthService {
         'email': googleUser.email,
         'name': googleUser.displayName ?? '',
         'given_name': googleUser.displayName?.split(' ').first ?? '',
-        'family_name': (googleUser.displayName?.split(' ').length ?? 0) > 1 ? googleUser.displayName!.split(' ').skip(1).join(' ') : '',
+        'family_name': (googleUser.displayName?.split(' ').length ?? 0) > 1 ? googleUser.displayName?.split(' ').skip(1).join(' ') ?? '' : '',
         'id_token': idToken ?? '',
       }, name: googleUser.displayName, email: googleUser.email);
     } catch (e) {
@@ -54,7 +54,7 @@ class SocialAuthService {
           'email': userData['email'] ?? '',
           'name': userData['name'] ?? '',
           'given_name': (userData['name']?.toString() ?? '').split(' ').first,
-          'family_name': (userData['name']?.toString() ?? '').split(' ').length > 1 ? (userData['name']!.toString()).split(' ').skip(1).join(' ') : '',
+          'family_name': (userData['name']?.toString() ?? '').split(' ').length > 1 ? (userData['name']?.toString() ?? '').split(' ').skip(1).join(' ') : '',
           'access_token': accessToken.token,
         }, name: userData['name'], email: userData['email']);
       } else if (result.status == LoginStatus.cancelled) {
@@ -138,17 +138,7 @@ class SocialAuthService {
       }
       return {'success': false, 'message': data['message'] ?? 'Social login failed'};
     } catch (e) {
-      final localToken = "SESSION_${provider.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}";
-      final user = AuthUser(
-        id: DateTime.now().millisecondsSinceEpoch % 10000,
-        names: (name == null || name.isEmpty) ? "Social User" : name,
-        email: (email == null || email.isEmpty) ? "authorized@$provider.com" : email,
-        phone: "",
-        role: "user",
-        createdAt: DateTime.now().toIso8601String(),
-      );
-      await AuthService.persistSession(localToken, user);
-      return {'success': true, 'offline': true};
+      return {'success': false, 'message': 'Social login failed. Please check your internet connection and try again.'};
     }
   }
 }

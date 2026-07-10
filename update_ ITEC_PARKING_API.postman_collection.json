@@ -1,0 +1,1204 @@
+{
+  "info": {
+    "name": "ITEC CLIENT API 2",
+    "_postman_id": "b04f2b2b-1105-4427-9371-123456789abc",
+    "description": "Postman collection for the ITEC Client API/ITEC Parking API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"mypassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate user and receive JWT token. `username` accepts a username, email, or phone number; phone-only accounts still require a password to be set via /auth/phone/link/verify or /auth/password/set."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"message\": \"Logged in\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid credentials\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/validate",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "validate"]
+            },
+            "description": "Check if the provided JWT token is valid."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Token is valid\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired token\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Registration - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"username\": \"newuser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", "initiate"]
+            },
+            "description": "Initiate user registration, possibly sending an OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP sent\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 400",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"User already exists\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Registration - Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/verify-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", "verify-otp"]
+            },
+            "description": "Verify OTP during registration."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP verified\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 400",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired OTP\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Registration - Verify Reclaim OTP",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/verify-reclaim-otp",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", "verify-reclaim-otp"]
+            },
+            "description": "Verify reclaim OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP verified for reclaim\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 400",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid reclaim OTP\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Registration - Complete",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type","value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"other_info\": \"...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/complete",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register", "complete"]
+            },
+            "description": "Complete user registration after OTP verification."
+          },
+          "response": [
+            {
+              "name": "Success 201",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Registration complete\"\n}",
+              "status": "Created",
+              "code": 201
+            },
+            {
+              "name": "Error 400",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not complete registration\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Reclaim - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/reclaim/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "phone", "reclaim", "initiate"]
+            },
+            "description": "Initiate phone reclamation for an authenticated user."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Reclamation initiated\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Reclaim - Verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000111\",\n  \"otp\": \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/reclaim/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "phone", "reclaim", "verify"]
+            },
+            "description": "Verify phone reclamation OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Phone reclaimed\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized or invalid OTP\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Google",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "X-Internal-Secret","value": "{{INTERNAL_SECRET}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"google_id\": \"1234567890\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"id_token\": \"<raw Google ID token - JWT>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google/callback",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "google", "callback"]
+            },
+            "description": "Find-or-create a user from a verified Google sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@gmail.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify google identity\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            },
+            {
+              "name": "Error 401 - missing/invalid internal secret",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Facebook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "X-Internal-Secret","value": "{{INTERNAL_SECRET}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"facebook\",\n  \"facebook_id\": \"1234567890\",\n  \"email\": \"user@example.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://platform-lookaside.fbsbx.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"access_token\": \"<raw Facebook access token>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/facebook/callback",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "facebook", "callback"]
+            },
+            "description": "Find-or-create a user from a verified Facebook sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@example.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify facebook identity\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Apple",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "X-Internal-Secret","value": "{{INTERNAL_SECRET}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"apple\",\n  \"apple_id\": \"001234.abcdef...\",\n  \"email\": \"user@privaterelay.appleid.com\",\n  \"name\": \"Jane Doe\",\n  \"id_token\": \"<raw Apple ID token - JWT>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/apple/callback",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "apple", "callback"]
+            },
+            "description": "Find-or-create a user from a verified Apple sign-in and return a session, same shape as /auth/login. Apple only sends `name` on the very first authorization; apple_id is the durable identifier. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@privaterelay.appleid.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify apple identity\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Phone Link - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/link/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "phone", "link", "initiate"]
+            },
+            "description": "Send an OTP to attach a phone number to the authenticated (e.g. social) account. Distinct from /auth/register/*, which creates a new account rather than attaching to an existing one."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP sent successfully\",\n  \"verification_payload\": \"<payload>\",\n  \"expires_in\": 600\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 409 - phone taken",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Phone number already registered\"\n}",
+              "status": "Conflict",
+              "code": 409
+            }
+          ]
+        },
+        {
+          "name": "Phone Link - Verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\",\n  \"password\": \"optional-new-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/link/verify",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "phone", "link", "verify"]
+            },
+            "description": "Verify the OTP, attach the phone as the account's primary number, optionally set a password, and flip requires_phone to false."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Phone number linked successfully\",\n  \"phone_number\": \"0700000001\",\n  \"requires_phone\": false\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 400 - bad OTP",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid OTP\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Set Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"my-new-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password/set",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password", "set"]
+            },
+            "description": "Set or replace a password on the authenticated account, independent of phone-link status. No OTP required since the account's email is already provider-verified. Enables /auth/login with email+password afterward."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Password set successfully\"\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "Error 400 - too short",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"A password of at least 6 characters is required\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": ["{{base_url}}"],
+              "path": ["users","me"]
+            },
+            "description": "Retrieve the authenticated user's details."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "body": "{ \"id\": 1, \"username\": \"testuser\", \"email\": \"test@example.com\", ... }",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "401 Error",
+              "body": "{ \"status\": \"error\", \"message\": \"Unauthorized\" }",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/users/5",
+              "host": ["{{base_url}}"],
+              "path": ["users","5"]
+            },
+            "description": "Retrieve another user's details by their ID."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "body": "{ \"id\": 5, \"username\": \"someone\", ... }",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "404 Error",
+              "body": "{ \"status\": \"error\", \"message\": \"User not found\" }",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "Get My Phones",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/users/me/phones",
+              "host": ["{{base_url}}"],
+              "path": ["users","me","phones"]
+            },
+            "description": "Retrieve all phone numbers linked to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "body": "{ \"phones\": [\"+25070000...\", \"+2507123...\"] }",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "Add Phone Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001111\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/me/phones",
+              "host": ["{{base_url}}"],
+              "path": ["users","me","phones"]
+            },
+            "description": "Bind a new phone number to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "body": "{ \"status\": \"success\", \"message\": \"Phone added\" }",
+              "status": "Created",
+              "code": 201
+            },
+            {
+              "name": "400 Error",
+              "body": "{ \"status\": \"error\", \"message\": \"Phone already exists\" }",
+              "status": "Bad Request",
+              "code": 400
+            }
+          ]
+        },
+        {
+          "name": "Initiate Phone Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001234\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/phone/verify/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["users","phone","verify","initiate"]
+            }
+          }
+        },
+        {
+          "name": "Complete Phone Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001234\", \"otp\": \"567890\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/phone/verify/complete",
+              "host": ["{{base_url}}"],
+              "path": ["users","phone","verify","complete"]
+            }
+          }
+        },
+        {
+          "name": "Delete Phone Number",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/phones/10",
+              "host": ["{{base_url}}"],
+              "path": ["users","me","phones","10"]
+            },
+            "description": "Delete phone number with ID 10 for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "body": "{ \"status\": \"success\", \"message\": \"Phone removed\" }",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "404 Error",
+              "body": "{ \"status\": \"error\", \"message\": \"Phone not found\" }",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parking",
+      "item": [
+        {
+          "name": "Get All Parking",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/parking",
+              "host": ["{{base_url}}"],
+              "path": ["parking"]
+            },
+            "description": "Retrieve a list of all active parking locations."
+          }
+        },
+        {
+          "name": "Get Parking By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/parking/1-101",
+              "host": ["{{base_url}}"],
+              "path": ["parking","1-101"]
+            },
+            "description": "Retrieve parking details by record ID in format db_id-parking_id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Databases",
+      "item": [
+        {
+          "name": "Get Databases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases",
+              "host": ["{{base_url}}"],
+              "path": ["databases"]
+            },
+            "description": "Admin-only: get all configured external databases."
+          }
+        },
+        {
+          "name": "Get Database By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases/2",
+              "host": ["{{base_url}}"],
+              "path": ["databases","2"]
+            },
+            "description": "Admin-only: get details of a single database config."
+          }
+        },
+        {
+          "name": "Test Database Connection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases/test/2",
+              "host": ["{{base_url}}"],
+              "path": ["databases","test","2"]
+            },
+            "description": "Admin-only: test a single database connection."
+          }
+        },
+        {
+          "name": "Execute Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"query\": \"SELECT * FROM park_in\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/databases/query/2",
+              "host": ["{{base_url}}"],
+              "path": ["databases","query","2"]
+            },
+            "description": "Admin-only: run an SQL query on the external DB with ID 2."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "item": [
+        {
+          "name": "Get Parking Pricing",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/pricing/parking/1-101",
+              "host": ["{{base_url}}"],
+              "path": ["pricing","parking","1-101"]
+            },
+            "description": "Get pricing data for parking record ID 1-101."
+          }
+        },
+        {
+          "name": "Get Car Categories",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/pricing/categories/1",
+              "host": ["{{base_url}}"],
+              "path": ["pricing","categories","1"]
+            },
+            "description": "Get car categories for a given DB ID = 1."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "item": [
+        {
+          "name": "Lookup Plate (all parkings)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate_no\": \"RAD123A\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payment/lookup",
+              "host": ["{{base_url}}"],
+              "path": ["payment","lookup"]
+            },
+            "description": "Search every registered parking database for a plate and report what is owed. Use this when the client does not know which parking their vehicle is in. If the client already knows the parking, pass db_id (and optionally parking_id) instead - see 'Lookup Plate (known parking)' - to skip the cross-database scan. Blocks postpaid/company-account vehicles from self-payment (payable: false)."
+          },
+          "response": [
+            {
+              "name": "200 Success - active session",
+              "body": "{\n  \"status\": \"success\",\n  \"matches\": [\n    {\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"parking_id\": \"101\",\n      \"plate_no\": \"RAD123A\",\n      \"p_in_id\": \"9001\",\n      \"payment_type\": \"checkout\",\n      \"entre_time\": \"2023-05-15 10:15:00\",\n      \"hours\": 3,\n      \"amount_owed\": 1500,\n      \"payable\": true\n    }\n  ]\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "200 Success - outstanding credit",
+              "body": "{\n  \"status\": \"success\",\n  \"matches\": [\n    {\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"parking_id\": \"101\",\n      \"plate_no\": \"RAD123A\",\n      \"p_in_id\": \"8990\",\n      \"payment_type\": \"credit\",\n      \"entre_time\": \"2023-05-10 08:00:00\",\n      \"amount_owed\": 2500,\n      \"payable\": true\n    }\n  ]\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "200 Success - postpaid (blocked)",
+              "body": "{\n  \"status\": \"success\",\n  \"matches\": [\n    {\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"parking_id\": \"101\",\n      \"plate_no\": \"RAD123A\",\n      \"payable\": false,\n      \"reason\": \"postpaid\",\n      \"message\": \"This vehicle is on a postpaid/company account. Contact the attendant to settle.\"\n    }\n  ]\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "404 Not Found",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Plate not found or not currently parked\"\n}",
+              "status": "Not Found",
+              "code": 404
+            },
+            {
+              "name": "401 Unauthorized",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Authentication required\"\n}",
+              "status": "Unauthorized",
+              "code": 401
+            }
+          ]
+        },
+        {
+          "name": "Lookup Plate (known parking)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plate_no\": \"RAD123A\",\n  \"db_id\": 1,\n  \"parking_id\": 101\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payment/lookup",
+              "host": ["{{base_url}}"],
+              "path": ["payment","lookup"]
+            },
+            "description": "Same endpoint as plain lookup, but when the client already knows which parking they're in (db_id, optionally parking_id), passing it skips the all-tenant scan and queries that single database directly - faster and avoids ambiguity if the same plate happens to exist in more than one tenant."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "body": "{\n  \"status\": \"success\",\n  \"matches\": [\n    {\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"parking_id\": \"101\",\n      \"plate_no\": \"RAD123A\",\n      \"p_in_id\": \"9001\",\n      \"payment_type\": \"checkout\",\n      \"entre_time\": \"2023-05-15 10:15:00\",\n      \"hours\": 3,\n      \"amount_owed\": 1500,\n      \"payable\": true\n    }\n  ]\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "404 Not Found",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Plate not found or not currently parked\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "Initiate Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"db_id\": 1,\n  \"plate_no\": \"RAD123A\",\n  \"p_in_id\": 9001,\n  \"payment_type\": \"checkout\",\n  \"payer_phone\": \"+250700000000\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payment/initiate",
+              "host": ["{{base_url}}"],
+              "path": ["payment","initiate"]
+            },
+            "description": "Initiate a mobile-money self-payment for a plate/session found via /payment/lookup. db_id, plate_no, p_in_id and payment_type ('checkout' or 'credit') should come from the lookup response. payer_phone is the number that will receive the MoMo prompt - it must be explicitly supplied by the client and is not defaulted to their account phone, since anyone with the plate number can look it up and pay. The amount is always recomputed server-side from the current session/credit state; any client-submitted amount is ignored. Poll /payment/status/{db_id}/{req_ref} afterward to track completion."
+          },
+          "response": [
+            {
+              "name": "202 Pending",
+              "body": "{\n  \"status\": \"pending\",\n  \"message\": \"Payment initiated. Please approve on your phone.\",\n  \"req_ref\": \"3fa1c2b4-5678-4abc-9def-0123456789ab\",\n  \"db_id\": 1,\n  \"transaction_id\": \"TX123456\"\n}",
+              "status": "Accepted",
+              "code": 202
+            },
+            {
+              "name": "400 Error - nothing owed",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Nothing owed for this plate\"\n}",
+              "status": "Bad Request",
+              "code": 400
+            },
+            {
+              "name": "403 Forbidden - postpaid",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"This vehicle is on a postpaid/company account and cannot be self-paid\"\n}",
+              "status": "Forbidden",
+              "code": 403
+            },
+            {
+              "name": "404 Not Found",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Plate not currently parked or credited\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "Check Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/payment/status/1/3fa1c2b4-5678-4abc-9def-0123456789ab",
+              "host": ["{{base_url}}"],
+              "path": ["payment","status","1","3fa1c2b4-5678-4abc-9def-0123456789ab"]
+            },
+            "description": "Poll the status of a self-payment attempt by db_id and req_ref (both returned from /payment/initiate). On the gateway reporting SUCCESSFUL, this also triggers the same server-side settlement (closing the parking session or paying down credit) as the gateway callback would, guarded so it only runs once even if both race each other."
+          },
+          "response": [
+            {
+              "name": "200 Success - pending",
+              "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"status\": \"PENDING\",\n    \"amount\": 1500,\n    \"charged_amount\": 0\n  }\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "200 Success - successful",
+              "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"status\": \"SUCCESSFUL\",\n    \"amount\": 1500,\n    \"charged_amount\": 1500\n  }\n}",
+              "status": "OK",
+              "code": 200
+            },
+            {
+              "name": "404 Error - unknown db",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Parking database not found\"\n}",
+              "status": "Not Found",
+              "code": 404
+            }
+          ]
+        },
+        {
+          "name": "Gateway Callback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Content-Type","value": "application/json"},
+              {"key": "X-Internal-Secret","value": "{{PAYMENT_INTERNAL_SECRET}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"req_ref\": \"3fa1c2b4-5678-4abc-9def-0123456789ab\",\n  \"status\": \"SUCCESSFUL\",\n  \"transaction_id\": \"TX123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/payment/callback?db_id=1",
+              "host": ["{{base_url}}"],
+              "path": ["payment","callback"],
+              "query": [{"key": "db_id", "value": "1"}]
+            },
+            "description": "Called by the itecpay MoMo gateway, not by app clients - included here for documentation/manual testing only. Protected by X-Internal-Secret (PAYMENT_INTERNAL_SECRET, distinct from the social-login secret) as a soft deterrent; the callback body's status is never trusted directly - the handler always re-verifies against itecpay's own verify endpoint before settling anything. Always responds 200 quickly regardless of outcome."
+          },
+          "response": [
+            {
+              "name": "200 Received",
+              "body": "{\n  \"status\": \"received\"\n}",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Receipts",
+      "item": [
+        {
+          "name": "Get User Receipts",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"start_date\": \"2023-01-01\",\n  \"end_date\": \"2023-12-31\",\n  \"phone\": \"+250700000000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/receipts",
+              "host": ["{{base_url}}"],
+              "path": ["receipts"]
+            },
+            "description": "Retrieve receipts for the current user's phone numbers. You can filter by date range and specific phone number."
+          },
+          "response": [
+            {
+              "name": "200 Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"page\": 1,\n  \"limit\": 20,\n  \"start_date\": \"2023-01-01\",\n  \"end_date\": \"2023-12-31\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/receipts",
+                  "host": ["{{base_url}}"],
+                  "path": ["receipts"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"park_out_receipt_id\": \"12345\",\n      \"exit_time\": \"2023-05-15 14:30:00\",\n      \"entre_time\": \"2023-05-15 10:15:00\",\n      \"hours_parked\": \"4.25\",\n      \"receipt_link\": \"http://example.com/receipts/12345.pdf\",\n      \"plate_number\": \"RAD123A\",\n      \"phone\": \"+250700000000\",\n      \"parking\": {\n        \"id\": \"101\",\n        \"name\": \"Downtown Parking\",\n        \"address\": \"123 Main Street\"\n      },\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"record_id\": \"1-12345\"\n    },\n    {\n      \"park_out_receipt_id\": \"12346\",\n      \"exit_time\": \"2023-05-14 18:20:00\",\n      \"entre_time\": \"2023-05-14 15:00:00\",\n      \"hours_parked\": \"3.33\",\n      \"receipt_link\": \"http://example.com/receipts/12346.pdf\",\n      \"plate_number\": \"RAD123A\",\n      \"phone\": \"+250700000000\",\n      \"parking\": {\n        \"id\": \"102\",\n        \"name\": \"Airport Parking\",\n        \"address\": \"456 Airport Road\"\n      },\n      \"db_id\": \"2\",\n      \"db_name\": \"Airport Parking Database\",\n      \"record_id\": \"2-12346\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total_pages\": 5,\n    \"total_records\": 98\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Authentication required\"\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250799999999\"\n}"
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"You can only request receipts for your own phone numbers\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Receipt By ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}],
+            "url": {
+              "raw": "{{base_url}}/receipts/1-500",
+              "host": ["{{base_url}}"],
+              "path": ["receipts","1-500"]
+            },
+            "description": "Retrieve a single receipt by record ID in the format db_id-receipt_id. This endpoint verifies that the receipt belongs to one of your registered phone numbers."
+          },
+          "response": [
+            {
+              "name": "200 Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}]
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"park_out_receipt_id\": \"500\",\n    \"exit_time\": \"2023-06-10 16:45:00\",\n    \"entre_time\": \"2023-06-10 09:30:00\",\n    \"hours_parked\": \"7.25\",\n    \"receipt_link\": \"http://example.com/receipts/500.pdf\",\n    \"plate_number\": \"RAB456B\",\n    \"phone\": \"+250700000000\",\n    \"parking\": {\n      \"id\": \"105\",\n      \"name\": \"Central Mall Parking\",\n      \"address\": \"789 Mall Avenue\"\n    },\n    \"db_id\": \"1\",\n    \"db_name\": \"Central Parking Database\",\n    \"record_id\": \"1-500\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}]
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Receipt not found\"\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [{"key": "Authorization","value": "Bearer {{JWT_TOKEN}}"}]
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"You can only access receipts for your own phone numbers\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": []
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Authentication required\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Root Endpoint",
+      "item": [
+        {
+          "name": "GET Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"]
+            },
+            "description": "Welcome endpoint for the Client API."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "body": "{ \"status\": \"success\", \"message\": \"Welcome to the Client API\" }",
+              "status": "OK",
+              "code": 200
+            }
+          ]
+        },
+        {
+          "name": "POST Root - Docs",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"]
+            },
+            "description": "Displays token decryption guide if in development mode."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://client-api.iteccone.com",
+      "type": "string"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "INTERNAL_SECRET",
+      "value": "",
+      "type": "string",
+      "description": "Shared secret sent as X-Internal-Secret on the social login callback endpoints. Set to the value configured server-side in SOCIAL_INTERNAL_SECRET."
+    },
+    {
+      "key": "PAYMENT_INTERNAL_SECRET",
+      "value": "",
+      "type": "string",
+      "description": "Shared secret sent as X-Internal-Secret on the payment gateway callback endpoint (/payment/callback). Set to the value configured server-side in PAYMENT_INTERNAL_SECRET. Distinct from INTERNAL_SECRET/SOCIAL_INTERNAL_SECRET since it protects a different trust boundary (the itecpay gateway, not our own frontend)."
+    }
+  ]
+}

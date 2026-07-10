@@ -1,33 +1,12 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
-import 'auth_service.dart';
 
 class HistoryService {
   static const String _key = 'parking_history_v2';
-  static const String _base = 'https://client-api.iteccone.com';
-  static const Duration _timeout = Duration(seconds: 10);
 
   // ── Save record to history ────────────────────────────────────
   static Future<void> save(VehicleRecord record) async {
-    // Attempt API save
-    try {
-      final payload = {
-        'slotId': record.slotId,
-        'plateNumber': record.plateNumber,
-        'parkingName': record.parkingName,
-        'entryTime': record.entryTime.toIso8601String(),
-        'status': record.status,
-      };
-      await http.post(
-        Uri.parse('$_base/history'),
-        headers: AuthService.authHeaders,
-        body: jsonEncode(payload),
-      ).timeout(_timeout);
-    } catch (_) {}
-
-    // Fallback/Local Cache
     final prefs = await SharedPreferences.getInstance();
     final list = await getAll(forceLocal: true);
 
@@ -46,22 +25,6 @@ class HistoryService {
     String? receiptNumber,
     DateTime? exitTime,
   }) async {
-    // Attempt API update
-    try {
-      final payload = {
-        'status': newStatus,
-        if (amountPaid != null) 'amountPaid': amountPaid,
-        if (receiptNumber != null) 'receiptNumber': receiptNumber,
-        if (exitTime != null) 'exitTime': exitTime.toIso8601String(),
-      };
-      await http.put(
-        Uri.parse('$_base/history/$slotId'),
-        headers: AuthService.authHeaders,
-        body: jsonEncode(payload),
-      ).timeout(_timeout);
-    } catch (_) {}
-
-    // Fallback/Local Cache
     final list = await getAll(forceLocal: true);
     final idx = list.indexWhere((h) => h.slotId == slotId);
     if (idx < 0) return;
@@ -75,49 +38,8 @@ class HistoryService {
     await _saveLocal(prefs, list);
   }
 
-  // ── Get all history ───────────────────────────────────────────
+  // ── Get all history (local only — no /history API exists) ─────
   static Future<List<HistoryEntry>> getAll({bool forceLocal = false}) async {
-    if (!forceLocal && AuthService.isLoggedIn) {
-      try {
-        final resp = await http.get(
-          Uri.parse('$_base/history'),
-          headers: AuthService.authHeaders,
-        ).timeout(_timeout);
-
-        if (resp.statusCode == 200) {
-          final data = jsonDecode(resp.body);
-          final val = data['history'] ?? data['data'] ?? [];
-          final list = (val is List) ? val : [];
-          final entries = list.map((e) => HistoryEntry(
-            slotId: e['slotId'],
-            plateNumber: e['plateNumber'],
-            ownerName: e['ownerName'],
-            ownerPhone: e['ownerPhone'],
-            ownerEmail: e['ownerEmail'],
-            entryTime: DateTime.parse(e['entryTime']),
-            exitTime: e['exitTime'] != null ? DateTime.parse(e['exitTime']) : null,
-            spotNumber: e['spotNumber'],
-            parkingName: e['parkingName'],
-            parkingAddress: e['parkingAddress'],
-            vehicleType: e['vehicleType'],
-            vehicleColor: e['vehicleColor'],
-            vehicleMake: e['vehicleMake'],
-            status: e['status'],
-            ratePerHour: (e['ratePerHour'] as num?)?.toDouble() ?? 0.0,
-            amountPaid: e['amountPaid'] != null ? (e['amountPaid'] as num).toDouble() : null,
-            receiptNumber: e['receiptNumber'],
-            searchedAt: e['searchedAt'] != null ? DateTime.parse(e['searchedAt']) : DateTime.now(),
-          )).toList();
-          
-          // Cache the API results locally
-          final prefs = await SharedPreferences.getInstance();
-          await _saveLocal(prefs, entries);
-          return entries;
-        }
-      } catch (_) {}
-    }
-
-    // Fallback to local
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_key) ?? [];
     return raw.map((s) {
@@ -147,13 +69,6 @@ class HistoryService {
 
   // ── Delete single entry ───────────────────────────────────────
   static Future<void> deleteEntry(String slotId) async {
-    try {
-      await http.delete(
-        Uri.parse('$_base/history/$slotId'),
-        headers: AuthService.authHeaders,
-      ).timeout(_timeout);
-    } catch (_) {}
-
     final list = await getAll(forceLocal: true);
     list.removeWhere((h) => h.slotId == slotId);
     final prefs = await SharedPreferences.getInstance();

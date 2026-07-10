@@ -20,11 +20,13 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
     setState(() => _loading = true);
     final list = await ApiService.getAllParking();
     final results = <_FacilityPricing>[];
-    for (final f in list) {
-      final pricing = await ApiService.getPricingData(f.recordId);
+    final pricingFutures = list.map((f) => ApiService.getPricingData(f.recordId)).toList();
+    final pricingResults = await Future.wait(pricingFutures);
+    for (var i = 0; i < list.length; i++) {
+      final pricing = pricingResults[i];
       results.add(_FacilityPricing(
-        facility: f,
-        hourlyRate: pricing?.ratePerHour ?? f.ratePerHour,
+        facility: list[i],
+        hourlyRate: pricing?.ratePerHour ?? list[i].ratePerHour,
         dailyRate: pricing?.ratePerDay,
       ));
     }

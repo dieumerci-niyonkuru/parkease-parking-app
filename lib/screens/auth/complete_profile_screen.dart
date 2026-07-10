@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:country_code_picker/country_code_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
 import '../main_layout.dart';
@@ -20,6 +21,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   String _verificationPayload = '';
   String _phoneNumber = '';
 
+  String _countryCode = '+250';
+
   Future<void> _initiateLink() async {
     final phone = _phoneCtrl.text.trim();
     if (phone.length < 10) {
@@ -27,7 +30,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
 
-    final fullPhone = phone.startsWith('+') ? phone : '+250$phone';
+    final fullPhone = phone.startsWith('+') ? phone : '$_countryCode$phone';
 
     setState(() => _isLoading = true);
     final result = await AuthService.phoneLinkInitiate(fullPhone);
@@ -138,6 +141,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           hintText: '07XXXXXXXX',
           prefixIcon: Icon(Icons.phone_android_rounded),
         ),
+      ),
+      const SizedBox(height: 8),
+      CountryCodePicker(
+        onChanged: (c) => setState(() => _countryCode = c.dialCode ?? '+250'),
+        initialSelection: 'RW',
+        favorite: const ['+250', 'RW'],
+        textStyle: AppTheme.body.copyWith(fontWeight: FontWeight.w800),
+        showFlag: true,
+        showDropDownButton: true,
       ),
       const SizedBox(height: 20),
       TextField(

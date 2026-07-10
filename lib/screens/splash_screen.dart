@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen>
       }
     } else if (AuthService.isBiometricEnabled && await AuthService.canUseBiometrics() && await AuthService.hasStoredCredentials()) {
       // ── BIOMETRIC LOGIN FLOW ──────────────────────────────
-      setState(() => _step = 'Biometric Login...'.toUpperCase());
+      setState(() => _step = 'Biometric Login...');
       bioSuccess = await AuthService.authenticateBiometrically();
       if (bioSuccess) {
         final result = await AuthService.loginWithBiometrics();

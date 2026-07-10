@@ -7,6 +7,7 @@ import 'screens/main_layout.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/history_screen.dart';
 import 'providers/app_provider.dart';
+import 'app_navigation.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,13 +26,11 @@ void main() async {
 
 class ITECParkingApp extends StatelessWidget {
   const ITECParkingApp({super.key});
-  
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ITEC Parking',
-      navigatorKey: navigatorKey,
+      navigatorKey: AppNavigation.navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
       home: const SplashScreen(),
