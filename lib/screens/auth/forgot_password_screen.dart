@@ -58,7 +58,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           // ── HERO HEADER ─────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 12, bottom: 28),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 12, bottom: 16),
             decoration: const BoxDecoration(
               color: AppTheme.primary,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
@@ -75,13 +75,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 3)))),
                   const SizedBox(width: 48),
                 ]),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Container(
-                  width: 72, height: 72,
+                  width: 56, height: 56,
                   decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), shape: BoxShape.circle),
-                  child: Icon(_sent ? Icons.mark_email_read_rounded : Icons.lock_reset_rounded, color: Colors.white, size: 38),
+                  child: Icon(_sent ? Icons.mark_email_read_rounded : Icons.lock_reset_rounded, color: Colors.white, size: 28),
                 ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Text(_sent ? 'Check Your Inbox' : 'Reset Password',
                   style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
               ],
