@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
 import '../theme/app_theme.dart';
@@ -74,23 +73,13 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
-  String get _greeting {
-    final h = DateTime.now().hour;
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  }
-
   @override Widget build(BuildContext context) {
     final profile = ProfileService.profile;
-    final user = AuthService.user;
-    final firstName = user?.names.split(' ').first ?? 'Driver';
-    final dateStr = DateFormat("EEEE, d MMMM").format(DateTime.now());
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
-        backgroundColor: AppTheme.primary, // Fixed Brand Color on top
+        backgroundColor: AppTheme.primary,
         surfaceTintColor: Colors.transparent,
         elevation: 4,
         leadingWidth: 0,
@@ -115,17 +104,8 @@ class _MainLayoutState extends State<MainLayout> {
               children: [
                 const ItecLogo(size: 32, fontSize: 18),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(_currentIndex == 0 ? _greeting : _pageTitle,
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
-                    Text(firstName, 
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, height: 1.1)),
-                    Text(dateStr, 
-                      style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w600, letterSpacing: 0.2)),
-                  ],
-                ),
+                Text(_pageTitle,
+                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
               ],
             ),
         actions: [
@@ -357,13 +337,13 @@ class _PremiumBottomNav extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.primary, // Matches the top bar color
+        color: AppTheme.primary,
         border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1)),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, -4))],
       ),
       child: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(items.length, (i) {
@@ -376,7 +356,7 @@ class _PremiumBottomNav extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
                     color: active ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
@@ -387,9 +367,9 @@ class _PremiumBottomNav extends StatelessWidget {
                       Icon(
                         active ? item.$1 : item.$2,
                         color: active ? Colors.white : Colors.white60,
-                        size: 24,
+                        size: 22,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(item.$3,
                         style: TextStyle(
                           color: active ? Colors.white : Colors.white60,

@@ -4,12 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../services/phone_service.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
-import 'parking_list_screen.dart';
-import 'history_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,8 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String get _greeting {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
   @override Widget build(BuildContext context) {
     final query = context.watch<AppProvider>().searchQuery;
+    final user = AuthService.user;
+    final firstName = user?.names.split(' ').first ?? 'Driver';
 
     final displayFacilities = query.isEmpty 
       ? _facilities 
@@ -60,27 +68,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Vehicle Lookup Card
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(24, 24, 24, 20),
-                      child: _QuickPayCard(),
-                    ),
-                    // ── QUICK ACTIONS ─────────────────────────────
+                    // ── WELCOME MESSAGE ─────────────────────────────
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(children: [
-                        Expanded(child: _QuickAction(
-                          icon: Icons.local_parking_rounded, label: 'Find Parking',
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ParkingListScreen())),
-                        )),
-                        const SizedBox(width: 12),
-                        Expanded(child: _QuickAction(
-                          icon: Icons.receipt_long_rounded, label: 'Payment History',
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HistoryScreen())),
-                        )),
-                      ]),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_greeting,
+                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 4),
+                          Text('Welcome, $firstName',
+                            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+                        ],
+                      ),
                     ).animate().fadeIn(delay: 100.ms),
                     const SizedBox(height: 4),
+                    // Vehicle Lookup Card
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(24, 16, 24, 20),
+                      child: _QuickPayCard(),
+                    ),
                   ],
                 ),
               ),
@@ -172,49 +179,6 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // ── CUSTOM WIDGETS ──────────────────────────────────────────────────
-
-class _QuickAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  const _QuickAction({required this.icon, required this.label, required this.onTap});
-
-  @override Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: AppTheme.primary, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.textPrimary,
-                )),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _QuickPayCard extends StatefulWidget {
   const _QuickPayCard();

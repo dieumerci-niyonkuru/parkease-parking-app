@@ -239,72 +239,54 @@ class _LoginScreenState extends State<LoginScreen> {
     final statusBarH = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7F2),
-      body: Stack(
-        children: [
-          // ── DECORATIVE BACKDROP (flat solid shapes, no gradients) ────
-          Positioned(
-            top: -90, right: -70,
-            child: Container(
-              width: 240, height: 240,
-              decoration: const BoxDecoration(color: AppTheme.primary, shape: BoxShape.circle),
-            ),
-          ),
-          Positioned(
-            top: -40, right: 40,
-            child: Container(
-              width: 90, height: 90,
-              decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.18), shape: BoxShape.circle),
-            ),
-          ),
+      body: SafeArea(
+        bottom: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              SizedBox(height: statusBarH == 0 ? 24 : 12),
 
-          SafeArea(
-            bottom: false,
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                children: [
-                  SizedBox(height: statusBarH == 0 ? 24 : 12),
+              // ── LOGO BADGE ─────────────────────────────────────
+              Container(
+                width: 84, height: 84,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 10))],
+                ),
+                child: const Center(child: ItecLogo(size: 44, fontSize: 24)),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              const SizedBox(height: 16),
+              const Text('ITEC PARKING',
+                style: TextStyle(color: AppTheme.primaryDeep, fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 3))
+                .animate().fadeIn(delay: 150.ms),
+              const SizedBox(height: 4),
+              Text('SMART PARKING SOLUTIONS',
+                style: TextStyle(color: AppTheme.primary.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2))
+                .animate().fadeIn(delay: 200.ms),
 
-                  // ── LOGO BADGE ─────────────────────────────────────
-                  Container(
-                    width: 84, height: 84,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 24, offset: const Offset(0, 10))],
-                    ),
-                    child: const Center(child: ItecLogo(size: 44, fontSize: 24)),
-                  ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
-                  const SizedBox(height: 16),
-                  const Text('ITEC PARKING',
-                    style: TextStyle(color: AppTheme.primaryDeep, fontSize: 15, fontWeight: FontWeight.w900, letterSpacing: 3))
-                    .animate().fadeIn(delay: 150.ms),
-                  const SizedBox(height: 4),
-                  Text('SMART PARKING SOLUTIONS',
-                    style: TextStyle(color: AppTheme.primary.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2))
-                    .animate().fadeIn(delay: 200.ms),
+              const SizedBox(height: 28),
 
-                  const SizedBox(height: 28),
-
-                  // ── FLOATING AUTH CARD ───────────────────────────────
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(32),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 30, offset: const Offset(0, 14))],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text('Welcome back 👋', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900))
-                          .animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
-                        const SizedBox(height: 4),
-                        Text('Sign in to keep parking, simplified.', style: AppTheme.body.copyWith(color: AppTheme.textMuted))
-                          .animate().fadeIn(delay: 280.ms),
-                        const SizedBox(height: 26),
+              // ── FLOATING AUTH CARD ───────────────────────────────
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 30, offset: const Offset(0, 14))],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('Welcome back', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900))
+                      .animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
+                    const SizedBox(height: 4),
+                    Text('Sign in to keep parking, simplified.', style: AppTheme.body.copyWith(color: AppTheme.textMuted))
+                      .animate().fadeIn(delay: 280.ms),
+                    const SizedBox(height: 26),
 
                         // ── USERNAME FIELD ──────────────────────────
                         TextField(
@@ -466,8 +448,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-        ],
-      ),
     );
   }
 

@@ -184,7 +184,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // ── HERO HEADER ─────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: statusBarH + 20, bottom: 32),
+            padding: EdgeInsets.only(top: statusBarH + 12, bottom: 20),
             decoration: const BoxDecoration(
               color: AppTheme.primary,
               borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
@@ -220,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'SMART PARKING SOLUTIONS',
                   style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 2),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // ── STEP INDICATORS ─────────────────────────────────────
                 Row(
@@ -263,7 +263,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     );
                   }),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 Text(
                   _step == 1 ? 'Phone Verification'
                   : _step == 2 ? 'OTP Confirmation'
