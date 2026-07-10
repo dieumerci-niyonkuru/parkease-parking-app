@@ -1,0 +1,2546 @@
+{
+  "info": {
+    "_postman_id": "e0a0f441-95bd-4df7-868c-f82931f7c257",
+    "name": "ITEC park selfservice API 2",
+    "description": "Postman collection for the ITEC Client API/ITEC Parking API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "56302676",
+    "_collection_link": "https://go.postman.co/collection/56302676-e0a0f441-95bd-4df7-868c-f82931f7c257?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"mypassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Authenticate user and receive JWT token. `username` accepts a username, email, or phone number; phone-only accounts still require a password to be set via /auth/phone/link/verify or /auth/password/set."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"mypassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticate user and receive JWT token. `username` accepts a username, email, or phone number; phone-only accounts still require a password to be set via /auth/phone/link/verify or /auth/password/set."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"message\": \"Logged in\"\n}"
+            },
+            {
+              "name": "Error 401",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"mypassword\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/login",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Authenticate user and receive JWT token. `username` accepts a username, email, or phone number; phone-only accounts still require a password to be set via /auth/phone/link/verify or /auth/password/set."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid credentials\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Validate Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/validate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "validate"
+              ]
+            },
+            "description": "Check if the provided JWT token is valid."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/validate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "validate"
+                  ]
+                },
+                "description": "Check if the provided JWT token is valid."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Token is valid\"\n}"
+            },
+            {
+              "name": "Error 401",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/validate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "validate"
+                  ]
+                },
+                "description": "Check if the provided JWT token is valid."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired token\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registration - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"username\": \"newuser\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                "initiate"
+              ]
+            },
+            "description": "Initiate user registration, possibly sending an OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"username\": \"newuser\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "initiate"
+                  ]
+                },
+                "description": "Initiate user registration, possibly sending an OTP."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP sent\"\n}"
+            },
+            {
+              "name": "Error 400",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"username\": \"newuser\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "initiate"
+                  ]
+                },
+                "description": "Initiate user registration, possibly sending an OTP."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"User already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registration - Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/verify-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                "verify-otp"
+              ]
+            },
+            "description": "Verify OTP during registration."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/verify-otp",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "verify-otp"
+                  ]
+                },
+                "description": "Verify OTP during registration."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP verified\"\n}"
+            },
+            {
+              "name": "Error 400",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/verify-otp",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "verify-otp"
+                  ]
+                },
+                "description": "Verify OTP during registration."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid or expired OTP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registration - Verify Reclaim OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/verify-reclaim-otp",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                "verify-reclaim-otp"
+              ]
+            },
+            "description": "Verify reclaim OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/verify-reclaim-otp",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "verify-reclaim-otp"
+                  ]
+                },
+                "description": "Verify reclaim OTP."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP verified for reclaim\"\n}"
+            },
+            {
+              "name": "Error 400",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/verify-reclaim-otp",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "verify-reclaim-otp"
+                  ]
+                },
+                "description": "Verify reclaim OTP."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid reclaim OTP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Registration - Complete",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"other_info\": \"...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register",
+                "complete"
+              ]
+            },
+            "description": "Complete user registration after OTP verification."
+          },
+          "response": [
+            {
+              "name": "Success 201",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"other_info\": \"...\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/complete",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "complete"
+                  ]
+                },
+                "description": "Complete user registration after OTP verification."
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Registration complete\"\n}"
+            },
+            {
+              "name": "Error 400",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"username\": \"newuser\",\n  \"password\": \"password123\",\n  \"other_info\": \"...\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/register/complete",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "register",
+                    "complete"
+                  ]
+                },
+                "description": "Complete user registration after OTP verification."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not complete registration\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reclaim - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000111\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/reclaim/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "phone",
+                "reclaim",
+                "initiate"
+              ]
+            },
+            "description": "Initiate phone reclamation for an authenticated user."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000111\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/reclaim/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "reclaim",
+                    "initiate"
+                  ]
+                },
+                "description": "Initiate phone reclamation for an authenticated user."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Reclamation initiated\"\n}"
+            },
+            {
+              "name": "Error 401",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000111\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/reclaim/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "reclaim",
+                    "initiate"
+                  ]
+                },
+                "description": "Initiate phone reclamation for an authenticated user."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reclaim - Verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000111\",\n  \"otp\": \"654321\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/reclaim/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "phone",
+                "reclaim",
+                "verify"
+              ]
+            },
+            "description": "Verify phone reclamation OTP."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000111\",\n  \"otp\": \"654321\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/reclaim/verify",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "reclaim",
+                    "verify"
+                  ]
+                },
+                "description": "Verify phone reclamation OTP."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Phone reclaimed\"\n}"
+            },
+            {
+              "name": "Error 401",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000111\",\n  \"otp\": \"654321\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/reclaim/verify",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "reclaim",
+                    "verify"
+                  ]
+                },
+                "description": "Verify phone reclamation OTP."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized or invalid OTP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Google",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-Secret",
+                "value": "{{INTERNAL_SECRET}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google\",\n  \"google_id\": \"1234567890\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"id_token\": \"<raw Google ID token - JWT>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/google/callback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "google",
+                "callback"
+              ]
+            },
+            "description": "Find-or-create a user from a verified Google sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"google\",\n  \"google_id\": \"1234567890\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"id_token\": \"<raw Google ID token - JWT>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/google/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Google sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@gmail.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}"
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"google\",\n  \"google_id\": \"1234567890\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"id_token\": \"<raw Google ID token - JWT>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/google/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Google sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify google identity\"\n}"
+            },
+            {
+              "name": "Error 401 - missing/invalid internal secret",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"google\",\n  \"google_id\": \"1234567890\",\n  \"email\": \"user@gmail.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://lh3.googleusercontent.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"id_token\": \"<raw Google ID token - JWT>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/google/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "google",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Google sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Facebook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-Secret",
+                "value": "{{INTERNAL_SECRET}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"facebook\",\n  \"facebook_id\": \"1234567890\",\n  \"email\": \"user@example.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://platform-lookaside.fbsbx.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"access_token\": \"<raw Facebook access token>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/facebook/callback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "facebook",
+                "callback"
+              ]
+            },
+            "description": "Find-or-create a user from a verified Facebook sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"facebook\",\n  \"facebook_id\": \"1234567890\",\n  \"email\": \"user@example.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://platform-lookaside.fbsbx.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"access_token\": \"<raw Facebook access token>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/facebook/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "facebook",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Facebook sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@example.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}"
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"facebook\",\n  \"facebook_id\": \"1234567890\",\n  \"email\": \"user@example.com\",\n  \"name\": \"Jane Doe\",\n  \"avatar\": \"https://platform-lookaside.fbsbx.com/...\",\n  \"given_name\": \"Jane\",\n  \"family_name\": \"Doe\",\n  \"access_token\": \"<raw Facebook access token>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/facebook/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "facebook",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Facebook sign-in and return a session, same shape as /auth/login. Requires the shared X-Internal-Secret header."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify facebook identity\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Social Login - Apple",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Internal-Secret",
+                "value": "{{INTERNAL_SECRET}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"apple\",\n  \"apple_id\": \"001234.abcdef...\",\n  \"email\": \"user@privaterelay.appleid.com\",\n  \"name\": \"Jane Doe\",\n  \"id_token\": \"<raw Apple ID token - JWT>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/apple/callback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "apple",
+                "callback"
+              ]
+            },
+            "description": "Find-or-create a user from a verified Apple sign-in and return a session, same shape as /auth/login. Apple only sends `name` on the very first authorization; apple_id is the durable identifier. Requires the shared X-Internal-Secret header."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"apple\",\n  \"apple_id\": \"001234.abcdef...\",\n  \"email\": \"user@privaterelay.appleid.com\",\n  \"name\": \"Jane Doe\",\n  \"id_token\": \"<raw Apple ID token - JWT>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/apple/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "apple",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Apple sign-in and return a session, same shape as /auth/login. Apple only sends `name` on the very first authorization; apple_id is the durable identifier. Requires the shared X-Internal-Secret header."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Signed in successfully.\",\n  \"token\": \"<JWT_TOKEN>\",\n  \"user\": { \"id\": 1, \"email\": \"user@privaterelay.appleid.com\", \"name\": \"Jane Doe\", \"phone\": null },\n  \"requires_phone\": true\n}"
+            },
+            {
+              "name": "Error 401 - bad identity",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-Internal-Secret",
+                    "value": "{{INTERNAL_SECRET}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"apple\",\n  \"apple_id\": \"001234.abcdef...\",\n  \"email\": \"user@privaterelay.appleid.com\",\n  \"name\": \"Jane Doe\",\n  \"id_token\": \"<raw Apple ID token - JWT>\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/apple/callback",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "apple",
+                    "callback"
+                  ]
+                },
+                "description": "Find-or-create a user from a verified Apple sign-in and return a session, same shape as /auth/login. Apple only sends `name` on the very first authorization; apple_id is the durable identifier. Requires the shared X-Internal-Secret header."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Could not verify apple identity\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Phone Link - Initiate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/link/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "phone",
+                "link",
+                "initiate"
+              ]
+            },
+            "description": "Send an OTP to attach a phone number to the authenticated (e.g. social) account. Distinct from /auth/register/*, which creates a new account rather than attaching to an existing one."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/link/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "link",
+                    "initiate"
+                  ]
+                },
+                "description": "Send an OTP to attach a phone number to the authenticated (e.g. social) account. Distinct from /auth/register/*, which creates a new account rather than attaching to an existing one."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"OTP sent successfully\",\n  \"verification_payload\": \"<payload>\",\n  \"expires_in\": 600\n}"
+            },
+            {
+              "name": "Error 409 - phone taken",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/link/initiate",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "link",
+                    "initiate"
+                  ]
+                },
+                "description": "Send an OTP to attach a phone number to the authenticated (e.g. social) account. Distinct from /auth/register/*, which creates a new account rather than attaching to an existing one."
+              },
+              "status": "Conflict",
+              "code": 409,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Phone number already registered\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Phone Link - Verify",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\",\n  \"password\": \"optional-new-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/phone/link/verify",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "phone",
+                "link",
+                "verify"
+              ]
+            },
+            "description": "Verify the OTP, attach the phone as the account's primary number, optionally set a password, and flip requires_phone to false."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\",\n  \"password\": \"optional-new-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/link/verify",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "link",
+                    "verify"
+                  ]
+                },
+                "description": "Verify the OTP, attach the phone as the account's primary number, optionally set a password, and flip requires_phone to false."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Phone number linked successfully\",\n  \"phone_number\": \"0700000001\",\n  \"requires_phone\": false\n}"
+            },
+            {
+              "name": "Error 400 - bad OTP",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"phone\": \"+250700000001\",\n  \"otp\": \"123456\",\n  \"password\": \"optional-new-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/phone/link/verify",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "phone",
+                    "link",
+                    "verify"
+                  ]
+                },
+                "description": "Verify the OTP, attach the phone as the account's primary number, optionally set a password, and flip requires_phone to false."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Invalid OTP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"my-new-password\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password/set",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "password",
+                "set"
+              ]
+            },
+            "description": "Set or replace a password on the authenticated account, independent of phone-link status. No OTP required since the account's email is already provider-verified. Enables /auth/login with email+password afterward."
+          },
+          "response": [
+            {
+              "name": "Success 200",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"my-new-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/password/set",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "password",
+                    "set"
+                  ]
+                },
+                "description": "Set or replace a password on the authenticated account, independent of phone-link status. No OTP required since the account's email is already provider-verified. Enables /auth/login with email+password afterward."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Password set successfully\"\n}"
+            },
+            {
+              "name": "Error 400 - too short",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"password\": \"my-new-password\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/auth/password/set",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "auth",
+                    "password",
+                    "set"
+                  ]
+                },
+                "description": "Set or replace a password on the authenticated account, independent of phone-link status. No OTP required since the account's email is already provider-verified. Enables /auth/login with email+password afterward."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"A password of at least 6 characters is required\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me"
+              ]
+            },
+            "description": "Retrieve the authenticated user's details."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Retrieve the authenticated user's details."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"id\": 1, \"username\": \"testuser\", \"email\": \"test@example.com\", ... }"
+            },
+            {
+              "name": "401 Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me"
+                  ]
+                },
+                "description": "Retrieve the authenticated user's details."
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"error\", \"message\": \"Unauthorized\" }"
+            }
+          ]
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/5",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "5"
+              ]
+            },
+            "description": "Retrieve another user's details by their ID."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "5"
+                  ]
+                },
+                "description": "Retrieve another user's details by their ID."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"id\": 5, \"username\": \"someone\", ... }"
+            },
+            {
+              "name": "404 Error",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/5",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "5"
+                  ]
+                },
+                "description": "Retrieve another user's details by their ID."
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"error\", \"message\": \"User not found\" }"
+            }
+          ]
+        },
+        {
+          "name": "Get My Phones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/phones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "phones"
+              ]
+            },
+            "description": "Retrieve all phone numbers linked to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me/phones",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me",
+                    "phones"
+                  ]
+                },
+                "description": "Retrieve all phone numbers linked to the authenticated user."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"phones\": [\"+25070000...\", \"+2507123...\"] }"
+            }
+          ]
+        },
+        {
+          "name": "Add Phone Number",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001111\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/me/phones",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "phones"
+              ]
+            },
+            "description": "Bind a new phone number to the authenticated user."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"phone\": \"+250700001111\" }"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/me/phones",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me",
+                    "phones"
+                  ]
+                },
+                "description": "Bind a new phone number to the authenticated user."
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"success\", \"message\": \"Phone added\" }"
+            },
+            {
+              "name": "400 Error",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{ \"phone\": \"+250700001111\" }"
+                },
+                "url": {
+                  "raw": "{{base_url}}/users/me/phones",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me",
+                    "phones"
+                  ]
+                },
+                "description": "Bind a new phone number to the authenticated user."
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"error\", \"message\": \"Phone already exists\" }"
+            }
+          ]
+        },
+        {
+          "name": "Initiate Phone Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001234\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/phone/verify/initiate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "phone",
+                "verify",
+                "initiate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Complete Phone Verification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"phone\": \"+250700001234\", \"otp\": \"567890\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/phone/verify/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "phone",
+                "verify",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Phone Number",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/me/phones/10",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "me",
+                "phones",
+                "10"
+              ]
+            },
+            "description": "Delete phone number with ID 10 for the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me/phones/10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me",
+                    "phones",
+                    "10"
+                  ]
+                },
+                "description": "Delete phone number with ID 10 for the authenticated user."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"success\", \"message\": \"Phone removed\" }"
+            },
+            {
+              "name": "404 Error",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/users/me/phones/10",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "users",
+                    "me",
+                    "phones",
+                    "10"
+                  ]
+                },
+                "description": "Delete phone number with ID 10 for the authenticated user."
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"error\", \"message\": \"Phone not found\" }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parking",
+      "item": [
+        {
+          "name": "Get All Parking",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/parking",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parking"
+              ]
+            },
+            "description": "Retrieve a list of all active parking locations."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Parking By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/parking/1-101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "parking",
+                "1-101"
+              ]
+            },
+            "description": "Retrieve parking details by record ID in format db_id-parking_id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Databases",
+      "item": [
+        {
+          "name": "Get Databases",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "databases"
+              ]
+            },
+            "description": "Admin-only: get all configured external databases."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Database By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "databases",
+                "2"
+              ]
+            },
+            "description": "Admin-only: get details of a single database config."
+          },
+          "response": []
+        },
+        {
+          "name": "Test Database Connection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/databases/test/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "databases",
+                "test",
+                "2"
+              ]
+            },
+            "description": "Admin-only: test a single database connection."
+          },
+          "response": []
+        },
+        {
+          "name": "Execute Query",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"query\": \"SELECT * FROM park_in\" }"
+            },
+            "url": {
+              "raw": "{{base_url}}/databases/query/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "databases",
+                "query",
+                "2"
+              ]
+            },
+            "description": "Admin-only: run an SQL query on the external DB with ID 2."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Pricing",
+      "item": [
+        {
+          "name": "Get Parking Pricing",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pricing/parking/1-101",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pricing",
+                "parking",
+                "1-101"
+              ]
+            },
+            "description": "Get pricing data for parking record ID 1-101."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Car Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pricing/categories/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pricing",
+                "categories",
+                "1"
+              ]
+            },
+            "description": "Get car categories for a given DB ID = 1."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Receipts",
+      "item": [
+        {
+          "name": "Get User Receipts",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/receipts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "receipts"
+              ]
+            },
+            "description": "Retrieve receipts for the current user's phone numbers. You can filter by date range and specific phone number."
+          },
+          "response": [
+            {
+              "name": "200 Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}/receipts",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "receipts"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": [\n    {\n      \"park_out_receipt_id\": \"12345\",\n      \"exit_time\": \"2023-05-15 14:30:00\",\n      \"entre_time\": \"2023-05-15 10:15:00\",\n      \"hours_parked\": \"4.25\",\n      \"receipt_link\": \"http://example.com/receipts/12345.pdf\",\n      \"plate_number\": \"RAD123A\",\n      \"phone\": \"+250700000000\",\n      \"parking\": {\n        \"id\": \"101\",\n        \"name\": \"Downtown Parking\",\n        \"address\": \"123 Main Street\"\n      },\n      \"db_id\": \"1\",\n      \"db_name\": \"Central Parking Database\",\n      \"record_id\": \"1-12345\"\n    },\n    {\n      \"park_out_receipt_id\": \"12346\",\n      \"exit_time\": \"2023-05-14 18:20:00\",\n      \"entre_time\": \"2023-05-14 15:00:00\",\n      \"hours_parked\": \"3.33\",\n      \"receipt_link\": \"http://example.com/receipts/12346.pdf\",\n      \"plate_number\": \"RAD123A\",\n      \"phone\": \"+250700000000\",\n      \"parking\": {\n        \"id\": \"102\",\n        \"name\": \"Airport Parking\",\n        \"address\": \"456 Airport Road\"\n      },\n      \"db_id\": \"2\",\n      \"db_name\": \"Airport Parking Database\",\n      \"record_id\": \"2-12346\"\n    }\n  ],\n  \"pagination\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total_pages\": 5,\n    \"total_records\": 98\n  },\n  \"errors\": []\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Authentication required\"\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"You can only request receipts for your own phone numbers\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Receipt By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{JWT_TOKEN}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/receipts/1-500",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "receipts",
+                "1-500"
+              ]
+            },
+            "description": "Retrieve a single receipt by record ID in the format db_id-receipt_id. This endpoint verifies that the receipt belongs to one of your registered phone numbers."
+          },
+          "response": [
+            {
+              "name": "200 Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"park_out_receipt_id\": \"500\",\n    \"exit_time\": \"2023-06-10 16:45:00\",\n    \"entre_time\": \"2023-06-10 09:30:00\",\n    \"hours_parked\": \"7.25\",\n    \"receipt_link\": \"http://example.com/receipts/500.pdf\",\n    \"plate_number\": \"RAB456B\",\n    \"phone\": \"+250700000000\",\n    \"parking\": {\n      \"id\": \"105\",\n      \"name\": \"Central Mall Parking\",\n      \"address\": \"789 Mall Avenue\"\n    },\n    \"db_id\": \"1\",\n    \"db_name\": \"Central Parking Database\",\n    \"record_id\": \"1-500\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Receipt not found\"\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{JWT_TOKEN}}"
+                  }
+                ],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"You can only access receipts for your own phone numbers\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": ""
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [],
+              "cookie": [],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Authentication required\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Root Endpoint",
+      "item": [
+        {
+          "name": "GET Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Welcome endpoint for the Client API."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}",
+                  "host": [
+                    "{{base_url}}"
+                  ]
+                },
+                "description": "Welcome endpoint for the Client API."
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "Text",
+              "header": [],
+              "cookie": [],
+              "body": "{ \"status\": \"success\", \"message\": \"Welcome to the Client API\" }"
+            }
+          ]
+        },
+        {
+          "name": "POST Root - Docs",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Displays token decryption guide if in development mode."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://client-api.iteccone.com"
+    },
+    {
+      "key": "JWT_TOKEN",
+      "value": ""
+    },
+    {
+      "key": "INTERNAL_SECRET",
+      "value": "d1d0f4ba3676ee56f9d1f3c8de0623e295104d915602b7b667f89c9b48e6771d",
+      "description": "Shared secret sent as X-Internal-Secret on the social login callback endpoints. Set to the value configured server-side in SOCIAL_INTERNAL_SECRET."
+    }
+  ]
+}

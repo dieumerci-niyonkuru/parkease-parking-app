@@ -82,15 +82,15 @@ class _NotifCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: notif.isRead ? AppTheme.bgCard : _color.withOpacity(0.05),
+        color: notif.isRead ? AppTheme.bgCard : _color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(
-          color: notif.isRead ? AppTheme.border : _color.withOpacity(0.25)),
+          color: notif.isRead ? AppTheme.border : _color.withValues(alpha: 0.25)),
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(width: 40, height: 40,
           decoration: BoxDecoration(
-            color: _color.withOpacity(0.12), shape: BoxShape.circle),
+            color: _color.withValues(alpha: 0.12), shape: BoxShape.circle),
           child: Icon(_icon, color: _color, size: 20)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

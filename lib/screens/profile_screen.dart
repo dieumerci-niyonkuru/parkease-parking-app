@@ -1,16 +1,19 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
 import '../services/phone_service.dart';
+import 'auth/complete_profile_screen.dart';
+import 'auth/set_password_screen.dart';
 import 'phone_screen.dart';
 import 'profile_edit_screen.dart';
+import 'parking_costs_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,7 +22,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   List<PhoneNumber> _phones = [];
-  bool _loading = true;
 
   @override void initState() { 
     super.initState(); 
@@ -27,11 +29,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _refresh() async {
-    setState(() => _loading = true);
     await AuthService.fetchProfile(); // Get fresh data from /users/me
     final phones = await PhoneService.getPhones();
     if (!mounted) return;
-    setState(() { _phones = phones; _loading = false; });
+    setState(() { _phones = phones; });
   }
 
   Future<void> _pickImage() async {
@@ -175,7 +176,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: double.infinity,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  // This would open a phone entry dialog
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CompleteProfileScreen()));
                                 },
                                 style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
                                 child: const Text('SET PHONE NUMBER', style: TextStyle(fontWeight: FontWeight.w900)),
@@ -196,7 +197,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             child: CircleAvatar(
                               radius: 58, backgroundColor: AppTheme.primary,
                               backgroundImage: ProfileService.profile.profilePic.isNotEmpty
-                                  ? FileImage(File(ProfileService.profile.profilePic))
+                                  ? (kIsWeb
+                                      ? NetworkImage(ProfileService.profile.profilePic)
+                                      : FileImage(File(ProfileService.profile.profilePic)) as ImageProvider)
                                   : null,
                               child: ProfileService.profile.profilePic.isEmpty
                                   ? Text(initials, style: const TextStyle(fontSize: 36, fontWeight: FontWeight.w900, color: Colors.white))
@@ -222,8 +225,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 40),
 
                   // ── SECURITY SECTION ──────────────────────────────────
-                  _SectionHeader('SECURITY & ACCOUNT'),
-                  _BiometricToggle(),
+                  const _SectionHeader('SECURITY & ACCOUNT'),
+                  const _BiometricToggle(),
                   _ProfileTile(
                     icon: Icons.person_outline_rounded, label: 'Edit Profile Information', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileEditScreen())).then((_) => _refresh()),
@@ -233,28 +236,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     trailing: '${_phones.length} active', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PhoneScreen())).then((_) => _refresh()),
                   ),
-                  _ProfileTile(icon: Icons.security_rounded, label: 'Identity Verification', trailing: 'Verified', onTap: () {}),
-                  _ProfileTile(icon: Icons.lock_outline_rounded, label: 'Update Password', onTap: () {}),
-                  
+                  _ProfileTile(icon: Icons.security_rounded, label: 'Identity Verification', trailing: 'Verified', onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Identity verified via phone number.'), behavior: SnackBarBehavior.floating),
+                    );
+                  }),
+                  _ProfileTile(icon: Icons.lock_outline_rounded, label: 'Set Password',
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SetPasswordScreen()))),
                   const SizedBox(height: 32),
                   
                   // ── PREFERENCES SECTION ───────────────────────────────
-                  _SectionHeader('PREFERENCES'),
+                  const _SectionHeader('PREFERENCES'),
                   _ProfileTile(
                     icon: Icons.notifications_none_rounded, label: 'Notification Settings', 
                     trailing: 'Enabled', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationSettingsScreen())),
                   ),
-                  _ProfileTile(icon: Icons.language_rounded, label: 'Language', trailing: 'English (RW)', onTap: () {}),
-                  _ProfileTile(icon: Icons.dark_mode_outlined, label: 'Appearance', trailing: 'System', onTap: () {}),
+                  _ProfileTile(icon: Icons.language_rounded, label: 'Language', trailing: 'English (RW)', onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Language selection coming soon.'), behavior: SnackBarBehavior.floating),
+                    );
+                  }),
+                  _ProfileTile(icon: Icons.dark_mode_outlined, label: 'Appearance', trailing: 'System', onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+                        title: const Text('Appearance'),
+                        content: const Text('Theme customization will be available in a future update.'),
+                        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+                      ),
+                    );
+                  }),
+                  _ProfileTile(icon: Icons.monetization_on_outlined, label: 'View Price List', onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ParkingCostsScreen()));
+                  }),
                   
                   const SizedBox(height: 32),
                   
                   // ── SUPPORT SECTION ───────────────────────────────────
-                  _SectionHeader('SUPPORT'),
-                  _ProfileTile(icon: Icons.help_outline_rounded, label: 'Help & FAQ Center', onTap: () {}),
-                  _ProfileTile(icon: Icons.info_outline_rounded, label: 'About ITEC Rwanda', onTap: () {}),
-                  _ProfileTile(icon: Icons.policy_outlined, label: 'Terms of Service', onTap: () {}),
+                  const _SectionHeader('SUPPORT'),
+                  _ProfileTile(icon: Icons.contact_support_rounded, label: 'Contact Us', onTap: () => _showContactSheet(context)),
+                  _ProfileTile(icon: Icons.help_outline_rounded, label: 'Help & FAQ Center', onTap: () async {
+                    final uri = Uri.parse('https://iteccone.com/help');
+                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }),
+                  _ProfileTile(icon: Icons.info_outline_rounded, label: 'About ITEC Rwanda', onTap: () async {
+                    final uri = Uri.parse('https://iteccone.com/about');
+                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }),
+                  _ProfileTile(icon: Icons.policy_outlined, label: 'Terms of Service', onTap: () async {
+                    final uri = Uri.parse('https://iteccone.com/terms');
+                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
+                  }),
                   
                   const SizedBox(height: 48),
                   
@@ -264,7 +298,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: OutlinedButton.icon(
                       onPressed: _logout,
                       icon: const Icon(Icons.logout_rounded, color: AppTheme.danger),
-                      label: Text('SIGN OUT OF PORTAL', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 13)),
+                      label: const Text('SIGN OUT OF PORTAL', style: TextStyle(color: AppTheme.danger, fontWeight: FontWeight.w900, letterSpacing: 1, fontSize: 13)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: AppTheme.danger, width: 2),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -318,7 +352,7 @@ class _BiometricToggleState extends State<_BiometricToggle> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5), width: 1),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5), width: 1),
         boxShadow: AppTheme.subtleShadow,
       ),
       child: SwitchListTile(
@@ -330,7 +364,7 @@ class _BiometricToggleState extends State<_BiometricToggle> {
         title: const Text('Fingerprint Login', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
         subtitle: const Text('Unlock app with your fingerprint', style: TextStyle(fontSize: 11)),
         value: AuthService.isBiometricEnabled,
-        activeColor: AppTheme.primary,
+        activeThumbColor: AppTheme.primary,
         onChanged: (val) async {
           if (val) {
             final success = await AuthService.authenticateBiometrically();
@@ -358,7 +392,7 @@ class _ProfileTile extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(
       color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.border.withOpacity(0.5), width: 1),
+      border: Border.all(color: AppTheme.border.withValues(alpha: 0.5), width: 1),
       boxShadow: AppTheme.subtleShadow,
     ),
     child: ListTile(
@@ -405,13 +439,13 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          _SectionHeader('CHANNELS'),
+          const _SectionHeader('CHANNELS'),
           _SwitchCard(title: 'Push Notifications', sub: 'Instant updates on your device', val: _push, onChange: (v) => setState(() => _push = v)),
           _SwitchCard(title: 'SMS Alerts', sub: 'Direct text messages for critical alerts', val: _sms, onChange: (v) => setState(() => _sms = v)),
           _SwitchCard(title: 'Email Reports', sub: 'Weekly summaries and digital receipts', val: _email, onChange: (v) => setState(() => _email = v)),
           
           const SizedBox(height: 32),
-          _SectionHeader('AUTOMATED ALERTS'),
+          const _SectionHeader('AUTOMATED ALERTS'),
           _SwitchCard(title: 'Parking Reminders', sub: 'Notify me 15 mins before duration ends', val: _reminder, onChange: (v) => setState(() => _reminder = v)),
           
           const SizedBox(height: 48),
@@ -436,6 +470,93 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
   }
 }
 
+// ── CONTACT US SHEET ────────────────────────────────────────────────
+
+void _showContactSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    builder: (ctx) => Container(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 2, fontWeight: FontWeight.w900)),
+          const SizedBox(height: 20),
+          _ContactRow(
+            icon: Icons.phone_in_talk_rounded,
+            label: 'Quick Call Us',
+            value: '+250 788 620 612',
+            onTap: () => launchUrl(Uri.parse('tel:+250788620612')),
+          ),
+          const SizedBox(height: 16),
+          _ContactRow(
+            icon: Icons.alternate_email_rounded,
+            label: 'Mail Us On',
+            value: 'info@itec.rw',
+            onTap: () => launchUrl(Uri.parse('mailto:info@itec.rw')),
+          ),
+          const SizedBox(height: 16),
+          const _ContactRow(
+            icon: Icons.location_on_rounded,
+            label: 'Visit Location',
+            value: 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA',
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _ContactRow extends StatelessWidget {
+  final IconData icon;
+  final String label, value;
+  final VoidCallback? onTap;
+  const _ContactRow({required this.icon, required this.label, required this.value, this.onTap});
+
+  @override Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(16),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+            child: Icon(icon, size: 18, color: AppTheme.primary),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 10, color: AppTheme.textMuted, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text(value, style: const TextStyle(fontSize: 13, color: AppTheme.textPrimary, fontWeight: FontWeight.w700)),
+              ],
+            ),
+          ),
+          if (onTap != null) const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted, size: 20),
+        ],
+      ),
+    ),
+  );
+}
+
 class _SwitchCard extends StatelessWidget {
   final String title, sub;
   final bool val;
@@ -446,12 +567,12 @@ class _SwitchCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(
       color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+      border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       boxShadow: AppTheme.subtleShadow,
     ),
     child: SwitchListTile(
       value: val, onChanged: onChange,
-      activeColor: AppTheme.primary,
+      activeThumbColor: AppTheme.primary,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       title: Text(title, style: AppTheme.body.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
       subtitle: Text(sub, style: AppTheme.bodySmall),

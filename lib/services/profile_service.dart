@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_service.dart';
 
 class UserProfile {
   final String name;
@@ -67,5 +69,18 @@ class ProfileService {
 
   static Future<void> update({String? name, String? email, String? phone, String? profilePic}) async {
     await save(_profile.copyWith(name: name, email: email, phone: phone, profilePic: profilePic));
+  }
+
+  static Future<bool> syncToServer() async {
+    try {
+      final resp = await http.put(
+        Uri.parse('${AuthService.baseUrl}/users/me'),
+        headers: AuthService.authHeaders,
+        body: jsonEncode(_profile.toJson()),
+      ).timeout(const Duration(seconds: 12));
+      return resp.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
   }
 }

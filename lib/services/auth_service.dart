@@ -4,11 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 import 'api_service.dart';
+import '../utils/app_utils.dart';
 
 class AuthUser {
   final int id;
@@ -43,19 +41,16 @@ class AuthUser {
 }
 
 class AuthService {
-  static const String _base    = 'https://client-api.iteccone.com';
-  static const Duration _timeout = Duration(seconds: 12);
+  static const String baseUrl = 'https://client-api.iteccone.com';
+  static const Duration timeout = Duration(seconds: 12);
   static const String _keyToken = 'jwt_token';
   static const String _keyUser  = 'auth_user';
   static const String _keyCreds = 'biometric_credentials';
   static const String _keyBioEnabled = 'biometric_enabled';
+  static const String internalSecret = 'd1d0f4ba3676ee56f9d1f3c8de0623e295104d915602b7b667f89c9b48e6771d';
 
   static const _secure = FlutterSecureStorage();
   static final _localAuth = LocalAuthentication();
-  static final _googleSignIn = GoogleSignIn(
-    clientId: kIsWeb ? '91956751634-ddtje7mn6642ongmkq91h77t52kdummm.apps.googleusercontent.com' : null,
-    scopes: ['email', 'profile'],
-  );
 
   // ── Cached state ──────────────────────────────────────────────
   static String?   _token;
@@ -120,7 +115,7 @@ class AuthService {
     }
   }
 
-  static Future<void> _persist(String token, AuthUser user) async {
+  static Future<void> persistSession(String token, AuthUser user) async {
     _token = token;
     _user  = user;
     await _secure.write(key: _keyToken, value: token);
@@ -150,9 +145,12 @@ class AuthService {
     
     try {
       final resp = await http.post(
-        Uri.parse('$_base/auth/validate'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'token': _token}),
+        Uri.parse('$baseUrl/auth/validate'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: jsonEncode({}),
       ).timeout(const Duration(seconds: 8));
 
       final data = jsonDecode(resp.body);
@@ -167,10 +165,10 @@ class AuthService {
   static Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final resp = await http.post(
-        Uri.parse('$_base/auth/login'),
+        Uri.parse('$baseUrl/auth/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'username': email, 'password': password}),
-      ).timeout(_timeout);
+      ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
       if (resp.statusCode == 200 && data['status'] == 'success') {
@@ -189,7 +187,7 @@ class AuthService {
         }
 
         if (user != null) {
-          await _persist(token, user);
+          await persistSession(token, user);
           return {'success': true};
         }
       }
@@ -211,140 +209,63 @@ class AuthService {
           }
         }
       }
-      return {'success': false, 'message': 'Connection error. Check your network.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
-  }
-
-  // ── Social Logins ──────────────────────────────────────────────
-
-  static Future<Map<String, dynamic>> loginWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) return {'success': false, 'message': 'Google Sign-In cancelled'};
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final String? idToken = googleAuth.idToken;
-
-      // ── EXTRACT REAL IDENTITY ──────────────────────────────
-      return await _socialAuthBackend('google', idToken ?? "LOCAL_AUTH_${googleUser.id}",
-        name: googleUser.displayName, 
-        email: googleUser.email
-      );
-    } catch (e) {
-      return {'success': false, 'message': 'Google Error: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> loginWithFacebook() async {
-    try {
-      final LoginResult result = await FacebookAuth.instance.login();
-      if (result.status == LoginStatus.success) {
-        final AccessToken accessToken = result.accessToken!;
-        final userData = await FacebookAuth.instance.getUserData();
-        return await _socialAuthBackend('facebook', accessToken.token,
-          name: userData['name'],
-          email: userData['email']
-        );
-      } else {
-        return {'success': false, 'message': 'Facebook Login failed: ${result.message}'};
-      }
-    } catch (e) {
-      return {'success': false, 'message': 'Facebook Error: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> loginWithApple() async {
-    try {
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      
-      final String? identityToken = credential.identityToken;
-      if (identityToken == null) return {'success': false, 'message': 'Failed to retrieve Apple Identity Token'};
-
-      return await _socialAuthBackend('apple', identityToken,
-        name: '${credential.givenName ?? ""} ${credential.familyName ?? ""}'.trim(),
-        email: credential.email
-      );
-    } catch (e) {
-      return {'success': false, 'message': 'Apple Error: $e'};
-    }
-  }
-
-  static Future<Map<String, dynamic>> _socialAuthBackend(String provider, String idToken, {String? name, String? email}) async {
-    // ── DIRECT AUTHORIZATION MODE (REAL DATA) ─────────────────
-    // We extract the user identity directly from the social provider
-    // to ensure the app is fully usable for you right now.
-    
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // Create a local session based on the REAL chosen social account
-    final localToken = "SESSION_${provider.toUpperCase()}_${DateTime.now().millisecondsSinceEpoch}";
-    
-    final user = AuthUser(
-      id: DateTime.now().millisecondsSinceEpoch % 10000,
-      names: (name == null || name.isEmpty) ? "Social User" : name,
-      email: (email == null || email.isEmpty) ? "authorized@$provider.com" : email,
-      phone: "", // Trigger the phone activation screen as requested
-      role: "user",
-      createdAt: DateTime.now().toIso8601String(),
-    );
-
-    await _persist(localToken, user);
-
-    return {'success': true};
   }
 
   // ── Register: step 1 — send OTP ──────────────────────────────
   static Future<Map<String, dynamic>> initiateRegister(String phone, String username) async {
     try {
       final resp = await http.post(
-        Uri.parse('$_base/auth/register/initiate'),
+        Uri.parse('$baseUrl/auth/register/initiate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phone': phone,
           'username': username,
         }),
-      ).timeout(_timeout);
+      ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
       if (resp.statusCode == 200 && data['status'] == 'success') {
         return {
           'success': true,
           'message': data['message'] ?? 'OTP sent',
+          'verification_payload': data['verification_payload'] ?? data['data']?['verification_payload'] ?? '',
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
     } catch (e) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
   // ── Register: step 2 — verify OTP ────────────────────────────
-  static Future<Map<String, dynamic>> verifyOtp(String phone, String otp) async {
+  static Future<Map<String, dynamic>> verifyOtp(String phone, String otp, {String verificationPayload = ''}) async {
     try {
+      final body = <String, dynamic>{
+        'phone': phone,
+        'otp': otp,
+      };
+      if (verificationPayload.isNotEmpty) {
+        body['verification_payload'] = verificationPayload;
+      }
       final resp = await http.post(
-        Uri.parse('$_base/auth/register/verify-otp'),
+        Uri.parse('$baseUrl/auth/register/verify-otp'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phone': phone,
-          'otp': otp,
-        }),
-      ).timeout(_timeout);
+        body: jsonEncode(body),
+      ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
       if (resp.statusCode == 200 && data['status'] == 'success') {
         return {
           'success': true,
           'message': data['message'] ?? 'OTP verified',
+          'registration_token': data['registration_token'] ?? data['data']?['registration_token'] ?? '',
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
     } catch (e) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -352,13 +273,13 @@ class AuthService {
   static Future<Map<String, dynamic>> verifyReclaimOtp(String phone, String otp) async {
     try {
       final resp = await http.post(
-        Uri.parse('$_base/auth/register/verify-reclaim-otp'),
+        Uri.parse('$baseUrl/auth/register/verify-reclaim-otp'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'phone': phone,
           'otp': otp,
         }),
-      ).timeout(_timeout);
+      ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
       if (resp.statusCode == 200 && data['status'] == 'success') {
@@ -369,7 +290,7 @@ class AuthService {
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
     } catch (e) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -377,18 +298,23 @@ class AuthService {
   static Future<Map<String, dynamic>> completeRegister({
     required String username,
     required String password,
+    String registrationToken = '',
     Map<String, dynamic>? otherInfo,
   }) async {
     try {
+      final body = <String, dynamic>{
+        'username': username,
+        'password': password,
+        ...?otherInfo,
+      };
+      if (registrationToken.isNotEmpty) {
+        body['registration_token'] = registrationToken;
+      }
       final resp = await http.post(
-        Uri.parse('$_base/auth/register/complete'),
+        Uri.parse('$baseUrl/auth/register/complete'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-          ...?otherInfo,
-        }),
-      ).timeout(_timeout);
+        body: jsonEncode(body),
+      ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
       if ((resp.statusCode == 200 || resp.statusCode == 201) && data['status'] == 'success') {
@@ -397,7 +323,7 @@ class AuthService {
       }
       return {'success': false, 'message': data['message'] ?? 'Registration failed'};
     } catch (e) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -406,16 +332,18 @@ class AuthService {
     if (_token == null) return null;
     try {
       final resp = await http.get(
-        Uri.parse('$_base/users/me'),
+        Uri.parse('$baseUrl/users/me'),
         headers: {
           'Authorization': 'Bearer $_token',
           'Content-Type': 'application/json',
         },
-      ).timeout(_timeout);
+      ).timeout(timeout);
 
       if (resp.statusCode == 200) {
         final data = jsonDecode(resp.body);
-        final user = AuthUser.fromJson(data['user'] as Map<String, dynamic>);
+        // /users/me returns the user fields at the top level; older builds wrapped them in `user`/`data`.
+        final userData = (data['user'] ?? data['data'] ?? data) as Map<String, dynamic>;
+        final user = AuthUser.fromJson(userData);
         _user = user;
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_keyUser, jsonEncode(user.toJson()));
@@ -425,6 +353,116 @@ class AuthService {
       }
     } catch (_) {}
     return _user;
+  }
+
+  // ── Phone Link Initiate ──────────────────────────────────────
+  static Future<Map<String, dynamic>> phoneLinkInitiate(String phone) async {
+    try {
+      final resp = await http.post(
+        Uri.parse('$baseUrl/auth/phone/link/initiate'),
+        headers: authHeaders,
+        body: jsonEncode({'phone': phone}),
+      ).timeout(timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'OTP sent',
+          'verification_payload': data['verification_payload'] ?? '',
+          'expires_in': data['expires_in'] ?? 600,
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
+    } catch (e) {
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
+    }
+  }
+
+  // ── Phone Link Verify ────────────────────────────────────────
+  static Future<Map<String, dynamic>> phoneLinkVerify(String phone, String otp, {String? password, String verificationPayload = ''}) async {
+    try {
+      final body = <String, dynamic>{
+        'phone': phone,
+        'otp': otp,
+      };
+      if (password != null && password.isNotEmpty) {
+        body['password'] = password;
+      }
+      if (verificationPayload.isNotEmpty) {
+        body['verification_payload'] = verificationPayload;
+      }
+      final resp = await http.post(
+        Uri.parse('$baseUrl/auth/phone/link/verify'),
+        headers: authHeaders,
+        body: jsonEncode(body),
+      ).timeout(timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        // Update the local user's phone number
+        if (_user != null && data['phone_number'] != null) {
+          _user = AuthUser(
+            id: _user!.id,
+            names: _user!.names,
+            email: _user!.email,
+            phone: data['phone_number'].toString(),
+            role: _user!.role,
+            createdAt: _user!.createdAt,
+          );
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_keyUser, jsonEncode(_user!.toJson()));
+        }
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Phone linked',
+          'phone_number': data['phone_number'] ?? '',
+          'requires_phone': data['requires_phone'] ?? false,
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
+    } catch (e) {
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
+    }
+  }
+
+  // ── Set Password ─────────────────────────────────────────────
+  static Future<Map<String, dynamic>> setPassword(String password) async {
+    try {
+      final resp = await http.post(
+        Uri.parse('$baseUrl/auth/password/set'),
+        headers: authHeaders,
+        body: jsonEncode({'password': password}),
+      ).timeout(timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        return {'success': true, 'message': data['message'] ?? 'Password set'};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Failed to set password'};
+    } catch (e) {
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
+    }
+  }
+
+  // ── Get User By ID ───────────────────────────────────────────
+  static Future<AuthUser?> getUserById(int userId) async {
+    try {
+      final resp = await http.get(
+        Uri.parse('$baseUrl/users/$userId'),
+        headers: authHeaders,
+      ).timeout(timeout);
+
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body);
+        // /users/{id} returns the user fields at the top level; older builds wrapped them in `user`/`data`.
+        final userData = data['user'] ?? data['data'] ?? data;
+        if (userData is Map<String, dynamic>) {
+          return AuthUser.fromJson(userData);
+        }
+      }
+    } catch (_) {}
+    return null;
   }
 
   // ── Auth header ───────────────────────────────────────────────

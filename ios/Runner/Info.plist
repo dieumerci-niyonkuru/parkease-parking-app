@@ -4,6 +4,29 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb1030689562886225</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.91956751634-e9tdneibvr3gbd51b814vj837k1ec4lj</string>
+			</array>
+		</dict>
+	</array>
+	<key>GIDClientID</key>
+	<string>91956751634-e9tdneibvr3gbd51b814vj837k1ec4lj.apps.googleusercontent.com</string>
+	<key>FacebookAppID</key>
+	<string>1030689562886225</string>
+	<key>FacebookClientToken</key>
+	<string>0d2b7d9f85206cda962feadc78d510a9</string>
+	<key>FacebookDisplayName</key>
+	<string>ITEC Parking</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

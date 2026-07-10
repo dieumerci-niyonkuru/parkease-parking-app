@@ -5,12 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
-import '../services/api_service.dart';
-import '../services/history_service.dart';
-import '../services/notification_service.dart';
 import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
-import '../widgets/widgets.dart';
 import 'payment_screen.dart';
 
 class PlateLookupScreen extends StatefulWidget {
@@ -76,7 +72,7 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.bgDeep,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primary.withOpacity(0.2), width: 1.5),
+                  border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2), width: 1.5),
                 ),
                 child: Row(children: [
                   Container(
@@ -94,7 +90,7 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
                       style: AppTheme.mono.copyWith(fontSize: 20, color: const Color(0xFF2D2018), fontWeight: FontWeight.w900, letterSpacing: 2),
                       decoration: InputDecoration(
                         hintText: 'RAC 001 A',
-                        hintStyle: AppTheme.mono.copyWith(fontSize: 20, color: Colors.black.withOpacity(0.1), letterSpacing: 2),
+                        hintStyle: AppTheme.mono.copyWith(fontSize: 20, color: Colors.black.withValues(alpha: 0.1), letterSpacing: 2),
                         border: InputBorder.none,
                       ),
                     ),
@@ -139,7 +135,7 @@ class _RecordDetails extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            gradient: AppTheme.heroGrad,
+            color: AppTheme.primary,
             borderRadius: BorderRadius.circular(28),
             boxShadow: AppTheme.glowShadow,
           ),
@@ -160,25 +156,44 @@ class _RecordDetails extends StatelessWidget {
         ).animate().fadeIn().scale(duration: 400.ms, curve: Curves.easeOutBack),
         
         const SizedBox(height: 24),
-        
-        // ── PAY BUTTON ──────────────────────────────────────────────
-        SizedBox(
-          width: double.infinity, height: 64,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => 
-                PaymentScreen(record: record, onPay: onPay)));
-            },
-            icon: const Icon(Icons.payment_rounded, color: Colors.white),
-            label: const Text('PAY NOW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primary, 
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              elevation: 4,
+
+        // ── PAY BUTTON (or postpaid notice) ─────────────────────────
+        if (record.payable)
+          SizedBox(
+            width: double.infinity, height: 64,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) =>
+                  PaymentScreen(record: record, onPay: onPay)));
+              },
+              icon: const Icon(Icons.payment_rounded, color: Colors.white),
+              label: const Text('PAY NOW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, letterSpacing: 1)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 4,
+              ),
             ),
-          ),
-        ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
-        
+          ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2)
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.warning.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.warning.withValues(alpha: 0.4)),
+            ),
+            child: Row(children: [
+              const Icon(Icons.info_outline_rounded, color: AppTheme.warning),
+              const SizedBox(width: 12),
+              Expanded(child: Text(
+                record.blockMessage ?? 'This vehicle is on a company/postpaid account. Please contact the parking attendant to settle.',
+                style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w600, color: AppTheme.textSecond),
+              )),
+            ]),
+          ).animate().fadeIn(delay: 300.ms),
+
         const SizedBox(height: 32),
         
         // ── VEHICLE & LOCATION DETAILS ──────────────────────────────
@@ -255,7 +270,7 @@ class _Row extends StatelessWidget {
 class _WelcomeView extends StatelessWidget {
   @override Widget build(BuildContext context) => Center(
     child: Column(mainAxisSize: MainAxisSize.min, children: [
-      Icon(Icons.directions_car_filled_rounded, color: AppTheme.textHint.withOpacity(0.5), size: 100),
+      Icon(Icons.directions_car_filled_rounded, color: AppTheme.textHint.withValues(alpha: 0.5), size: 100),
       const SizedBox(height: 24),
       Text('Ready to pay?', style: AppTheme.heading2),
       const SizedBox(height: 10),

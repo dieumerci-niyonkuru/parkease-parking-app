@@ -28,29 +28,10 @@ class AppTheme {
   static const Color textMuted    = Color(0xFF868E96);
   static const Color textHint     = Color(0xFFADB5BD);
 
-  // ── Gradients ─────────────────────────────────────────────────
-  static const LinearGradient primaryGrad = LinearGradient(
-    colors: [Color(0xFF8E6A4B), Color(0xFF7A5B40)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient cardGrad = LinearGradient(
-    colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient heroGrad = LinearGradient(
-    colors: [Color(0xFF7A5B40), Color(0xFF5D432D)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
   // ── Shadows ───────────────────────────────────────────────────
   static List<BoxShadow> glowShadow = [
     BoxShadow(
-      color: primary.withOpacity(0.3),
+      color: primary.withValues(alpha: 0.3),
       blurRadius: 20,
       spreadRadius: -2,
       offset: const Offset(0, 10),
@@ -59,7 +40,7 @@ class AppTheme {
 
   static List<BoxShadow> cardShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.06),
+      color: Colors.black.withValues(alpha: 0.06),
       blurRadius: 16,
       spreadRadius: 0,
       offset: const Offset(0, 4),
@@ -68,7 +49,7 @@ class AppTheme {
 
   static List<BoxShadow> subtleShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 8,
       spreadRadius: 0,
       offset: const Offset(0, 2),
@@ -128,7 +109,6 @@ class AppTheme {
     colorScheme: const ColorScheme.light(
       primary: primary,
       secondary: accent,
-      background: bgDeep,
       surface: bgCard,
       error: danger,
     ),

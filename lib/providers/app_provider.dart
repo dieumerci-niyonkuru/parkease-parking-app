@@ -23,7 +23,7 @@ class AppProvider extends ChangeNotifier {
     
     // Show a snackbar or dialog if possible (navigator might be null if not yet built)
     final context = ITECParkingApp.navigatorKey.currentContext;
-    if (context != null) {
+    if (context != null && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Your session has expired. Please login again.'),

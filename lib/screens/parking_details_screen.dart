@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../services/api_service.dart';
-import '../utils/app_utils.dart';
 import '../widgets/branded_loader.dart';
-import '../widgets/widgets.dart';
 import 'package:intl/intl.dart';
 
 class ParkingDetailsScreen extends StatefulWidget {
@@ -16,11 +15,8 @@ class ParkingDetailsScreen extends StatefulWidget {
 }
 
 class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
-  Map<String, dynamic>? _pricing;
-  List<dynamic> _categories = [];
-  List<dynamic> _fullTariffs = [];
+  PricingData? _pricing;
   bool _loading = true;
-  bool _showFullList = false;
 
   @override void initState() {
     super.initState();
@@ -29,24 +25,38 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
 
   Future<void> _loadData() async {
     setState(() => _loading = true);
-    final results = await Future.wait([
-      ApiService.getPricing(widget.facility.recordId),
-      ApiService.getCarCategories(widget.facility.dbId),
-      ApiService.getTariffs(),
-    ]);
+    final pricing = await ApiService.getPricingData(widget.facility.recordId);
     if (!mounted) return;
     setState(() {
-      _pricing = results[0] as Map<String, dynamic>?;
-      _categories = results[1] as List<dynamic>;
-      _fullTariffs = results[2] as List<dynamic>;
+      _pricing = pricing;
       _loading = false;
     });
   }
 
+  // Opens the device maps app / browser searching for this site by name +
+  // address. The API doesn't provide GPS coordinates, so we search by text —
+  // which still drops the user straight into turn-by-turn on most devices.
+  Future<void> _openInMaps() async {
+    final query = Uri.encodeComponent('${widget.facility.fullParkName}, ${widget.facility.address}');
+    final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Couldn\'t open maps. Please make sure a maps app or browser is installed.'), behavior: SnackBarBehavior.floating),
+        );
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Couldn\'t open maps. Please try again.'), behavior: SnackBarBehavior.floating),
+        );
+      }
+    }
+  }
+
   @override Widget build(BuildContext context) {
-    final rate = _pricing != null 
-        ? (double.tryParse(_pricing!['rate']?.toString() ?? widget.facility.ratePerHour.toString()) ?? widget.facility.ratePerHour)
-        : widget.facility.ratePerHour;
+    final categories = _pricing?.categories ?? const <PriceCategory>[];
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
@@ -80,7 +90,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7F2), // Premium Cream
-                      border: Border(bottom: BorderSide(color: AppTheme.primary.withOpacity(0.1))),
+                      border: Border(bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.1))),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,9 +107,24 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         Row(children: [
                           const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 18),
                           const SizedBox(width: 8),
-                          Text('${widget.facility.parkingLots} parking spots available', 
+                          Text('${widget.facility.parkingLots} parking spots available',
                             style: AppTheme.bodySmall.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800)),
                         ]),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton.icon(
+                            onPressed: _openInMaps,
+                            icon: const Icon(Icons.navigation_rounded, size: 18, color: Colors.white),
+                            label: const Text('NAVIGATE TO SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5, color: Colors.white)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primary,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ).animate().fadeIn().slideY(begin: 0.1),
@@ -115,39 +140,20 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                         const Text('Pricing Information', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 24),
 
-                        _CategoryPricingCard(
-                          title: 'General',
-                          rates: _pricing ?? {},
-                          onViewFull: () => _showFullPriceList(context, rate),
-                        ).animate().fadeIn(),
+                        if (categories.isEmpty)
+                          const _PricingUnavailable().animate().fadeIn()
+                        else
+                          ...categories.map((c) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _CategoryPricingCard(
+                              title: categories.length > 1 ? c.name : 'General',
+                              category: c,
+                              currency: _pricing?.currency ?? 'RWF',
+                              onViewFull: c.tiers.length > 5 ? () => _showFullPriceList(context, c) : null,
+                            ).animate().fadeIn(),
+                          )),
 
-                        const SizedBox(height: 40),
-
-                        // ── NAVIGATION ACTIONS ──────────────────────────
-                        Center(
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              final nav = Navigator.of(context);
-                              if (nav.canPop()) {
-                                nav.pop();
-                              }
-                            },
-                            icon: const Text('🏠', style: TextStyle(fontSize: 18)),
-                            label: const Text('BACK TO DASHBOARD', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1, color: Colors.white)),
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: AppTheme.primary,
-                              side: const BorderSide(color: Colors.white24, width: 1.5),
-                              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 40),
-                        
-                        // ── CONTACT FOOTER ──────────────────────────────
-                        _AssistanceFooter(),
-                        const SizedBox(height: 60),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -160,22 +166,24 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
 
 class _CategoryPricingCard extends StatelessWidget {
   final String title;
-  final Map<String, dynamic> rates;
+  final PriceCategory category;
+  final String currency;
   final VoidCallback? onViewFull;
-  const _CategoryPricingCard({required this.title, required this.rates, this.onViewFull});
+  const _CategoryPricingCard({required this.title, required this.category, this.currency = 'RWF', this.onViewFull});
 
   @override Widget build(BuildContext context) {
     final moneyFmt = NumberFormat('#,###');
-    
-    // Reterive prices directly from API keys or use the 200 Frw example from user
-    final rate = double.tryParse(rates['rate']?.toString() ?? '200') ?? 200.0;
+    final sym = currency == 'RWF' ? 'Frw ' : '$currency ';
+    // Show up to the first 5 real tiers the backend defines (hours > 0),
+    // not a fabricated rate * n projection.
+    final previewTiers = category.tiers.where((t) => t.hours > 0).take(5).toList();
 
     return Container(
       padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7F2),
         borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,11 +192,8 @@ class _CategoryPricingCard extends StatelessWidget {
           const SizedBox(height: 16),
           const Divider(height: 1, thickness: 0.5),
           const SizedBox(height: 24),
-          _PriceItem('1 Hours', '${moneyFmt.format(rate)}'),
-          _PriceItem('2 Hours', '${moneyFmt.format(rate * 2)}'),
-          _PriceItem('3 Hours', '${moneyFmt.format(rate * 3)}'),
-          _PriceItem('4 Hours', '${moneyFmt.format(rate * 4)}'),
-          _PriceItem('5 Hours', '${moneyFmt.format(rate * 5)}'),
+          for (final t in previewTiers)
+            _priceItem('${t.hours} Hour${t.hours == 1 ? "" : "s"}', '$sym${moneyFmt.format(t.price)}'),
           if (onViewFull != null) ...[
             const SizedBox(height: 20),
             Center(
@@ -204,7 +209,7 @@ class _CategoryPricingCard extends StatelessWidget {
     );
   }
 
-  Widget _PriceItem(String label, String value) {
+  Widget _priceItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -219,7 +224,7 @@ class _CategoryPricingCard extends StatelessWidget {
 }
 
 extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
-  Future<void> _showFullPriceList(BuildContext context, double rate) async {
+  Future<void> _showFullPriceList(BuildContext context, PriceCategory category) async {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -239,15 +244,16 @@ extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
           width: double.maxFinite,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: _buildFullRateBreakdown(rate),
+            child: _buildFullRateBreakdown(category),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFullRateBreakdown(double rate) {
+  Widget _buildFullRateBreakdown(PriceCategory category) {
     final moneyFmt = NumberFormat('#,###');
+    final sym = _pricing?.currency == 'RWF' ? 'Frw ' : '${_pricing?.currency ?? ''} ';
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -255,68 +261,41 @@ extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
-        children: List.generate(25, (i) {
-          final double amount = i * rate;
+        children: category.tiers.map((t) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(i == 0 ? '0-1 Hour' : '$i Hours', 
+                Text(t.hours == 0 ? '0-1 Hour' : '${t.hours} Hour${t.hours == 1 ? "" : "s"}',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey)),
-                Text('${moneyFmt.format(amount)}', 
+                Text('$sym${moneyFmt.format(t.price)}',
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF7A5B40))),
               ],
             ),
           );
-        }),
+        }).toList(),
       ),
     );
   }
 }
 
-class _AssistanceFooter extends StatelessWidget {
-  @override Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: AppTheme.glowShadow,
-      ),
-      child: Column(
-        children: [
-          Text('GETTING ASSISTANCE', 
-            style: AppTheme.label.copyWith(color: Colors.white, letterSpacing: 2, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 20),
-          _FooterRow(Icons.phone_in_talk_rounded, 'Quick Call Us:', '+250 788 620 612'),
-          const SizedBox(height: 14),
-          _FooterRow(Icons.alternate_email_rounded, 'Mail Us On:', 'info@itec.rw'),
-          const SizedBox(height: 14),
-          _FooterRow(Icons.location_on_rounded, 'Visit Location:', 'KN 1 Rd 4, MUHIMA-Near Post Office\nP.O. Box 4179 KIGALI RWANDA'),
-        ],
-      ),
-    );
-  }
-
-  Widget _FooterRow(IconData icon, String label, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+class _PricingUnavailable extends StatelessWidget {
+  const _PricingUnavailable();
+  @override Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.all(28),
+    decoration: BoxDecoration(
+      color: const Color(0xFFFFF7F2),
+      borderRadius: BorderRadius.circular(28),
+    ),
+    child: Column(
       children: [
-        Icon(icon, size: 18, color: Colors.white70),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 10, color: Colors.white60, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 2),
-              Text(text, style: const TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w700)),
-            ],
-          ),
-        ),
+        Icon(Icons.info_outline_rounded, color: AppTheme.primary.withValues(alpha: 0.5), size: 32),
+        const SizedBox(height: 12),
+        const Text('Pricing information is temporarily unavailable for this site.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF7A5B40))),
       ],
-    );
-  }
+    ),
+  );
 }

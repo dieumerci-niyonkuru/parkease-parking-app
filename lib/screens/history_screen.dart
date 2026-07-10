@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
-import 'receipt_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -25,7 +25,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   DateTime? _to;
 
   static final _dateFmt  = DateFormat('dd MMM yyyy');
-  static final _timeFmt  = DateFormat('HH:mm');
   static final _moneyFmt = NumberFormat('#,###');
 
   @override
@@ -41,8 +40,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final startDate = _from != null ? fmt.format(_from!) : null;
     final endDate   = _to != null ? fmt.format(_to!) : null;
 
-    final user = AuthService.user;
-    final phone = (user?.phone.isNotEmpty == true) ? user!.phone : user?.names;
+    final phone = AuthService.user?.phone;
 
     List<HistoryEntry> list = await ApiService.getReceipts(
       startDate: startDate,
@@ -79,7 +77,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           : null,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(
+          colorScheme: const ColorScheme.light(
             primary: AppTheme.primary,
             onPrimary: Colors.white,
             surface: AppTheme.bgCard,
@@ -133,6 +131,33 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 const Text('RECEIPT HISTORY', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
                 const SizedBox(height: 4),
                 Text('Official Parking Records'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: () => Navigator.of(context).pushNamed('plate_lookup', arguments: ''),
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
+                    ),
+                    child: Row(children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
+                        child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 14),
+                      const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('QUICK PAY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1)),
+                        SizedBox(height: 2),
+                        Text('Pay by plate number', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600)),
+                      ])),
+                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.6), size: 12),
+                    ]),
+                  ),
+                ),
               ],
             ),
           ),
@@ -189,7 +214,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           
           if (hasFilter)
             Container(
-              color: AppTheme.primary.withOpacity(0.05),
+              color: AppTheme.primary.withValues(alpha: 0.05),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Row(children: [
                 const Icon(Icons.filter_list_rounded, color: AppTheme.primary, size: 14),
@@ -254,7 +279,7 @@ class _TableView extends StatelessWidget {
       Container(
         color: AppTheme.bgCard,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(children: [
+        child: const Row(children: [
           _TH('PLATE',       flex: 2),
           _TH('ENTRY',       flex: 3),
           _TH('EXIT',        flex: 3),
@@ -271,7 +296,7 @@ class _TableView extends StatelessWidget {
             final e   = entries[i];
             final odd = i % 2 == 1;
             return Container(
-              color: odd ? AppTheme.bgDeep.withOpacity(0.3) : Colors.white,
+              color: odd ? AppTheme.bgDeep.withValues(alpha: 0.3) : Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(children: [
                 Expanded(
@@ -307,7 +332,7 @@ class _TableView extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppTheme.primary.withOpacity(0.1),
+                          color: AppTheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: const Text('VIEW', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: AppTheme.primary)),
@@ -347,9 +372,9 @@ class _SummaryChip extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
     decoration: BoxDecoration(
-      color: color.withOpacity(0.08),
+      color: color.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: color.withOpacity(0.2)),
+      border: Border.all(color: color.withValues(alpha: 0.2)),
     ),
     child: Row(mainAxisSize: MainAxisSize.min, children: [
       Icon(icon, color: color, size: 14),
@@ -373,7 +398,7 @@ class _ReceiptCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5), width: 0.8),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5), width: 0.8),
         boxShadow: AppTheme.subtleShadow,
       ),
       child: Column(children: [
@@ -382,7 +407,7 @@ class _ReceiptCard extends StatelessWidget {
           child: Row(children: [
             Container(
               width: 48, height: 48,
-              decoration: BoxDecoration(color: AppTheme.success.withOpacity(0.1), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
               child: const Icon(Icons.verified_rounded, color: AppTheme.success, size: 26),
             ),
             const SizedBox(width: 14),
@@ -398,7 +423,7 @@ class _ReceiptCard extends StatelessWidget {
               const SizedBox(height: 3),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                 child: Text(dur, style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800, fontSize: 10)),
               ),
             ]),
@@ -406,7 +431,7 @@ class _ReceiptCard extends StatelessWidget {
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          decoration: BoxDecoration(color: AppTheme.bgDeep.withOpacity(0.5), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
+          decoration: BoxDecoration(color: AppTheme.bgDeep.withValues(alpha: 0.5), borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20))),
           child: Row(children: [
             Expanded(child: _TimeCell(label: 'ENTRY', time: entry.entryTime, icon: Icons.login_rounded, color: AppTheme.primary)),
             Container(width: 1, height: 32, color: AppTheme.border),
@@ -420,10 +445,30 @@ class _ReceiptCard extends StatelessWidget {
                   ])),
             ),
             if (entry.receiptNumber != null)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: AppTheme.success.withOpacity(0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppTheme.success.withOpacity(0.3))),
-                child: Text('EBM #${entry.receiptNumber}', style: AppTheme.label.copyWith(color: AppTheme.success, fontWeight: FontWeight.w800, fontSize: 9)),
+              GestureDetector(
+                onTap: entry.receiptUrl != null && entry.receiptUrl!.isNotEmpty
+                    ? () async {
+                        try {
+                          final opened = await launchUrl(Uri.parse(entry.receiptUrl!), mode: LaunchMode.externalApplication);
+                          if (!opened && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('No app found to open this receipt.'), behavior: SnackBarBehavior.floating),
+                            );
+                          }
+                        } catch (_) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Couldn\'t open the receipt. Please try again.'), behavior: SnackBarBehavior.floating),
+                            );
+                          }
+                        }
+                      }
+                    : null,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppTheme.success.withValues(alpha: 0.3))),
+                  child: Text('EBM #${entry.receiptNumber}', style: AppTheme.label.copyWith(color: AppTheme.success, fontWeight: FontWeight.w800, fontSize: 9)),
+                ),
               ),
           ]),
         ),
@@ -462,7 +507,7 @@ class _EmptyState extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 48),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Icon(hasFilter ? Icons.filter_list_off_rounded : Icons.receipt_long_rounded, color: AppTheme.textHint.withOpacity(0.3), size: 80),
+        Icon(hasFilter ? Icons.filter_list_off_rounded : Icons.receipt_long_rounded, color: AppTheme.textHint.withValues(alpha: 0.3), size: 80),
         const SizedBox(height: 20),
         Text(hasFilter ? 'No records in this date range' : 'No transaction history', style: AppTheme.heading3.copyWith(color: AppTheme.textMuted), textAlign: TextAlign.center),
         const SizedBox(height: 10),

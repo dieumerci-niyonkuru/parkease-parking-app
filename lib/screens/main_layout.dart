@@ -1,7 +1,7 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_provider.dart';
@@ -9,7 +9,10 @@ import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
+import '../services/notification_service.dart';
+import '../widgets/widgets.dart';
 import 'home_screen.dart';
+import 'notifications_screen.dart';
 import 'parking_list_screen.dart';
 import 'plate_lookup_screen.dart';
 import 'history_screen.dart';
@@ -38,13 +41,11 @@ class _MainLayoutState extends State<MainLayout> {
   final List<Widget> _pages = [
     const HomeScreen(),
     const ParkingListScreen(),
-    const PlateLookupScreen(initialPlate: ''),
     const HistoryScreen(),
     const ProfileScreen(),
   ];
 
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
-    GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
@@ -55,9 +56,8 @@ class _MainLayoutState extends State<MainLayout> {
     switch (_currentIndex) {
       case 0: return 'DASHBOARD';
       case 1: return 'PARKING SITE';
-      case 2: return 'PLATE LOOKUP';
-      case 3: return 'RECEIPTS';
-      case 4: return 'MY ACCOUNT';
+      case 2: return 'RECEIPTS';
+      case 3: return 'MY ACCOUNT';
       default: return 'ITEC PARKING';
     }
   }
@@ -72,6 +72,13 @@ class _MainLayoutState extends State<MainLayout> {
       setState(() => _isSearching = true);
       context.read<AppProvider>().setSearchActive(true);
     }
+  }
+
+  String get _greeting {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
   @override Widget build(BuildContext context) {
@@ -106,25 +113,12 @@ class _MainLayoutState extends State<MainLayout> {
             )
           : Row(
               children: [
-                Container(
-                  width: 32, height: 32,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      'assets/images/app_photos/itec_logo_strong.png',
-                      width: 20, height: 20,
-                      errorBuilder: (_,__,___) => const Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
-                    ),
-                  ),
-                ),
+                const ItecLogo(size: 32, fontSize: 18),
                 const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_currentIndex == 0 ? 'Welcome Back' : _pageTitle, 
+                    Text(_currentIndex == 0 ? _greeting : _pageTitle,
                       style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
                     Text(firstName, 
                       style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, height: 1.1)),
@@ -135,20 +129,35 @@ class _MainLayoutState extends State<MainLayout> {
               ],
             ),
         actions: [
+          // ── NOTIFICATIONS ─────────────────────────────────────
           IconButton(
-            onPressed: () {
-              if (_currentIndex != 0) {
-                setState(() => _currentIndex = 0);
-              } else {
-                final nav = _navigatorKeys[0].currentState;
-                if (nav != null && nav.canPop()) {
-                  nav.popUntil((r) => r.isFirst);
-                }
-              }
-              setState(() {});
+            onPressed: () async {
+              await Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+              );
+              if (mounted) setState(() {}); // refresh unread badge on return
             },
-            icon: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
-            tooltip: 'Back to Home',
+            icon: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24),
+                if (NotificationService.unreadCount > 0)
+                  Positioned(
+                    top: -4, right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(color: AppTheme.danger, shape: BoxShape.circle),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Text(
+                        NotificationService.unreadCount > 9 ? '9+' : '${NotificationService.unreadCount}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.w900, height: 1),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            tooltip: 'Notifications',
           ),
           IconButton(
             onPressed: () {
@@ -167,7 +176,7 @@ class _MainLayoutState extends State<MainLayout> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 onSelected: (val) async {
                   if (val == 0) {
-                    setState(() => _currentIndex = 4); // Go to profile (index 4)
+                    setState(() => _currentIndex = 3); // Go to profile
                   } else if (val == 1) {
                     // ── LOGOUT CONFIRMATION DIALOG ──────────────────
                     final confirmed = await showDialog<bool>(
@@ -198,7 +207,7 @@ class _MainLayoutState extends State<MainLayout> {
 
                     if (confirmed == true) {
                       await AuthService.logout();
-                      if (mounted) {
+                      if (mounted && context.mounted) {
                         Navigator.of(context, rootNavigator: true).pushNamedAndRemoveUntil('/login', (route) => false);
                       }
                     }
@@ -208,9 +217,11 @@ class _MainLayoutState extends State<MainLayout> {
                   tag: 'main-avatar',
                   child: CircleAvatar(
                     radius: 16,
-                    backgroundColor: Colors.white.withOpacity(0.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.2),
                     backgroundImage: profile.profilePic.isNotEmpty
-                        ? FileImage(File(profile.profilePic))
+                        ? (kIsWeb
+                            ? NetworkImage(profile.profilePic)
+                            : FileImage(File(profile.profilePic)) as ImageProvider)
                         : null,
                     child: profile.profilePic.isEmpty
                         ? const Icon(Icons.person_rounded, color: Colors.white, size: 18)
@@ -240,7 +251,7 @@ class _MainLayoutState extends State<MainLayout> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppTheme.border.withOpacity(0.5), height: 1),
+          child: Container(color: AppTheme.border.withValues(alpha: 0.5), height: 1),
         ),
       ),
       body: IndexedStack(
@@ -281,7 +292,7 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: _PremiumBottomNav(
         current: _currentIndex,
         onTap: (i) {
-          if (i != 0 && i != 1 && _isProfileIncomplete) {
+          if (i == 2 && _isProfileIncomplete) {
             _showProfileRequiredDialog();
             return;
           }
@@ -306,7 +317,7 @@ class _MainLayoutState extends State<MainLayout> {
           ],
         ),
         content: const Text(
-          'To access Quick Pay and Receipts, you must first complete your profile by linking a phone number.',
+          'To access Receipts, you must first complete your profile by linking a phone number.',
           style: TextStyle(fontSize: 14),
         ),
         actions: [
@@ -317,7 +328,7 @@ class _MainLayoutState extends State<MainLayout> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => _currentIndex = 4); // Take to My Account
+              setState(() => _currentIndex = 3); // Take to My Account
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF7A5B40),
@@ -339,16 +350,16 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
-      (Icons.location_city_rounded,   Icons.location_city_outlined,  'ParkingSites'),
-      (Icons.electric_bolt_rounded,   Icons.electric_bolt_outlined,  'Quick Pay'),
+      (Icons.directions_car_rounded,  Icons.directions_car_outlined, 'Parking Site'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
+      (Icons.person_rounded,          Icons.person_outlined,         'Account'),
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.primary, // Matches the top bar color
-        border: Border(top: BorderSide(color: Colors.white.withOpacity(0.1), width: 1)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, -4))],
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1), width: 1)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, -4))],
       ),
       child: SafeArea(
         child: Padding(
@@ -367,7 +378,7 @@ class _PremiumBottomNav extends StatelessWidget {
                   curve: Curves.easeOutCubic,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: active ? Colors.white.withOpacity(0.15) : Colors.transparent,
+                    color: active ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(

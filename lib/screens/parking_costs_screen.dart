@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
 import '../models/models.dart';
@@ -10,7 +11,7 @@ class ParkingCostsScreen extends StatefulWidget {
 }
 
 class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
-  List<ParkingFacility> _facilities = [];
+  List<_FacilityPricing> _data = [];
   bool _loading = true;
 
   @override void initState() { super.initState(); _load(); }
@@ -18,11 +19,21 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     final list = await ApiService.getAllParking();
+    final results = <_FacilityPricing>[];
+    for (final f in list) {
+      final pricing = await ApiService.getPricingData(f.recordId);
+      results.add(_FacilityPricing(
+        facility: f,
+        hourlyRate: pricing?.ratePerHour ?? f.ratePerHour,
+        dailyRate: pricing?.ratePerDay,
+      ));
+    }
     if (!mounted) return;
-    setState(() { _facilities = list; _loading = false; });
+    setState(() { _data = results; _loading = false; });
   }
 
   @override Widget build(BuildContext context) {
+    final moneyFmt = NumberFormat('#,###');
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
@@ -52,7 +63,7 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
                 children: [
                   Text('Standard Rates', style: AppTheme.heading2),
                   const SizedBox(height: 8),
-                  Text('Hourly rates for all ITEC-enabled parking facilities across Rwanda.', style: AppTheme.bodySmall),
+                  Text('Official hourly rates for all ITEC-enabled parking facilities across Rwanda.', style: AppTheme.bodySmall),
                   const SizedBox(height: 24),
                   Expanded(
                     child: Container(
@@ -67,20 +78,23 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
                           child: Table(
                             columnWidths: const {
                               0: FlexColumnWidth(3),
-                              1: FlexColumnWidth(2),
+                              1: FlexColumnWidth(1),
+                              2: FlexColumnWidth(1),
                             },
                             children: [
                               TableRow(
-                                decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1)),
+                                decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1)),
                                 children: [
-                                  _HeaderCell('FACILITY'),
-                                  _HeaderCell('COST / HOUR', align: TextAlign.right),
+                                  _headerCell('FACILITY'),
+                                  _headerCell('RATE/HR', align: TextAlign.right),
+                                  _headerCell('RATE/DAY', align: TextAlign.right),
                                 ],
                               ),
-                              ..._facilities.map((f) => TableRow(
+                              ..._data.map((d) => TableRow(
                                 children: [
-                                  _DataCell(f.fullParkName),
-                                  _DataCell('${f.ratePerHour.toInt()} RWF', align: TextAlign.right, isBold: true),
+                                  _dataCell(d.facility.fullParkName),
+                                  _dataCell('${moneyFmt.format(d.hourlyRate.toInt())} RWF', align: TextAlign.right, isBold: true),
+                                  _dataCell(d.dailyRate != null ? '${moneyFmt.format(d.dailyRate!.toInt())} RWF' : '—', align: TextAlign.right),
                                 ],
                               )),
                             ],
@@ -90,7 +104,7 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
                     ).animate().fadeIn().slideY(begin: 0.05),
                   ),
                   const SizedBox(height: 20),
-                  _InfoBox(),
+                  _infoBox(),
                   const SizedBox(height: 40),
                 ],
               ),
@@ -98,31 +112,38 @@ class _ParkingCostsScreenState extends State<ParkingCostsScreen> {
     );
   }
 
-  Widget _HeaderCell(String text, {TextAlign align = TextAlign.left}) => Padding(
+  Widget _headerCell(String text, {TextAlign align = TextAlign.left}) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     child: Text(text, style: AppTheme.label.copyWith(fontWeight: FontWeight.w900, color: AppTheme.primary, fontSize: 10, letterSpacing: 1)),
   );
 
-  Widget _DataCell(String text, {TextAlign align = TextAlign.left, bool isBold = false}) => Padding(
+  Widget _dataCell(String text, {TextAlign align = TextAlign.left, bool isBold = false}) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     child: Text(text, textAlign: align, style: AppTheme.body.copyWith(
-      fontSize: 13, 
+      fontSize: 13,
       fontWeight: isBold ? FontWeight.w800 : FontWeight.w500,
       color: isBold ? AppTheme.primary : AppTheme.textPrimary,
     )),
   );
 
-  Widget _InfoBox() => Container(
+  Widget _infoBox() => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: AppTheme.primary.withOpacity(0.05),
+      color: AppTheme.primary.withValues(alpha: 0.05),
       borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+      border: Border.all(color: AppTheme.primary.withValues(alpha: 0.2)),
     ),
     child: Row(children: [
       const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 20),
       const SizedBox(width: 12),
-      Expanded(child: Text('Rates are set by the facility management and include all applicable taxes.', style: AppTheme.label.copyWith(fontSize: 10, color: AppTheme.textSecond))),
+      Expanded(child: Text('Rates are set by the facility management and include all applicable taxes. Data sourced from the ITEC Central Pricing Database.', style: AppTheme.label.copyWith(fontSize: 10, color: AppTheme.textSecond))),
     ]),
   );
+}
+
+class _FacilityPricing {
+  final ParkingFacility facility;
+  final double hourlyRate;
+  final double? dailyRate;
+  const _FacilityPricing({required this.facility, required this.hourlyRate, this.dailyRate});
 }

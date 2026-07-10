@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/app_theme.dart';
 import '../services/notification_service.dart';
@@ -6,6 +7,7 @@ import '../services/profile_service.dart';
 import '../services/auth_service.dart';
 import 'main_layout.dart';
 import 'auth/login_screen.dart';
+import '../widgets/widgets.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,6 +18,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   String _step = 'Initializing...';
+  Timer? _navTimer;
 
   @override void initState() {
     super.initState();
@@ -24,10 +27,10 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
       final v = _ctrl.value;
       setState(() {
-        if (v < 0.25)       _step = 'Securing Connection...';
-        else if (v < 0.5)   _step = 'Retrieving Parking Sites...';
-        else if (v < 0.75)  _step = 'Validating Driver Session...';
-        else                _step = 'Smart Parking Solutions';
+        if (v < 0.25) { _step = 'Securing Connection...'; }
+        else if (v < 0.5) { _step = 'Retrieving Parking Sites...'; }
+        else if (v < 0.75) { _step = 'Validating Driver Session...'; }
+        else { _step = 'Smart Parking Solutions'; }
       });
     });
     _ctrl.forward();
@@ -43,6 +46,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     bool isValid = true; 
     bool bioSuccess = false;
+
 
     if (AuthService.isLoggedIn) {
       final check = await AuthService.validateToken();
@@ -62,28 +66,34 @@ class _SplashScreenState extends State<SplashScreen>
       }
     }
 
-    await Future.delayed(const Duration(milliseconds: 2000));
-    if (!mounted) return;
-    
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
+    // Schedule navigation after a short delay, ensuring timer is cancelled on dispose
+    _navTimer = Timer(const Duration(milliseconds: 2000), () {
+      if (!mounted) return;
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
         pageBuilder: (_, __, ___) =>
             (AuthService.isLoggedIn && (isValid || bioSuccess)) ? const MainLayout() : const LoginScreen(),
         transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
         transitionDuration: const Duration(milliseconds: 600),
       ),
-    );
+      );
+    });
   }
 
-  @override void dispose() { _ctrl.dispose(); super.dispose(); }
+  @override
+  void dispose() {
+    _navTimer?.cancel();
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.primary, // Brand Brown Background
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: AppTheme.primary,
         ),
         child: Column(children: [
@@ -98,18 +108,12 @@ class _SplashScreenState extends State<SplashScreen>
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(28),
                 boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 20, offset: const Offset(0, 10))
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 20, offset: const Offset(0, 10))
                 ],
               ),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/app_photos/itec_logo_strong.png',
-                  width: 80, height: 80,
-                  errorBuilder: (_,__,___) => const Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 64, fontWeight: FontWeight.w900)),
-                ),
-              ),
-            ),
-          ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.easeOutBack),
+              child: const ItecLogo(size: 80, fontSize: 64),
+            ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.easeOutBack),
+          ),
 
           const SizedBox(height: 32),
           const Text('ITEC PARKING',

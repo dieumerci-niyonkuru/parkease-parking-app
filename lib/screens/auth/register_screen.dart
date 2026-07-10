@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+
 import 'package:country_code_picker/country_code_picker.dart';
 import '../../theme/app_theme.dart';
 import '../../services/auth_service.dart';
@@ -18,17 +18,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // Step 1: Phone
   String _countryCode = '+250';
-  final _phoneCtrl = TextEditingController();
+  final _phoneCtrl    = TextEditingController();
   final _usernameCtrl = TextEditingController();
   String _verificationPayload = '';
 
   // Step 2: OTP
-  final _otpCtrl = TextEditingController();
+  final _otpCtrl          = TextEditingController();
   String _registrationToken = '';
 
   // Step 3: Profile
-  final _namesCtrl = TextEditingController();
-  final _emailCtrl = TextEditingController();
+  final _namesCtrl    = TextEditingController();
+  final _emailCtrl    = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
   @override
@@ -42,70 +42,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _showSnack(String msg, {bool isError = true}) async {
+  Future<void> _showDialog(String msg, {bool isError = true}) async {
     if (!mounted) return;
     await showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Icon(
-              isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
-              color: isError ? AppTheme.danger : AppTheme.success,
-              size: 64,
-            ),
-            const SizedBox(height: 24),
-            Text(isError ? 'ERROR' : 'SUCCESS', 
-              style: AppTheme.heading3.copyWith(
-                letterSpacing: 2, 
-                color: isError ? AppTheme.danger : AppTheme.success
-              )),
-            const SizedBox(height: 12),
-            Text(
-              msg,
-              textAlign: TextAlign.center,
-              style: AppTheme.body.copyWith(color: AppTheme.textMuted),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(ctx),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isError ? AppTheme.danger : AppTheme.success,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72, height: 72,
+                decoration: BoxDecoration(
+                  color: (isError ? AppTheme.danger : AppTheme.success).withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
                 ),
-                child: const Text('OK', style: TextStyle(fontWeight: FontWeight.w900)),
+                child: Icon(
+                  isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                  color: isError ? AppTheme.danger : AppTheme.success,
+                  size: 40,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 20),
+              Text(
+                isError ? 'Oops!' : 'Success!',
+                style: AppTheme.heading2.copyWith(color: isError ? AppTheme.danger : AppTheme.success),
+              ),
+              const SizedBox(height: 8),
+              Text(msg, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
+              const SizedBox(height: 28),
+              SizedBox(
+                width: double.infinity, height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isError ? AppTheme.danger : AppTheme.success,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: const Text('OK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Future<void> _initiateRegistration() async {
-    final phone = _phoneCtrl.text.trim();
+    final phone    = _phoneCtrl.text.trim();
     final username = _usernameCtrl.text.trim();
-    if (phone.isEmpty) {
-      _showSnack('Please enter your phone number');
-      return;
-    }
-    if (username.isEmpty) {
-      _showSnack('Please enter a username');
-      return;
-    }
+    if (phone.isEmpty) { _showDialog('Please enter your phone number'); return; }
+    if (username.isEmpty) { _showDialog('Please enter a username'); return; }
 
     setState(() => _isLoading = true);
     final fullPhone = '$_countryCode$phone';
     final result = await AuthService.initiateRegister(fullPhone, username);
-    
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -114,23 +110,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _verificationPayload = result['verification_payload'] ?? '';
         _step = 2;
       });
-      _showSnack('OTP sent to $fullPhone', isError: false);
+      _showDialog('OTP sent to $fullPhone', isError: false);
     } else {
-      _showSnack(result['message'] ?? 'Failed to send OTP');
+      _showDialog(result['message'] ?? 'Failed to send OTP');
     }
   }
 
   Future<void> _verifyOtp() async {
     final otp = _otpCtrl.text.trim();
-    if (otp.length < 4) {
-      _showSnack('Please enter a valid OTP');
-      return;
-    }
+    if (otp.length < 4) { _showDialog('Please enter a valid OTP'); return; }
 
     setState(() => _isLoading = true);
     final fullPhone = '$_countryCode${_phoneCtrl.text.trim()}';
-    final result = await AuthService.verifyOtp(fullPhone, otp);
-    
+    final result = await AuthService.verifyOtp(
+      fullPhone, otp,
+      verificationPayload: _verificationPayload,
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -140,17 +135,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _step = 3;
       });
     } else {
-      _showSnack(result['message'] ?? 'Invalid OTP');
+      _showDialog(result['message'] ?? 'Invalid OTP. Please try again.');
     }
   }
 
   Future<void> _completeRegistration() async {
-    final names = _namesCtrl.text.trim();
-    final email = _emailCtrl.text.trim();
+    final names    = _namesCtrl.text.trim();
+    final email    = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
-
     if (names.isEmpty || email.isEmpty || password.isEmpty) {
-      _showSnack('Please fill in all fields');
+      _showDialog('Please fill in all fields to finish setting up your account.');
+      return;
+    }
+    // The backend requires at least 6 characters — check it here so users
+    // get an instant, clear message instead of a server rejection.
+    if (password.length < 6) {
+      _showDialog('Your password needs at least 6 characters. Please choose a longer one.');
       return;
     }
 
@@ -158,88 +158,173 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final result = await AuthService.completeRegister(
       username: _usernameCtrl.text.trim(),
       password: password,
-      otherInfo: {
-        'names': names,
-        'email': email,
-      },
+      registrationToken: _registrationToken,
+      otherInfo: {'names': names, 'email': email},
     );
-    
     if (!mounted) return;
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
-      _showSnack('Registration successful', isError: false);
-      Navigator.of(context).pushReplacementNamed('/main');
+      if (!mounted) return;
+      await _showDialog('Account created successfully! Please sign in.', isError: false);
+      if (!mounted) return;
+      Navigator.of(context).pop();
     } else {
-      _showSnack(result['message'] ?? 'Registration failed');
+      _showDialog(result['message'] ?? 'Registration failed. Please try again.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final statusBarH = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       body: Column(
         children: [
-          // ── BRANDED HEADER ─────────────────────────────────────────
+          // ── HERO HEADER ─────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 20, bottom: 24),
-            decoration: BoxDecoration(
+            padding: EdgeInsets.only(top: statusBarH + 20, bottom: 32),
+            decoration: const BoxDecoration(
               color: AppTheme.primary,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
             ),
             child: Column(
               children: [
+                // Back + Title row
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
                       onPressed: () {
-                        if (_step > 1) setState(() => _step--);
-                        else Navigator.pop(context);
+                        if (_step > 1) {
+                          setState(() => _step--);
+                        } else {
+                          Navigator.pop(context);
+                        }
                       },
+                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                     ),
                     const Expanded(
                       child: Center(
-                        child: Padding(
-                          padding: EdgeInsets.only(right: 48), // Balancing for back button
-                          child: Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)),
+                        child: Text(
+                          'ITEC PARKING',
+                          style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4),
                         ),
                       ),
                     ),
+                    const SizedBox(width: 48),
                   ],
                 ),
                 const SizedBox(height: 4),
-                Text('Smart Parking Solutions'.toUpperCase(), style: const TextStyle(color: Colors.white70, fontSize: 8, letterSpacing: 1, fontWeight: FontWeight.w700)),
+                const Text(
+                  'SMART PARKING SOLUTIONS',
+                  style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 2),
+                ),
+                const SizedBox(height: 24),
+
+                // ── STEP INDICATORS ─────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (i) {
+                    final stepNum = i + 1;
+                    final isActive = _step == stepNum;
+                    final isDone   = _step > stepNum;
+                    return Row(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: isActive ? 36 : 28,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: isDone ? AppTheme.success : (isActive ? Colors.white : Colors.white30),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                          child: Center(
+                            child: isDone
+                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                              : Text(
+                                  '$stepNum',
+                                  style: TextStyle(
+                                    color: isActive ? AppTheme.primary : Colors.white70,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                          ),
+                        ),
+                        if (i < 2)
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 40, height: 2,
+                            color: _step > stepNum ? AppTheme.success : Colors.white30,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+                      ],
+                    );
+                  }),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _step == 1 ? 'Phone Verification'
+                  : _step == 2 ? 'OTP Confirmation'
+                  : 'Profile Setup',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13, letterSpacing: 0.5),
+                ),
               ],
             ),
           ),
 
+          // ── SCROLLABLE CONTENT ───────────────────────────────────────
           Expanded(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 40),
-              child: Column(
-                children: [
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 300),
-                    child: _buildCurrentStep(),
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 350),
+                transitionBuilder: (child, anim) => FadeTransition(
+                  opacity: anim,
+                  child: SlideTransition(
+                    position: Tween<Offset>(begin: const Offset(0.05, 0), end: Offset.zero).animate(anim),
+                    child: child,
                   ),
-                  const SizedBox(height: 100),
-                ],
+                ),
+                child: _buildStep(),
               ),
             ),
           ),
 
-          // ── BRANDED FOOTER ─────────────────────────────────────────
+          // ── SIGN IN LINK (always visible, no scroll needed) ────────
+          if (_step == 1)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: RichText(
+                  text: TextSpan(
+                    style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+                    children: [
+                      const TextSpan(text: 'Already have an account?  '),
+                      WidgetSpan(
+                        child: GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Text('Sign In', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // ── FOOTER ──────────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            color: AppTheme.primary,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            color: AppTheme.primaryDeep,
             child: const Center(
-              child: Text('Copyright © 2026 ITEC Parking', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1)),
+              child: Text(
+                'Copyright © 2026 ITEC Parking',
+                style: TextStyle(color: Colors.white54, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 1),
+              ),
             ),
           ),
         ],
@@ -247,267 +332,273 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  String get _stepTitle {
+  Widget _buildStep() {
     switch (_step) {
-      case 1: return 'ACCOUNT INITIALIZATION';
-      case 2: return 'SECURITY VERIFICATION';
-      case 3: return 'PROFILE COMPLETION';
-      default: return 'REGISTRATION';
+      case 1:  return _buildPhoneStep();
+      case 2:  return _buildOtpStep();
+      default: return _buildProfileStep();
     }
   }
 
-  Widget _buildCurrentStep() {
-    switch (_step) {
-      case 1:
-        return _buildPhoneStep().animate().fadeIn(duration: 300.ms).slideX(begin: 0.1);
-      case 2:
-        return _buildOtpStep().animate().fadeIn(duration: 300.ms).slideX(begin: 0.1);
-      case 3:
-        return _buildProfileStep().animate().fadeIn(duration: 300.ms).slideX(begin: 0.1);
-      default:
-        return const SizedBox();
-    }
-  }
+  // ─── STEP 1: Phone ──────────────────────────────────────────────────
+  Widget _buildPhoneStep() => Column(
+    key: const ValueKey(1),
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text('Create Account', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
+      const SizedBox(height: 6),
+      Text('Enter your phone number to get started', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
+      const SizedBox(height: 32),
 
-  Widget _buildPhoneStep() {
-    return Column(
-      key: const ValueKey(1),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Create Account',
-          style: AppTheme.heading1,
-          textAlign: TextAlign.start,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Enter your phone number to continue',
-          style: AppTheme.body,
-          textAlign: TextAlign.start,
-        ),
-        const SizedBox(height: 32),
+      const _FieldLabel(text: 'Username'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _usernameCtrl,
+        textInputAction: TextInputAction.next,
+        style: _inputStyle,
+        decoration: _inputDeco(hint: 'e.g. john_doe', icon: Icons.account_circle_outlined),
+      ),
+      const SizedBox(height: 20),
 
-        Text('Username', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _usernameCtrl,
-          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'e.g. john_doe',
-            prefixIcon: Icon(Icons.account_circle_outlined, size: 20),
-          ),
+      const _FieldLabel(text: 'Phone Number'),
+      const SizedBox(height: 8),
+      Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppTheme.border),
         ),
-        const SizedBox(height: 20),
-
-        Text('Phone Number', style: AppTheme.label),
-        const SizedBox(height: 8),
-        Row(
+        child: Row(
           children: [
-            Container(
-              decoration: BoxDecoration(
-                color: AppTheme.bgSurface,
-                border: Border.all(color: AppTheme.border),
-                borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              ),
-              child: CountryCodePicker(
-                onChanged: (code) {
-                  setState(() {
-                    _countryCode = code.dialCode ?? '+250';
-                  });
-                },
-                initialSelection: 'RW',
-                favorite: const ['+250', 'RW', '+254', 'KE'],
-                showCountryOnly: false,
-                showOnlyCountryWhenClosed: false,
-                alignLeft: false,
-                textStyle: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
-              ),
+            CountryCodePicker(
+              onChanged: (code) => setState(() => _countryCode = code.dialCode ?? '+250'),
+              initialSelection: 'RW',
+              favorite: const ['+250', 'RW', '+254', 'KE'],
+              showCountryOnly: false,
+              showOnlyCountryWhenClosed: false,
+              alignLeft: false,
+              textStyle: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w600),
             ),
-            const SizedBox(width: 12),
+            Container(width: 1, height: 36, color: AppTheme.border),
             Expanded(
               child: TextField(
                 controller: _phoneCtrl,
                 keyboardType: TextInputType.phone,
-                style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-                decoration: const InputDecoration(
-                  hintText: 'e.g. 780000000',
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _initiateRegistration(),
+                style: _inputStyle,
+                decoration: InputDecoration(
+                  hintText: '780 000 000',
+                  hintStyle: AppTheme.body.copyWith(color: AppTheme.textHint),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 32),
+      ),
+      const SizedBox(height: 36),
+      _PrimaryButton(text: 'Send OTP', isLoading: _isLoading, onPressed: _initiateRegistration),
+    ],
+  );
 
-        _buildPrimaryButton(
-          text: 'Continue',
-          onPressed: _isLoading ? null : _initiateRegistration,
+  // ─── STEP 2: OTP ────────────────────────────────────────────────────
+  Widget _buildOtpStep() => Column(
+    key: const ValueKey(2),
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text('Verify OTP', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
+      const SizedBox(height: 6),
+      RichText(
+        text: TextSpan(
+          style: AppTheme.body.copyWith(color: AppTheme.textMuted),
+          children: [
+            const TextSpan(text: 'We sent a code to  '),
+            TextSpan(
+              text: '$_countryCode${_phoneCtrl.text}',
+              style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w800),
+            ),
+          ],
         ),
-      ],
-    );
-  }
+      ),
+      const SizedBox(height: 40),
 
-  Widget _buildOtpStep() {
-    return Column(
-      key: const ValueKey(2),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Verify OTP',
-          style: AppTheme.heading1,
-          textAlign: TextAlign.start,
+      // Large OTP input
+      Container(
+        height: 72,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.border, width: 1.5),
+          boxShadow: AppTheme.subtleShadow,
         ),
-        const SizedBox(height: 8),
-        Text(
-          'We sent a code to $_countryCode${_phoneCtrl.text}',
-          style: AppTheme.body,
-          textAlign: TextAlign.start,
-        ),
-        const SizedBox(height: 48),
-
-        Text('Enter OTP', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _otpCtrl,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.center,
-          style: AppTheme.heading1.copyWith(letterSpacing: 8.0, color: AppTheme.textPrimary),
-          maxLength: 6,
-          decoration: const InputDecoration(
-            counterText: '',
-            hintText: '••••••',
-          ),
-        ),
-        const SizedBox(height: 32),
-
-        _buildPrimaryButton(
-          text: 'Verify',
-          onPressed: _isLoading ? null : _verifyOtp,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildProfileStep() {
-    return Column(
-      key: const ValueKey(3),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Complete Profile',
-          style: AppTheme.heading1,
-          textAlign: TextAlign.start,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Tell us a bit about yourself',
-          style: AppTheme.body,
-          textAlign: TextAlign.start,
-        ),
-        const SizedBox(height: 32),
-
-        Text('Full Name', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _namesCtrl,
-          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'John Doe',
-            prefixIcon: Icon(Icons.person_outline, size: 20),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        Text('Email Address', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _emailCtrl,
-          keyboardType: TextInputType.emailAddress,
-          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-          decoration: const InputDecoration(
-            hintText: 'john.doe@example.com',
-            prefixIcon: Icon(Icons.email_outlined, size: 20),
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        Text('Password', style: AppTheme.label),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _passwordCtrl,
-          obscureText: _obscurePassword,
-          style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Create a strong password',
-            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
-            suffixIcon: IconButton(
-              icon: Icon(
-                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                color: AppTheme.textMuted,
-                size: 20,
+        child: Center(
+          child: TextField(
+            controller: _otpCtrl,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            maxLength: 6,
+            onSubmitted: (_) => _verifyOtp(),
+            style: const TextStyle(
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+              color: AppTheme.textPrimary,
+              letterSpacing: 12,
+            ),
+            decoration: const InputDecoration(
+              counterText: '',
+              hintText: '- - - - - -',
+              hintStyle: TextStyle(
+                fontSize: 24,
+                color: AppTheme.textHint,
+                letterSpacing: 8,
+                fontWeight: FontWeight.w300,
               ),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: EdgeInsets.symmetric(horizontal: 16),
             ),
           ),
         ),
-        const SizedBox(height: 32),
-
-        _buildPrimaryButton(
-          text: 'Complete Registration',
-          onPressed: _isLoading ? null : _completeRegistration,
+      ),
+      const SizedBox(height: 12),
+      Center(
+        child: Text(
+          'Enter the 6-digit code sent to your phone',
+          style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
         ),
-      ],
-    );
-  }
+      ),
+      const SizedBox(height: 36),
+      _PrimaryButton(text: 'Verify OTP', isLoading: _isLoading, onPressed: _verifyOtp),
+      const SizedBox(height: 20),
+      Center(
+        child: TextButton.icon(
+          onPressed: _isLoading ? null : _initiateRegistration,
+          icon: const Icon(Icons.refresh_rounded, size: 18, color: AppTheme.primary),
+          label: Text('Resend Code', style: AppTheme.body.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w700)),
+        ),
+      ),
+    ],
+  );
 
-  Widget _buildPrimaryButton({required String text, required VoidCallback? onPressed}) {
-    return SizedBox(
-      height: 56,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+  // ─── STEP 3: Profile ────────────────────────────────────────────────
+  Widget _buildProfileStep() => Column(
+    key: const ValueKey(3),
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text('Complete Profile', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
+      const SizedBox(height: 6),
+      Text('Almost there! Tell us a bit about yourself.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
+      const SizedBox(height: 32),
+
+      const _FieldLabel(text: 'Full Name'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _namesCtrl,
+        textInputAction: TextInputAction.next,
+        style: _inputStyle,
+        decoration: _inputDeco(hint: 'John Doe', icon: Icons.person_outline_rounded),
+      ),
+      const SizedBox(height: 20),
+
+      const _FieldLabel(text: 'Email Address'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _emailCtrl,
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+        style: _inputStyle,
+        decoration: _inputDeco(hint: 'john@example.com', icon: Icons.email_outlined),
+      ),
+      const SizedBox(height: 20),
+
+      const _FieldLabel(text: 'Password'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _passwordCtrl,
+        obscureText: _obscurePassword,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _completeRegistration(),
+        style: _inputStyle,
+        decoration: _inputDeco(
+          hint: 'Create a strong password',
+          icon: Icons.lock_outline_rounded,
+          suffix: IconButton(
+            icon: Icon(
+              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              color: AppTheme.textMuted, size: 20,
+            ),
+            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
           ),
         ),
-        child: _isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Text(text, style: AppTheme.heading4.copyWith(color: Colors.white)),
       ),
+      const SizedBox(height: 8),
+      Row(children: [
+        const Icon(Icons.info_outline_rounded, size: 13, color: AppTheme.textMuted),
+        const SizedBox(width: 6),
+        Text('Use at least 6 characters.', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+      ]),
+      const SizedBox(height: 28),
+      _PrimaryButton(text: 'Create Account', isLoading: _isLoading, onPressed: _completeRegistration),
+    ],
+  );
+
+  TextStyle get _inputStyle => AppTheme.body.copyWith(
+    color: AppTheme.textPrimary,
+    fontWeight: FontWeight.w600,
+    fontSize: 15,
+  );
+
+  InputDecoration _inputDeco({required String hint, required IconData icon, Widget? suffix}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      prefixIcon: Icon(icon, color: AppTheme.textMuted, size: 20),
+      suffixIcon: suffix,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
+      hintStyle: AppTheme.body.copyWith(color: AppTheme.textHint),
     );
   }
 }
 
-class _ContactRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _FieldLabel extends StatelessWidget {
   final String text;
-  const _ContactRow(this.icon, this.label, this.text);
+  const _FieldLabel({required this.text});
+  @override
+  Widget build(BuildContext context) => Text(
+    text.toUpperCase(),
+    style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10, color: AppTheme.textSecond),
+  );
+}
+
+class _PrimaryButton extends StatelessWidget {
+  final String text;
+  final bool isLoading;
+  final VoidCallback? onPressed;
+  const _PrimaryButton({required this.text, required this.isLoading, this.onPressed});
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: AppTheme.textMuted),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textMuted)),
-              const SizedBox(height: 2),
-              Text(text, style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => SizedBox(
+    height: 56,
+    child: ElevatedButton(
+      onPressed: isLoading ? null : onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppTheme.primary,
+        disabledBackgroundColor: AppTheme.primary.withValues(alpha: 0.6),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 2,
+      ),
+      child: isLoading
+          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+          : Text(text, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
+    ),
+  );
 }

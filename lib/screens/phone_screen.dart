@@ -24,6 +24,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
 
   void _showQuickAdd() => _showAddDialog(title: 'Quick Add', mode: 'quick');
   void _showReclaim()  => _showAddDialog(title: 'Reclaim Number', mode: 'reclaim');
+  void _showVerifyAdd() => _showAddDialog(title: 'Add & Verify', mode: 'verify');
 
   Future<void> _deletePhone(PhoneNumber ph) async {
     if (ph.isPrimary) {
@@ -83,7 +84,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
     final otpCtrl      = TextEditingController();
     bool loading  = false;
     bool otpSent  = false;
-    String verificationPayload = '';
 
     showModalBottomSheet(
       context: context,
@@ -119,7 +119,9 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 Text(
                   mode == 'quick'
                       ? 'Add a phone number instantly — no verification needed.'
-                      : 'Reclaim a number that was registered by someone else.',
+                      : mode == 'verify'
+                        ? 'Add a number and verify it via OTP.'
+                        : 'Reclaim a number that was registered by someone else.',
                   style: AppTheme.body,
                 ),
                 const SizedBox(height: 24),
@@ -165,11 +167,11 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   Container(
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppTheme.primary.withOpacity(0.07),
+                      color: AppTheme.primary.withValues(alpha: 0.07),
                       borderRadius:
                           BorderRadius.circular(AppTheme.radiusMd),
                       border: Border.all(
-                          color: AppTheme.primary.withOpacity(0.3)),
+                          color: AppTheme.primary.withValues(alpha: 0.3)),
                     ),
                     child: Row(children: [
                       const Icon(Icons.check_circle_outline_rounded,
@@ -219,27 +221,27 @@ class _PhoneScreenState extends State<PhoneScreen> {
                                 _snack('Number added!', isError: false);
                                 _load();
                               } else {
-                                _snack(r['message'] ?? 'Failed.');
+                                _snack(r['message'] ?? 'Couldn\'t add that number. Please try again.');
                               }
                             } else if (!otpSent) {
-                              // Reclaim — initiate
+                              // Reclaim or Verify — initiate OTP
                               final full =
                                   '$countryCode${phoneCtrl.text.trim()}';
-                              final r = await PhoneService.reclaim(full);
+                              final r = mode == 'reclaim'
+                                ? await PhoneService.reclaim(full)
+                                : await PhoneService.initiateVerify(full);
                               setModal(() => loading = false);
                               if (r['success'] == true) {
-                                verificationPayload =
-                                    r['verification_payload'] ?? '';
                                 setModal(() => otpSent = true);
                               } else {
-                                _snack(r['message'] ?? 'Failed.');
+                                _snack(r['message'] ?? 'Couldn\'t send the OTP. Please try again.');
                               }
                             } else {
                               // Confirm OTP
                               final fullPhone = '$countryCode${phoneCtrl.text.trim()}';
                               final r = mode == 'reclaim'
                                 ? await PhoneService.reclaimVerify(fullPhone, otpCtrl.text.trim())
-                                : await PhoneService.confirmVerify(verificationPayload, otpCtrl.text.trim());
+                                : await PhoneService.confirmVerify(fullPhone, otpCtrl.text.trim());
                               
                               if (!ctx.mounted) return;
                               setModal(() => loading = false);
@@ -306,24 +308,28 @@ class _PhoneScreenState extends State<PhoneScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                   // ── Action Buttons ────────────────────────
-                  Row(children: [
-                    Expanded(
-                      child: _ActionBtn(
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _ActionBtn(
                         label: '+ Quick Add',
                         color: AppTheme.success,
                         onTap: _showQuickAdd,
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _ActionBtn(
-                        label: '🔁 Reclaim',
+                      _ActionBtn(
+                        label: 'Add & Verify',
+                        color: AppTheme.primary,
+                        onTap: _showVerifyAdd,
+                      ),
+                      _ActionBtn(
+                        label: 'Reclaim',
                         color: AppTheme.danger,
                         outlined: true,
                         onTap: _showReclaim,
                       ),
-                    ),
-                  ]).animate().fadeIn(delay: 50.ms),
+                    ],
+                  ).animate().fadeIn(delay: 50.ms),
                   const SizedBox(height: 20),
 
                   // ── Phone List ────────────────────────────
@@ -363,7 +369,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                                   leading: Container(
                                     width: 38, height: 38,
                                     decoration: BoxDecoration(
-                                      color: AppTheme.primary.withOpacity(0.1),
+                                      color: AppTheme.primary.withValues(alpha: 0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(Icons.phone_rounded,
@@ -395,7 +401,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                                     icon: Container(
                                       width: 32, height: 32,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.danger.withOpacity(0.1),
+                                        color: AppTheme.danger.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(8),
                                       ),
                                       child: const Icon(Icons.delete_outline_rounded,
@@ -418,7 +424,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       color: AppTheme.bgCard,
                       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
                       border: Border.all(
-                          color: AppTheme.primary.withOpacity(0.2),
+                          color: AppTheme.primary.withValues(alpha: 0.2),
                           width: 0.5),
                       boxShadow: AppTheme.subtleShadow,
                     ),
@@ -433,19 +439,19 @@ class _PhoneScreenState extends State<PhoneScreen> {
                               style: AppTheme.heading4.copyWith(fontSize: 14)),
                         ]),
                         const SizedBox(height: 14),
-                        _InfoBullet(
+                        const _InfoBullet(
                           bold: 'Quick Add',
                           text: ' saves a number to your account right away.',
                         ),
                         const SizedBox(height: 10),
-                        _InfoBullet(
+                        const _InfoBullet(
                           bold: 'Add & Verify',
                           text:
                               ' texts a one-time code to confirm you own the number before it\'s saved.',
                           highlight: true,
                         ),
                         const SizedBox(height: 10),
-                        _InfoBullet(
+                        const _InfoBullet(
                           bold: 'Reclaim',
                           text:
                               ' reclaim your phone number if it\'s already taken by someone else.',

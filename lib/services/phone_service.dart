@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_service.dart';
+import '../utils/app_utils.dart';
 
 class PhoneNumber {
   final int id;
@@ -84,7 +85,7 @@ class PhoneService {
       final resp = await http.post(
         Uri.parse('$_base/users/me/phones'),
         headers: AuthService.authHeaders,
-        body: jsonEncode({'phone_number': phone}),
+        body: jsonEncode({'phone': phone}),
       ).timeout(_timeout);
 
       final data = jsonDecode(resp.body);
@@ -93,7 +94,7 @@ class PhoneService {
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to add number.'};
     } catch (e) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -103,7 +104,7 @@ class PhoneService {
       final resp = await http.post(
         Uri.parse('$_base/users/phone/verify/initiate'),
         headers: AuthService.authHeaders,
-        body: jsonEncode({'phone_number': phone}),
+        body: jsonEncode({'phone': phone}),
       ).timeout(_timeout);
 
       final data = jsonDecode(resp.body);
@@ -112,18 +113,18 @@ class PhoneService {
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to send OTP.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
   // ── Step 2: confirm OTP ───────────────────────────────────────
   static Future<Map<String, dynamic>> confirmVerify(
-      String payload, String otp) async {
+      String phone, String otp) async {
     try {
       final resp = await http.post(
         Uri.parse('$_base/users/phone/verify/complete'),
         headers: AuthService.authHeaders,
-        body: jsonEncode({'verification_payload': payload, 'otp': otp}),
+        body: jsonEncode({'phone': phone, 'otp': otp}),
       ).timeout(_timeout);
 
       final data = jsonDecode(resp.body);
@@ -132,7 +133,7 @@ class PhoneService {
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -151,7 +152,7 @@ class PhoneService {
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to reclaim.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -170,7 +171,7 @@ class PhoneService {
       }
       return {'success': false, 'message': data['message'] ?? 'Invalid OTP.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
   static Future<Map<String, dynamic>> deletePhone(int id) async {
@@ -186,7 +187,7 @@ class PhoneService {
       final data = jsonDecode(resp.body);
       return {'success': false, 'message': data['message'] ?? 'Failed to delete.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
@@ -204,7 +205,7 @@ class PhoneService {
       final data = jsonDecode(resp.body);
       return {'success': false, 'message': data['message'] ?? 'Failed to set primary.'};
     } catch (_) {
-      return {'success': false, 'message': 'Connection error.'};
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 }

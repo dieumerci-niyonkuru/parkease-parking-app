@@ -1,14 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:country_code_picker/country_code_picker.dart';
-import 'package:http/http.dart' as http;
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../widgets/branded_loader.dart';
 import '../services/auth_service.dart';
+import '../services/api_service.dart';
 
 enum PayMethod { momo, airtel, card, cash }
 
@@ -40,52 +39,95 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _fmt(double v) => NumberFormat('#,##0', 'en').format(v.toInt());
 
+  String _payStatus = '';
+
   Future<void> _pay() async {
-    // ── VALIDATION ──────────────────────────────────────────────
-    if (_method == PayMethod.momo || _method == PayMethod.airtel) {
-      if (_momoCtrl.text.trim().length < 8) {
-        _snack('Please enter a valid phone number (e.g. 788 000 000).', isError: true);
-        return;
-      }
-    } else if (_method == PayMethod.card) {
-      if (_cardNumCtrl.text.replaceAll(' ', '').length < 13) {
-        _snack('Invalid card number. Check your entry.', isError: true);
-        return;
-      }
-      if (_expiryCtrl.text.isEmpty || _cvvCtrl.text.length < 3) {
-        _snack('Please complete all card details.', isError: true);
-        return;
-      }
+    final r = widget.record;
+
+    // Card / cash aren't supported by the self-service payment API (mobile
+    // money only). Be honest rather than pretend to charge a card.
+    if (_method == PayMethod.card) {
+      _snack('Card payment isn\'t available yet. Please use Mobile Money.', isError: true);
+      return;
+    }
+    if (_method == PayMethod.cash) {
+      _snack('For cash, please pay the attendant at the parking exit.', isError: true);
+      return;
     }
 
+    // ── MOBILE MONEY (real API) ─────────────────────────────────
+    final localPhone = _momoCtrl.text.trim();
+    if (localPhone.length < 8) {
+      _snack('Please enter the phone number that will receive the payment prompt.', isError: true);
+      return;
+    }
+    if (r.dbId == null || r.pInId == null || (r.paymentType ?? '').isEmpty) {
+      _snack('This vehicle can\'t be paid here right now. Please look up the plate again.', isError: true);
+      return;
+    }
+
+    final payerPhone = '$_countryCode$localPhone';
     HapticFeedback.mediumImpact();
-    setState(() => _paying = true);
-    
-    // Simulate real gateway delay
-    await Future.delayed(const Duration(milliseconds: 1500));
+    setState(() { _paying = true; _payStatus = 'Sending payment request...'; });
 
-    try {
-      final phoneOrCard = _method == PayMethod.card ? _cardNumCtrl.text.trim() : '$_countryCode${_momoCtrl.text.trim()}';
-      final payload = {
-        'slotId': widget.record.slotId,
-        'amount': widget.record.totalAmount,
-        'method': _method.name,
-        'account': phoneOrCard,
-      };
-      await http.post(
-        Uri.parse('https://client-api.iteccone.com/payment'),
-        headers: AuthService.authHeaders,
-        body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 12));
-    } catch (_) {}
-
-    final updated = await widget.onPay(widget.record);
+    // 1) Initiate the mobile-money charge.
+    final init = await ApiService.paymentInitiate(
+      dbId: r.dbId!,
+      plateNo: r.plateNumber,
+      pInId: r.pInId!,
+      paymentType: r.paymentType!,
+      payerPhone: payerPhone,
+    );
     if (!mounted) return;
-    setState(() { _paying = false; _done = true; _receipt = updated; });
+    if (init['success'] != true) {
+      setState(() { _paying = false; _payStatus = ''; });
+      _snack(init['message']?.toString() ?? 'Couldn\'t start the payment. Please try again.', isError: true);
+      return;
+    }
+
+    final reqRef = init['reqRef']?.toString();
+    final dbId = (init['dbId'] as int?) ?? r.dbId!;
+    if (reqRef == null) {
+      setState(() { _paying = false; _payStatus = ''; });
+      _snack('Couldn\'t start the payment. Please try again.', isError: true);
+      return;
+    }
+
+    setState(() => _payStatus = 'Approve the prompt on $payerPhone...');
+
+    // 2) Poll for completion (up to ~2 minutes).
+    final ok = await _pollStatus(dbId, reqRef);
+    if (!mounted) return;
+
+    if (!ok) {
+      setState(() { _paying = false; _payStatus = ''; });
+      _snack('Payment not completed. If you were charged, it will reflect shortly.', isError: true);
+      return;
+    }
+
+    // 3) Success → build the receipt.
+    final updated = await widget.onPay(r);
+    if (!mounted) return;
+    setState(() { _paying = false; _done = true; _receipt = updated; _payStatus = ''; });
     HapticFeedback.heavyImpact();
-    
-    _snack('Payment processed successfully!', isError: false);
+    _snack('Payment successful!', isError: false);
   }
+
+  // Polls /payment/status until SUCCESSFUL (true) or FAILED/timeout (false).
+  Future<bool> _pollStatus(int dbId, String reqRef) async {
+    const maxAttempts = 24;      // 24 x 5s ≈ 2 minutes
+    for (var i = 0; i < maxAttempts; i++) {
+      await Future.delayed(const Duration(seconds: 5));
+      if (!mounted) return false;
+      final st = await ApiService.paymentStatus(dbId, reqRef);
+      final state = st['state']?.toString();
+      if (state == 'SUCCESSFUL') return true;
+      if (state == 'FAILED' || state == 'CANCELLED') return false;
+      if (mounted) setState(() => _payStatus = 'Waiting for confirmation... (${i + 1})');
+    }
+    return false;
+  }
+
 
   void _snack(String msg, {bool isError = false}) {
     if (!mounted) return;
@@ -158,7 +200,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   color: AppTheme.bgCard,
                   borderRadius: BorderRadius.circular(28),
                   boxShadow: AppTheme.cardShadow,
-                  border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+                  border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
                 ),
                 child: Column(children: [
                   Text('TOTAL INVOICE AMOUNT', style: AppTheme.label.copyWith(letterSpacing: 2)),
@@ -194,9 +236,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               const SizedBox(height: 40),
               
               if (_paying)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: BrandedLoader(message: 'Authorizing payment...'),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: BrandedLoader(message: _payStatus.isEmpty ? 'Authorizing payment...' : _payStatus),
                 )
               else ...[
                 SizedBox(
@@ -209,29 +251,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                       elevation: 4,
                     ),
-                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.lock_rounded, size: 20),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Text('AUTHORIZE PAYMENT', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
                     ]),
                   ),
                 ).animate().fadeIn(delay: 400.ms),
-                
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back_rounded, size: 20),
-                    label: const Text('CANCEL & GO BACK', style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.textMuted,
-                      side: BorderSide(color: AppTheme.border),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                  ),
-                ).animate().fadeIn(delay: 500.ms),
               ],
               
               const SizedBox(height: 40),
@@ -302,14 +328,14 @@ class _PaymentGrid extends StatelessWidget {
             duration: const Duration(milliseconds: 250),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: active ? AppTheme.primary.withOpacity(0.08) : Colors.white,
+              color: active ? AppTheme.primary.withValues(alpha: 0.08) : Colors.white,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: active ? AppTheme.primary : AppTheme.border, 
                 width: active ? 2.5 : 1.5,
               ),
               boxShadow: active ? [
-                BoxShadow(color: AppTheme.primary.withOpacity(0.15), blurRadius: 15, offset: const Offset(0, 8))
+                BoxShadow(color: AppTheme.primary.withValues(alpha: 0.15), blurRadius: 15, offset: const Offset(0, 8))
               ] : [],
             ),
             child: Column(
@@ -420,7 +446,7 @@ class _CardForm extends StatelessWidget {
 class _CashNotice extends StatelessWidget {
   @override Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(24),
-    decoration: BoxDecoration(color: AppTheme.success.withOpacity(0.05), borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.success.withOpacity(0.2))),
+    decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.success.withValues(alpha: 0.2))),
     child: Row(children: [
       const Icon(Icons.info_rounded, color: AppTheme.success, size: 32),
       const SizedBox(width: 16),

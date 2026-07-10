@@ -3,6 +3,38 @@ import 'package:intl/intl.dart';
 class AppUtils {
   AppUtils._();
 
+  // ── User-friendly error messages ──────────────────────────────
+  /// Maps an HTTP status code to a short, human-readable message that is
+  /// safe to show directly to end users (no stack traces or codes).
+  static String friendlyHttpError(int statusCode, {String? serverMessage}) {
+    if (serverMessage != null && serverMessage.trim().isNotEmpty) {
+      return serverMessage.trim();
+    }
+    switch (statusCode) {
+      case 400:
+        return 'Something in your request wasn\'t quite right. Please check and try again.';
+      case 401:
+        return 'Your session has expired. Please sign in again.';
+      case 403:
+        return 'You don\'t have permission to do that.';
+      case 404:
+        return 'We couldn\'t find what you were looking for.';
+      case 409:
+        return 'That already exists. Please try a different value.';
+      case 429:
+        return 'Too many attempts. Please wait a moment and try again.';
+      default:
+        if (statusCode >= 500) {
+          return 'Our servers are having trouble right now. Please try again shortly.';
+        }
+        return 'Something went wrong. Please try again.';
+    }
+  }
+
+  /// A generic, friendly message for network/connection failures.
+  static String friendlyNetworkError() =>
+      'Can\'t reach the server. Please check your internet connection and try again.';
+
   // ── Currency Formatter ────────────────────────────────────────
   static String formatRwf(double amount) {
     final formatted = NumberFormat('#,###', 'en_US').format(amount.toInt());

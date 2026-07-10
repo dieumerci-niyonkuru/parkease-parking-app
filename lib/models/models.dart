@@ -30,7 +30,7 @@ class ParkingFacility {
     dbId:         int.tryParse(j['db_id']?.toString() ?? '1') ?? 1,
     dbName:       j['db_name']        ?? '',
     recordId:     j['record_id']      ?? '',
-    ratePerHour:  double.tryParse(j['rate_per_hour']?.toString() ?? j['hourly_rate']?.toString() ?? j['price_per_hour']?.toString() ?? '200') ?? 200,
+    ratePerHour:  double.tryParse(j['rate_per_hour']?.toString() ?? j['hourly_rate']?.toString() ?? j['price_per_hour']?.toString() ?? j['correctPrice']?.toString() ?? j['correctprice']?.toString() ?? j['correct_price']?.toString() ?? j['price']?.toString() ?? j['amount']?.toString() ?? j['cost']?.toString() ?? j['fee']?.toString() ?? j['tariff']?.toString() ?? j['unit_price']?.toString() ?? j['parking_fee']?.toString() ?? '200') ?? 200,
   );
 
   static List<ParkingFacility> get mockList => [
@@ -63,6 +63,14 @@ class VehicleRecord {
   final double? amountPaid;
   final String? receiptNumber;
 
+  // ── Real payment fields (from POST /payment/lookup) ──────────────
+  final int? dbId;             // tenant database id
+  final String? pInId;         // park-in session id, needed to initiate payment
+  final String? paymentType;   // 'checkout' or 'credit'
+  final bool payable;          // false for postpaid/company accounts
+  final String? blockMessage;  // shown when payable == false
+  final double? amountOwed;    // server-computed amount due
+
   VehicleRecord({
     required this.slotId,
     required this.plateNumber,
@@ -81,15 +89,56 @@ class VehicleRecord {
     required this.ratePerHour,
     this.amountPaid,
     this.receiptNumber,
+    this.dbId,
+    this.pInId,
+    this.paymentType,
+    this.payable = true,
+    this.blockMessage,
+    this.amountOwed,
   });
+
+  // Build a record from a /payment/lookup match. The server computes the
+  // amount owed and whether the vehicle can be self-paid, so we trust those
+  // directly rather than recalculating locally.
+  factory VehicleRecord.fromPaymentMatch(Map<String, dynamic> m, {String? fallbackPlate}) {
+    final payable = m['payable'] != false; // default true unless explicitly false
+    final hours = double.tryParse(m['hours']?.toString() ?? '0') ?? 0.0;
+    final entry = DateTime.tryParse((m['entre_time'] ?? '').toString())
+        ?? DateTime.now().subtract(Duration(minutes: (hours * 60).round()));
+    final owed = double.tryParse(m['amount_owed']?.toString() ?? '');
+    return VehicleRecord(
+      slotId:         '${m['db_id'] ?? ''}-${m['p_in_id'] ?? m['parking_id'] ?? ''}',
+      plateNumber:    (m['plate_no'] ?? fallbackPlate ?? '').toString().toUpperCase(),
+      ownerName:      'Driver',
+      ownerPhone:     '',
+      ownerEmail:     '',
+      entryTime:      entry,
+      spotNumber:     m['parking_id']?.toString() ?? '—',
+      parkingName:    m['db_name']?.toString() ?? 'Parking Site',
+      parkingAddress: '',
+      vehicleType:    'Vehicle',
+      vehicleColor:   '—',
+      vehicleMake:    '—',
+      status:         VehicleStatus.parked,
+      ratePerHour:    hours > 0 && owed != null ? owed / hours : 0,
+      dbId:           int.tryParse(m['db_id']?.toString() ?? ''),
+      pInId:          m['p_in_id']?.toString(),
+      paymentType:    m['payment_type']?.toString(),
+      payable:        payable,
+      blockMessage:   m['message']?.toString(),
+      amountOwed:     owed,
+    );
+  }
 
   Duration get duration {
     final end = exitTime ?? DateTime.now();
     return end.difference(entryTime);
   }
 
+  // Prefer the server-computed amount owed; fall back to a local calc only
+  // for demo/offline records that never went through /payment/lookup.
   double get totalAmount {
-    return AppUtils.calcAmount(duration, ratePerHour);
+    return amountOwed ?? AppUtils.calcAmount(duration, ratePerHour);
   }
 
   String get durationDisplay {
@@ -123,6 +172,12 @@ class VehicleRecord {
     ratePerHour:    ratePerHour,
     amountPaid:     amountPaid    ?? this.amountPaid,
     receiptNumber:  receiptNumber ?? this.receiptNumber,
+    dbId:           dbId,
+    pInId:          pInId,
+    paymentType:    paymentType,
+    payable:        payable,
+    blockMessage:   blockMessage,
+    amountOwed:     amountOwed,
   );
 
   static final Map<String, Map<String, dynamic>> _mockData = {
@@ -321,5 +376,186 @@ extension StatusStringExt on String {
       default:       return 'Unknown';
     }
   }
+}
+
+// ── Pricing Data ─────────────────────────────────────────────────
+// Real API shape (GET /pricing/parking/{record_id}):
+// {
+//   "categories": [
+//     { "category": {"id":1,"name":"Small Car","symbol":"S"},
+//       "prices": [ {"hours":0,"price":200,...}, {"hours":1,"price":200,...}, ... ] }
+//   ],
+//   "currency": "Frw", "has_categories": false,
+//   "parking_id": "6", "db_id": "1", "record_id": "1-6"
+// }
+// Prices are a real per-hour lookup table, not a flat rate to multiply.
+
+class PriceTier {
+  final int hours;
+  final double price;
+  const PriceTier({required this.hours, required this.price});
+
+  factory PriceTier.fromJson(Map<String, dynamic> j) => PriceTier(
+    hours: int.tryParse(j['hours']?.toString() ?? '0') ?? 0,
+    price: double.tryParse(j['price']?.toString() ?? '0') ?? 0,
+  );
+}
+
+class PriceCategory {
+  final int id;
+  final String name;
+  final String? symbol;
+  final List<PriceTier> tiers;
+
+  const PriceCategory({
+    required this.id,
+    required this.name,
+    this.symbol,
+    required this.tiers,
+  });
+
+  factory PriceCategory.fromJson(Map<String, dynamic> j) {
+    final cat = (j['category'] as Map?)?.cast<String, dynamic>() ?? const {};
+    final pricesRaw = (j['prices'] as List?) ?? const [];
+    final tiers = pricesRaw
+        .whereType<Map>()
+        .map((p) => PriceTier.fromJson(p.cast<String, dynamic>()))
+        .toList()
+      ..sort((a, b) => a.hours.compareTo(b.hours));
+    return PriceCategory(
+      id: int.tryParse(cat['id']?.toString() ?? '0') ?? 0,
+      name: cat['name']?.toString() ?? 'General',
+      symbol: cat['symbol']?.toString(),
+      tiers: tiers,
+    );
+  }
+
+  /// Real price for the given whole-hour duration, looked up from the
+  /// backend's actual (possibly non-linear) price table. Falls back to the
+  /// nearest lower tier, or the highest tier if [hours] exceeds the table.
+  double? priceForHours(int hours) {
+    if (tiers.isEmpty) return null;
+    PriceTier? exact;
+    PriceTier? nearestBelow;
+    for (final t in tiers) {
+      if (t.hours == hours) exact = t;
+      if (t.hours <= hours && (nearestBelow == null || t.hours > nearestBelow.hours)) {
+        nearestBelow = t;
+      }
+    }
+    return (exact ?? nearestBelow ?? tiers.last).price;
+  }
+}
+
+class PricingData {
+  final List<PriceCategory> categories;
+  final String currency;
+  final bool hasCategories;
+
+  const PricingData({
+    required this.categories,
+    required this.currency,
+    required this.hasCategories,
+  });
+
+  factory PricingData.fromJson(Map<String, dynamic> j) {
+    final catsRaw = (j['categories'] as List?) ?? const [];
+    final categories = catsRaw
+        .whereType<Map>()
+        .map((c) => PriceCategory.fromJson(c.cast<String, dynamic>()))
+        .toList();
+    return PricingData(
+      categories: categories,
+      currency: j['currency']?.toString() ?? 'RWF',
+      hasCategories: j['has_categories'] == true,
+    );
+  }
+
+  PriceCategory? get general => categories.isEmpty ? null : categories.first;
+
+  /// The real 1-hour price for the general category — used where a single
+  /// comparable rate is needed (e.g. facility list sorting/display).
+  double get ratePerHour => general?.priceForHours(1) ?? 200;
+
+  /// The real 24-hour price, if the backend defines a day tier.
+  double? get ratePerDay => general?.priceForHours(24);
+}
+
+// ── Car Category ─────────────────────────────────────────────────
+class CarCategory {
+  final int id;
+  final String name;
+  final double rateMultiplier;
+  final double? rate;
+  final String? description;
+
+  const CarCategory({
+    required this.id,
+    required this.name,
+    required this.rateMultiplier,
+    this.rate,
+    this.description,
+  });
+
+  factory CarCategory.fromJson(Map<String, dynamic> j) => CarCategory(
+    id: int.tryParse(j['id']?.toString() ?? '0') ?? 0,
+    name: j['name'] ?? j['category_name'] ?? j['type'] ?? '',
+    rateMultiplier: double.tryParse(
+      j['rate_multiplier']?.toString() ??
+      j['multiplier']?.toString() ??
+      '1.0'
+    ) ?? 1.0,
+    rate: double.tryParse(
+      j['rate']?.toString() ??
+      j['price']?.toString() ??
+      j['amount']?.toString() ??
+      j['cost']?.toString() ??
+      j['fee']?.toString() ??
+      j['rate_per_hour']?.toString() ??
+      j['hourly_rate']?.toString() ??
+      '',
+    ),
+    description: j['description']?.toString(),
+  );
+}
+
+// ── Database Config (Admin) ─────────────────────────────────────
+class DatabaseConfig {
+  final int id;
+  final String name;
+  final String type;
+  final String host;
+  final int port;
+  final String databaseName;
+  final String username;
+  final bool isConnected;
+  final String? status;
+  final DateTime? createdAt;
+
+  const DatabaseConfig({
+    required this.id,
+    required this.name,
+    required this.type,
+    required this.host,
+    required this.port,
+    required this.databaseName,
+    required this.username,
+    this.isConnected = false,
+    this.status,
+    this.createdAt,
+  });
+
+  factory DatabaseConfig.fromJson(Map<String, dynamic> j) => DatabaseConfig(
+    id: int.tryParse(j['id']?.toString() ?? '0') ?? 0,
+    name: j['name'] ?? j['db_name'] ?? '',
+    type: j['type'] ?? j['db_type'] ?? 'mysql',
+    host: j['host'] ?? j['db_host'] ?? '',
+    port: int.tryParse(j['port']?.toString() ?? j['db_port']?.toString() ?? '3306') ?? 3306,
+    databaseName: j['database_name'] ?? j['db_database'] ?? '',
+    username: j['username'] ?? j['db_username'] ?? '',
+    isConnected: j['is_connected'] ?? j['connected'] ?? false,
+    status: j['status']?.toString(),
+    createdAt: DateTime.tryParse(j['created_at'] ?? j['createdAt'] ?? ''),
+  );
 }
 

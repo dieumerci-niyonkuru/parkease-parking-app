@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:shimmer/shimmer.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
-import 'branded_loader.dart';
 
 // ── Gradient Button ───────────────────────────────────────────────
 class GradientButton extends StatefulWidget {
@@ -72,12 +70,7 @@ class _GradientButtonState extends State<GradientButton>
           width: widget.isFullWidth ? double.infinity : null,
           height: widget.height,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: widget.colors ??
-                  [AppTheme.primary, const Color(0xFF00A37A)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            color: widget.colors?.first ?? AppTheme.primary,
             borderRadius: BorderRadius.circular(AppTheme.radiusMd),
             boxShadow: widget.onTap != null ? AppTheme.glowShadow : [],
           ),
@@ -147,8 +140,8 @@ class OutlinedAppButton extends StatelessWidget {
         height: height,
         padding: const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
-          color: c.withOpacity(0.08),
-          border: Border.all(color: c.withOpacity(0.4)),
+          color: c.withValues(alpha: 0.08),
+          border: Border.all(color: c.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         ),
         child: Row(
@@ -189,9 +182,9 @@ class StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -235,7 +228,7 @@ class DataField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.bgSurface,
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-        border: Border.all(color: AppTheme.border.withOpacity(0.5)),
+        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,21 +411,12 @@ class AmountCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isPaid
-              ? [AppTheme.bgSurface, AppTheme.bgSurface]
-              : [
-                  AppTheme.primary.withOpacity(0.08),
-                  AppTheme.accent.withOpacity(0.06),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: isPaid ? AppTheme.bgSurface : AppTheme.primary.withValues(alpha: 0.07),
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(
           color: isPaid
               ? AppTheme.border
-              : AppTheme.primary.withOpacity(0.3),
+              : AppTheme.primary.withValues(alpha: 0.3),
         ),
       ),
       child: Row(
@@ -459,18 +443,14 @@ class AmountCard extends StatelessWidget {
                           ),
                         ],
                       )
-                    : ShaderMask(
-                        shaderCallback: (b) =>
-                            AppTheme.primaryGrad.createShader(b),
-                        child: Text(
-                          'RWF ${_formatRwf(amount)}',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            fontFamily: 'monospace',
-                            letterSpacing: -0.5,
-                          ),
+                    : Text(
+                        'RWF ${_formatRwf(amount)}',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.primary,
+                          fontFamily: 'monospace',
+                          letterSpacing: -0.5,
                         ),
                       ),
               ],
@@ -538,10 +518,7 @@ class ProgressSteps extends StatelessWidget {
                       duration: const Duration(milliseconds: 300),
                       height: 3,
                       decoration: BoxDecoration(
-                        gradient: done || active
-                            ? AppTheme.primaryGrad
-                            : null,
-                        color: done || active ? null : AppTheme.border,
+                        color: done || active ? AppTheme.primary : AppTheme.border,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -652,9 +629,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         left: 16,
         right: 16,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppTheme.bgDeep,
-        border: const Border(
+        border: Border(
             bottom: BorderSide(color: AppTheme.border, width: 0.5)),
       ),
       child: Row(
@@ -748,13 +725,10 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1E3A34), Color(0xFF0D1F1B)],
-            begin: Alignment.topLeft, end: Alignment.bottomRight,
-          ),
+          color: const Color(0xFF15302A),
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
-          border: Border.all(color: AppTheme.primary.withOpacity(0.3), width: 1.5),
-          boxShadow: [BoxShadow(color: AppTheme.primary.withOpacity(0.1), blurRadius: 20, offset: const Offset(0, 8))],
+          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1.5),
+          boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))],
         ),
         child: Column(
           children: [
@@ -762,7 +736,7 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.2), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.2), shape: BoxShape.circle),
                   child: const Icon(Icons.timer_outlined, color: AppTheme.primary, size: 20),
                 ),
                 const SizedBox(width: 12),
@@ -775,7 +749,7 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
                     ],
                   ),
                 ),
-                StatusBadge(label: 'LIVE', color: AppTheme.warning, icon: Icons.sensors_rounded),
+                const StatusBadge(label: 'LIVE', color: AppTheme.warning, icon: Icons.sensors_rounded),
               ],
             ),
             const SizedBox(height: 20),
@@ -812,6 +786,53 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── ITEC Brand Logo ───────────────────────────────────────────────
+class ItecLogo extends StatelessWidget {
+  final double size;
+  final double fontSize;
+  final Color? bgColor;
+  final Color? textColor;
+
+  const ItecLogo({
+    super.key,
+    this.size = 80,
+    this.fontSize = 44,
+    this.bgColor,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bgColor ?? Colors.white,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: size * 0.25,
+            offset: Offset(0, size * 0.1),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          'P',
+          style: TextStyle(
+            color: textColor ?? const Color(0xFF7A5B40),
+            fontSize: fontSize,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0,
+            height: 1,
+          ),
         ),
       ),
     );

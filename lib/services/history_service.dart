@@ -178,6 +178,7 @@ class HistoryService {
       'ratePerHour': h.ratePerHour,
       'amountPaid': h.amountPaid,
       'receiptNumber': h.receiptNumber,
+      'receiptUrl': h.receiptUrl,
       'searchedAt': h.searchedAt.toIso8601String(),
     })).toList();
     await prefs.setStringList(_key, encoded);

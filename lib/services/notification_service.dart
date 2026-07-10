@@ -88,7 +88,18 @@ class NotificationService {
     } catch (_) {}
   }
 
-  static void _onNotificationTap(NotificationResponse resp) {}
+  static void _onNotificationTap(NotificationResponse resp) {
+    final payload = resp.payload;
+    if (payload != null && payload.isNotEmpty) {
+      _addInApp(AppNotification(
+        id: 'tap_${DateTime.now().millisecondsSinceEpoch}',
+        title: 'Notification',
+        body: payload,
+        type: NotificationType.system,
+        time: DateTime.now(),
+      ));
+    }
+  }
 
   // ── Show Push Notification ────────────────────────────────────
   static Future<void> _showPush({

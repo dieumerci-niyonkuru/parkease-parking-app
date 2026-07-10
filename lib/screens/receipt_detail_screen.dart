@@ -1,13 +1,17 @@
+import 'dart:io';
 import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 import '../theme/app_theme.dart';
 import '../widgets/branded_loader.dart';
 import '../models/models.dart';
-import '../utils/app_utils.dart';
+
 
 class ReceiptDetailScreen extends StatefulWidget {
   final HistoryEntry entry;
@@ -18,7 +22,6 @@ class ReceiptDetailScreen extends StatefulWidget {
 }
 
 class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
-  Map<String, dynamic>? _pricing;
   HistoryEntry? _entry;
   bool _loading = true;
 
@@ -31,15 +34,10 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
 
   Future<void> _refreshData() async {
     setState(() => _loading = true);
-    final results = await Future.wait([
-      ApiService.getReceiptById(widget.entry.slotId),
-      ApiService.getPricing(widget.entry.slotId),
-    ]);
-    
+    final refreshed = await ApiService.getReceiptById(widget.entry.slotId);
     if (mounted) {
       setState(() {
-        if (results[0] != null) _entry = results[0] as HistoryEntry;
-        _pricing = results[1] as Map<String, dynamic>?;
+        if (refreshed != null) _entry = refreshed;
         _loading = false;
       });
     }
@@ -48,21 +46,28 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading && _entry == null) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.bgDeep,
-        body: const BrandedLoader(message: 'Retrieving official receipt...'),
+        body: BrandedLoader(message: 'Retrieving official receipt...'),
       );
     }
 
     final entry = _entry!;
-    final rate = _pricing != null 
-        ? (double.tryParse(_pricing!['rate']?.toString() ?? entry.ratePerHour.toString()) ?? entry.ratePerHour)
-        : entry.ratePerHour;
     final moneyFmt = NumberFormat('#,###');
     final dtFmt = DateFormat('EEEE, d MMMM yyyy · HH:mm');
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
+      appBar: AppBar(
+        backgroundColor: AppTheme.bgDeep,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text('RECEIPT DETAILS', style: AppTheme.heading4.copyWith(letterSpacing: 1.2, color: AppTheme.primary)),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -87,9 +92,9 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 16),
-                  _DetailRow('EBM Receipt #', entry.receiptNumber ?? 'N/A', isBold: true),
-                  _DetailRow('Plate Number', entry.plateNumber, isMono: true),
-                  _DetailRow('Parking Site', entry.parkingName),
+                  _detailRow('EBM Receipt #', entry.receiptNumber ?? 'N/A', isBold: true),
+                  _detailRow('Plate Number', entry.plateNumber, isMono: true),
+                  _detailRow('Parking Site', entry.parkingName),
                 ],
               ),
             ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9)),
@@ -103,7 +108,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => _openPdf(entry.receiptUrl!),
+                    onPressed: () => _openPdf(context, entry.receiptUrl!),
                     icon: const Icon(Icons.picture_as_pdf_rounded, color: Colors.white),
                     label: const Text('VIEW OFFICIAL PDF RECEIPT', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
@@ -128,10 +133,10 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
                 children: [
                   Text('SESSION SUMMARY', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 1)),
                   const SizedBox(height: 16),
-                  _DetailRow('Entry Time', dtFmt.format(entry.entryTime)),
-                  _DetailRow('Exit Time', entry.exitTime != null ? dtFmt.format(entry.exitTime!) : '—'),
-                  _DetailRow('Duration', _getDurationStr(entry)),
-                  _DetailRow('Hourly Rate', 'RWF ${entry.ratePerHour.toInt()} / hr'),
+                  _detailRow('Entry Time', dtFmt.format(entry.entryTime)),
+                  _detailRow('Exit Time', entry.exitTime != null ? dtFmt.format(entry.exitTime!) : '—'),
+                  _detailRow('Duration', _getDurationStr(entry)),
+                  _detailRow('Hourly Rate', 'RWF ${entry.ratePerHour.toInt()} / hr'),
                 ],
               ),
             ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
@@ -151,19 +156,14 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
                 children: [
                   Text('PARKING SITE INFORMATION', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 1)),
                   const SizedBox(height: 16),
-                  _DetailRow('Facility Name', entry.parkingName, isBold: true),
-                  _DetailRow('Location', entry.parkingAddress),
-                  _DetailRow('Spot/Slot #', entry.spotNumber, isHighlight: true),
+                  _detailRow('Facility Name', entry.parkingName, isBold: true),
+                  _detailRow('Location', entry.parkingAddress),
+                  _detailRow('Spot/Slot #', entry.spotNumber, isHighlight: true),
                 ],
               ),
             ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
 
             const SizedBox(height: 24),
-
-            // ── 24 HOUR RATE LIST ─────────────────────────────
-            _buildRateList(rate).animate().fadeIn(delay: 300.ms),
-
-            const SizedBox(height: 32),
 
             // ── ACTIONS ────────────────────────────────────────
             Row(
@@ -204,54 +204,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
     );
   }
 
-  Widget _buildRateList(double rate) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('RATE BREAKDOWN (24h)', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 1)),
-              if (_loading)
-                const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary))
-              else
-                const Icon(Icons.info_outline_rounded, color: AppTheme.primary, size: 16),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Table(
-            children: [
-              TableRow(
-                children: [
-                  Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text('Duration', style: AppTheme.label.copyWith(fontSize: 10))),
-                  Padding(padding: const EdgeInsets.symmetric(vertical: 4), child: Text('Fee (RWF)', style: AppTheme.label.copyWith(fontSize: 10), textAlign: TextAlign.right)),
-                ],
-              ),
-              const TableRow(children: [Divider(), Divider()]),
-              ...List.generate(25, (i) {
-                final fee = AppUtils.calcAmount(Duration(hours: i), rate);
-                return TableRow(
-                  children: [
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(i == 0 ? '0-1 Hour' : '$i Hours', style: AppTheme.bodySmall)),
-                    Padding(padding: const EdgeInsets.symmetric(vertical: 6), child: Text(NumberFormat('#,###').format(fee), style: AppTheme.bodySmall.copyWith(fontWeight: FontWeight.bold, color: AppTheme.primary), textAlign: TextAlign.right)),
-                  ],
-                );
-              }),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _DetailRow(String label, String value, {bool isBold = false, bool isMono = false, bool isHighlight = false}) {
+  Widget _detailRow(String label, String value, {bool isBold = false, bool isMono = false, bool isHighlight = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -285,29 +238,103 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
     return m == 0 ? '$h hr${h > 1 ? "s" : ""}' : '$h hr${h > 1 ? "s" : ""} $m min';
   }
 
-  Future<void> _openPdf(String url) async {
+  Future<void> _openPdf(BuildContext context, String url) async {
     final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    try {
+      final opened = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!opened && mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No app found to open this receipt. Try installing a PDF viewer or browser.'),
+            backgroundColor: AppTheme.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couldn\'t open the receipt. Please try again.'),
+            backgroundColor: AppTheme.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
-  void _saveReceipt(BuildContext context) {
+  Future<void> _saveReceipt(BuildContext context) async {
     HapticFeedback.mediumImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Receipt image saved to your gallery.'),
-        backgroundColor: AppTheme.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+    try {
+      final entry = _entry!;
+      if (entry.receiptUrl != null && entry.receiptUrl!.isNotEmpty) {
+        final uri = Uri.parse(entry.receiptUrl!);
+        final response = await http.get(uri);
+        if (response.statusCode == 200) {
+          final dir = await getApplicationDocumentsDirectory();
+          final filename = 'receipt_${entry.receiptNumber ?? entry.slotId}.pdf';
+          final file = File('${dir.path}/$filename');
+          await file.writeAsBytes(response.bodyBytes);
+          if (mounted && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('Receipt saved to your device.'),
+                backgroundColor: AppTheme.success,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            );
+          }
+        }
+      } else {
+        if (mounted && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('This receipt doesn\'t have a downloadable PDF yet.'),
+              backgroundColor: AppTheme.danger,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couldn\'t save the receipt. Please try again.'),
+            backgroundColor: AppTheme.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
-  void _shareReceipt(BuildContext context) {
+  Future<void> _shareReceipt(BuildContext context) async {
     HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening share dialog...')),
-    );
+    try {
+      final entry = _entry!;
+      final text = '''
+ITEC Parking Receipt
+--------------------
+EBM Receipt #: ${entry.receiptNumber ?? 'N/A'}
+Plate: ${entry.plateNumber}
+Site: ${entry.parkingName}
+Amount: RWF ${NumberFormat('#,###').format(entry.amountPaid?.toInt() ?? 0)}
+Duration: ${_getDurationStr(entry)}
+''';
+      await Share.share(text);
+    } catch (e) {
+      if (mounted && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couldn\'t share the receipt. Please try again.'),
+            backgroundColor: AppTheme.danger,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 }
