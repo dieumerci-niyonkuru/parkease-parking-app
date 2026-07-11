@@ -79,18 +79,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     // ── WELCOME MESSAGE ─────────────────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_greeting,
-                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 4),
-                          Text('Welcome, $firstName to',
-                            style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
-                          const SizedBox(height: 2),
-                          const Text('ITEC Parking',
-                            style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
-                        ],
+                      child: GestureDetector(
+                        onTap: () => widget.onNavigateToTab?.call(0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Welcome, $firstName! 👋',
+                              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 20, fontWeight: FontWeight.w900)),
+                            const SizedBox(height: 2),
+                            const Text('To ITEC Parking',
+                              style: TextStyle(color: AppTheme.textMuted, fontSize: 14, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
                       ),
                     ).animate().fadeIn(delay: 100.ms),
                     const SizedBox(height: 4),
