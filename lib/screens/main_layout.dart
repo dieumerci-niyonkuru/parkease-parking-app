@@ -169,7 +169,13 @@ class _MainLayoutState extends State<MainLayout> {
             onPressed: () {
               setState(() {
                 _isSearching = !_isSearching;
-                if (!_isSearching) {
+                if (_isSearching) {
+                  // Opening search: pre-fill with the current query so the
+                  // user can continue where they left off from the inline field.
+                  final current = context.read<AppProvider>().searchQuery;
+                  _searchCtrl.text = current;
+                  _searchCtrl.selection = TextSelection.fromPosition(TextPosition(offset: current.length));
+                } else {
                   // Closing search: clear the field and the active query so
                   // lists return to their full, unfiltered state.
                   _searchCtrl.clear();

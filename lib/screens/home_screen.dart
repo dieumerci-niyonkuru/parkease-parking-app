@@ -20,8 +20,11 @@ class _HomeScreenState extends State<HomeScreen> {
   List<ParkingFacility> _facilities = [];
   List<PhoneNumber>     _phones     = [];
   bool _loading = true;
+  final _searchCtrl = TextEditingController();
 
   @override void initState() { super.initState(); _load(); }
+
+  @override void dispose() { _searchCtrl.dispose(); super.dispose(); }
 
   Future<void> _load() async {
     final results = await Future.wait([
@@ -80,10 +83,60 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ).animate().fadeIn(delay: 100.ms),
+                    // ── INLINE SEARCH FIELD ──────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
+                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+                        ),
+                        child: Row(children: [
+                          const SizedBox(width: 14),
+                          Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              controller: _searchCtrl,
+                              textCapitalization: TextCapitalization.characters,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: 0.5),
+                              decoration: InputDecoration(
+                                hintText: 'Search parking sites...',
+                                hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 13, fontWeight: FontWeight.w500),
+                                border: InputBorder.none,
+                                filled: false,
+                                contentPadding: EdgeInsets.zero,
+                                isDense: true,
+                              ),
+                              onChanged: (v) {
+                                context.read<AppProvider>().updateSearchQuery(v);
+                                setState(() {});
+                              },
+                            ),
+                          ),
+                          if (_searchCtrl.text.isNotEmpty)
+                            GestureDetector(
+                              onTap: () {
+                                _searchCtrl.clear();
+                                context.read<AppProvider>().updateSearchQuery('');
+                                setState(() {});
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.only(right: 12),
+                                child: Icon(Icons.close_rounded, color: AppTheme.textMuted, size: 18),
+                              ),
+                            ),
+                        ]),
+                      ),
+                    ).animate().fadeIn(delay: 120.ms),
                     const SizedBox(height: 4),
                     // ── PAY NOW HERO ─────────────────────────────
                     const Padding(
-                      padding: EdgeInsets.fromLTRB(24, 16, 24, 20),
+                      padding: EdgeInsets.fromLTRB(24, 12, 24, 16),
                       child: PayNowCard(),
                     ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.1),
                   ],
