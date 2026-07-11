@@ -98,8 +98,7 @@ class _MainLayoutState extends State<MainLayout> {
               height: 42,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white.withValues(alpha: 0.12),
               ),
               child: Row(children: [
                 const Icon(Icons.search_rounded, color: Colors.white70, size: 20),
@@ -289,7 +288,6 @@ class _MainLayoutState extends State<MainLayout> {
       body: PageView(
         controller: _pageController,
         onPageChanged: (i) {
-          HapticFeedback.lightImpact();
           setState(() => _currentIndex = i);
         },
         children: List.generate(_pages.length, (index) {
