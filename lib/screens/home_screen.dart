@@ -8,9 +8,11 @@ import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
 import '../widgets/pay_now_card.dart';
+import 'phone_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final void Function(int tabIndex)? onNavigateToTab;
+  const HomeScreen({super.key, this.onNavigateToTab});
   @override State<HomeScreen> createState() => _HomeScreenState();
 }
 
@@ -115,9 +117,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text('Overview', style: AppTheme.heading3),
                         const SizedBox(height: 14),
                         Row(children: [
-                          Expanded(child: _StatCard(icon: Icons.local_parking_rounded, iconBg: AppTheme.primary, label: 'PARKING SITES', value: _facilities.length.toString())),
+                          Expanded(child: GestureDetector(
+                            onTap: () => widget.onNavigateToTab?.call(1),
+                            child: _StatCard(icon: Icons.local_parking_rounded, iconBg: AppTheme.primary, label: 'PARKING SITES', value: _facilities.length.toString()),
+                          )),
                           const SizedBox(width: 16),
-                          Expanded(child: _StatCard(icon: Icons.phone_android_rounded, iconBg: AppTheme.success, label: 'LINKED PHONES', value: _phones.length.toString())),
+                          Expanded(child: GestureDetector(
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PhoneScreen())),
+                            child: _StatCard(icon: Icons.phone_android_rounded, iconBg: AppTheme.success, label: 'LINKED PHONES', value: _phones.length.toString()),
+                          )),
                         ]).animate().fadeIn().slideY(begin: 0.1),
                         const SizedBox(height: 28),
 
@@ -241,7 +249,11 @@ class _StatCard extends StatelessWidget {
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20), boxShadow: AppTheme.subtleShadow),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, color: iconBg, size: 24),
+      Row(children: [
+        Icon(icon, color: iconBg, size: 24),
+        const Spacer(),
+        Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textMuted.withValues(alpha: 0.4), size: 12),
+      ]),
       const SizedBox(height: 14),
       Text(value, style: AppTheme.heading2.copyWith(fontSize: 24, color: AppTheme.textPrimary)),
       const SizedBox(height: 4),

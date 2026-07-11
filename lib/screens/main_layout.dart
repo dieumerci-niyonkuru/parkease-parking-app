@@ -37,8 +37,8 @@ class _MainLayoutState extends State<MainLayout> {
     _currentIndex = widget.initialIndex;
   }
 
-  final List<Widget> _pages = [
-    const HomeScreen(),
+  List<Widget> get _pages => [
+    HomeScreen(onNavigateToTab: (i) => setState(() => _currentIndex = i)),
     const ParkingListScreen(),
     const HistoryScreen(),
     const ProfileScreen(),
