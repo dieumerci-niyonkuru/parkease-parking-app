@@ -96,13 +96,13 @@ class _MainLayoutState extends State<MainLayout> {
         title: _isSearching
           ? Container(
               height: 42,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: Colors.white.withValues(alpha: 0.15),
               ),
               child: Row(children: [
                 const Icon(Icons.search_rounded, color: Colors.white70, size: 20),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: _searchCtrl,
@@ -111,8 +111,10 @@ class _MainLayoutState extends State<MainLayout> {
                     cursorColor: Colors.white,
                     decoration: const InputDecoration(
                       hintText: 'Search sites, plates, receipts...',
-                      hintStyle: TextStyle(color: Colors.white60, fontSize: 13),
+                      hintStyle: TextStyle(color: Colors.white54, fontSize: 13),
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                       filled: false,
                       contentPadding: EdgeInsets.zero,
                       isDense: true,
