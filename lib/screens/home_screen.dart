@@ -83,56 +83,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ).animate().fadeIn(delay: 100.ms),
-                    // ── INLINE SEARCH FIELD ──────────────────────────
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
-                      child: Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
-                        ),
-                        child: Row(children: [
-                          const SizedBox(width: 14),
-                          Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _searchCtrl,
-                              textCapitalization: TextCapitalization.characters,
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: 0.5),
-                              decoration: InputDecoration(
-                                hintText: 'Search parking sites...',
-                                hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 13, fontWeight: FontWeight.w500),
-                                border: InputBorder.none,
-                                filled: false,
-                                contentPadding: EdgeInsets.zero,
-                                isDense: true,
-                              ),
-                              onChanged: (v) {
-                                context.read<AppProvider>().updateSearchQuery(v);
-                                setState(() {});
-                              },
-                            ),
-                          ),
-                          if (_searchCtrl.text.isNotEmpty)
-                            GestureDetector(
-                              onTap: () {
-                                _searchCtrl.clear();
-                                context.read<AppProvider>().updateSearchQuery('');
-                                setState(() {});
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.only(right: 12),
-                                child: Icon(Icons.close_rounded, color: AppTheme.textMuted, size: 18),
-                              ),
-                            ),
-                        ]),
-                      ),
-                    ).animate().fadeIn(delay: 120.ms),
                     const SizedBox(height: 4),
                     // ── PAY NOW HERO ─────────────────────────────
                     const Padding(
@@ -180,7 +130,55 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: _StatCard(icon: Icons.phone_android_rounded, iconBg: AppTheme.success, label: 'LINKED PHONES', value: _phones.length.toString()),
                           )),
                         ]).animate().fadeIn().slideY(begin: 0.1),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
+                        // ── INLINE SEARCH FIELD ──────────────────────────
+                        Container(
+                          height: 48,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+                          ),
+                          child: Row(children: [
+                            const SizedBox(width: 14),
+                            Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchCtrl,
+                                textCapitalization: TextCapitalization.characters,
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: 0.5),
+                                decoration: InputDecoration(
+                                  hintText: 'Search parking sites...',
+                                  hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 13, fontWeight: FontWeight.w500),
+                                  border: InputBorder.none,
+                                  filled: false,
+                                  contentPadding: EdgeInsets.zero,
+                                  isDense: true,
+                                ),
+                                onChanged: (v) {
+                                  context.read<AppProvider>().updateSearchQuery(v);
+                                  setState(() {});
+                                },
+                              ),
+                            ),
+                            if (_searchCtrl.text.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  _searchCtrl.clear();
+                                  context.read<AppProvider>().updateSearchQuery('');
+                                  setState(() {});
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.only(right: 12),
+                                  child: Icon(Icons.close_rounded, color: AppTheme.textMuted, size: 18),
+                                ),
+                              ),
+                          ]),
+                        ).animate().fadeIn(delay: 100.ms),
+                        const SizedBox(height: 20),
 
                         const Text('Parking Sites', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 16),
