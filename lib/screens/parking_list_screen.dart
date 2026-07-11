@@ -95,8 +95,8 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                     labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, letterSpacing: 0.5),
                     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     tabs: const [
-                      Tab(text: 'ALL SITES', icon: Icon(Icons.location_city_rounded, size: 18)),
-                      Tab(text: 'RATES', icon: Icon(Icons.payments_rounded, size: 18)),
+                      Tab(text: 'ALL SITES', icon: Icon(Icons.directions_car_rounded, size: 18)),
+                      Tab(text: 'RATES', icon: Icon(Icons.local_parking_rounded, size: 18)),
                     ],
                   ),
                 ],
@@ -249,7 +249,7 @@ class _RatesTab extends StatelessWidget {
           final f = sorted[i];
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
@@ -260,20 +260,21 @@ class _RatesTab extends StatelessWidget {
               onTap: () => Navigator.of(context).pushNamed('parking_detail', arguments: f),
               child: Row(children: [
                 Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 20),
+                  width: 44, height: 44,
+                  decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
+                  child: const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(f.fullParkName.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text('${f.parkingLots} spots available', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
                   ]),
                 ),
                 Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                   Text('Frw ${moneyFmt.format(f.ratePerHour)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.primary)),
+                  const SizedBox(height: 2),
                   Text('per hour', style: TextStyle(fontSize: 9, color: Colors.grey.shade500, fontWeight: FontWeight.w700)),
                 ]),
               ]),
@@ -291,7 +292,6 @@ class _ParkingSiteCard extends StatelessWidget {
   const _ParkingSiteCard({required this.facility, required this.onTap});
 
   @override Widget build(BuildContext context) {
-    final moneyFmt = NumberFormat('#,###');
     final available = facility.parkingLots > 0;
     return GestureDetector(
       onTap: onTap,
@@ -331,10 +331,10 @@ class _ParkingSiteCard extends StatelessWidget {
             ]),
             const SizedBox(height: 14),
             Row(children: [
-              _chip(Icons.payments_rounded, 'Frw ${moneyFmt.format(facility.ratePerHour)}/hr', AppTheme.primary),
-              const SizedBox(width: 8),
-              _chip(Icons.local_parking_rounded, available ? '${facility.parkingLots} spots' : 'Full',
+              _chip(Icons.local_parking_rounded, available ? '${facility.parkingLots} spots available' : 'Full',
                 available ? AppTheme.success : AppTheme.textMuted),
+              const SizedBox(width: 8),
+              _chip(Icons.touch_app_rounded, 'Tap for rates & details', AppTheme.primary),
             ]),
           ],
         ),

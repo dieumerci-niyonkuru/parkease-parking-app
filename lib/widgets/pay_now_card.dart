@@ -25,46 +25,55 @@ class PayNowCard extends StatelessWidget {
 
   // ── Full hero card (Home) ──────────────────────────────────────────
   Widget _buildHero(BuildContext context) {
+    final now = DateTime.now();
+    final carIcons = [
+      Icons.directions_car_rounded,
+      Icons.local_taxi_rounded,
+      Icons.time_to_leave_rounded,
+      Icons.directions_car_filled_rounded,
+    ];
+    final activeIcon = carIcons[now.minute % carIcons.length];
+
     return GestureDetector(
       onTap: () => _open(context),
       child: Container(
-        padding: const EdgeInsets.all(22),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppTheme.primary,
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(24),
           boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 22, offset: const Offset(0, 12))],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Container(
-              width: 56, height: 56,
+              width: 52, height: 52,
               alignment: Alignment.center,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(18)),
-              child: const Text('💰', style: TextStyle(fontSize: 30)),
+              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(16)),
+              child: Icon(activeIcon, color: Colors.white, size: 28),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 14),
             const Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text('Pay Parking Fees', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
-                SizedBox(height: 4),
+                Text('Pay Parking Fees', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w900)),
+                SizedBox(height: 3),
                 Text('Enter your plate number and pay in seconds.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500, height: 1.3)),
+                  style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500, height: 1.3)),
               ]),
             ),
           ]),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           SizedBox(
-            width: double.infinity, height: 54,
+            width: double.infinity, height: 46,
             child: ElevatedButton(
               onPressed: () => _open(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: AppTheme.primary,
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              child: const Text('PAY NOW  💰',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5, color: AppTheme.primary)),
+              child: const Text('PAY NOW',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 0.5, color: AppTheme.primary)),
             ),
           ),
         ]),
@@ -77,31 +86,31 @@ class PayNowCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => _open(context),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: AppTheme.primary,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Row(children: [
           Container(
-            width: 40, height: 40,
+            width: 36, height: 36,
             alignment: Alignment.center,
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-            child: const Text('💰', style: TextStyle(fontSize: 20)),
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(10)),
+            child: const Icon(Icons.directions_car_rounded, color: Colors.white, size: 18),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           const Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-              Text('Pay Parking Fees', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900)),
+              Text('Pay Parking Fees', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w900)),
               SizedBox(height: 1),
               Text('Pay instantly by plate number', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w500)),
             ]),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-            child: const Text('PAY NOW', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.3)),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            child: const Text('PAY', style: TextStyle(color: AppTheme.primary, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.3)),
           ),
         ]),
       ),

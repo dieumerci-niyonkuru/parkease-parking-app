@@ -303,27 +303,46 @@ class _CategoryPricingCard extends StatelessWidget {
 
 extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
   Future<void> _showFullPriceList(BuildContext context, PriceCategory category) async {
-    await showDialog(
+    await showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Price List', style: TextStyle(fontWeight: FontWeight.w900)),
-            IconButton(
-              icon: const Icon(Icons.close_rounded),
-              onPressed: () => Navigator.pop(ctx),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: _buildFullRateBreakdown(category),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.55,
+        minChildSize: 0.35,
+        maxChildSize: 0.85,
+        builder: (ctx, scrollCtrl) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
+          child: Column(children: [
+            // ── Drag handle ──────────────────────────────────────
+            const SizedBox(height: 12),
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(children: [
+                const Icon(Icons.receipt_long_rounded, color: AppTheme.primary, size: 20),
+                const SizedBox(width: 10),
+                const Expanded(child: Text('Full Price List', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 22),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ]),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: SingleChildScrollView(
+                controller: scrollCtrl,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                child: _buildFullRateBreakdown(category),
+              ),
+            ),
+          ]),
         ),
       ),
     );
@@ -336,19 +355,19 @@ extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7F2),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: category.tiers.map((t) {
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(t.hours == 0 ? '0-1 Hour' : '${t.hours} Hour${t.hours == 1 ? "" : "s"}',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey)),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF212529))),
                 Text('$sym${moneyFmt.format(t.price)}',
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Color(0xFF7A5B40))),
+                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF7A5B40))),
               ],
             ),
           );

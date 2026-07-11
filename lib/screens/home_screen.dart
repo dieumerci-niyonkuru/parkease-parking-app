@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
-import '../services/auth_service.dart';
 import '../services/phone_service.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
@@ -44,8 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override Widget build(BuildContext context) {
     final query = context.watch<AppProvider>().searchQuery;
-    final user = AuthService.user;
-    final firstName = user?.names.split(' ').first ?? 'Driver';
 
     final displayFacilities = query.isEmpty 
       ? _facilities 
@@ -76,8 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(_greeting,
                             style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
-                          Text('Welcome, $firstName',
-                            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+                          const Text('ITEC Parking',
+                            style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
                         ],
                       ),
                     ).animate().fadeIn(delay: 100.ms),
