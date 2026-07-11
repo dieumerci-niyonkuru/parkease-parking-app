@@ -15,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   int _step = 1; // 1: Phone, 2: OTP, 3: Profile
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   // Step 1: Phone
   String _countryCode = '+250';
@@ -30,6 +31,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _namesCtrl    = TextEditingController();
   final _emailCtrl    = TextEditingController();
   final _passwordCtrl = TextEditingController();
+  final _confirmPasswordCtrl = TextEditingController();
 
   @override
   void dispose() {
@@ -39,6 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _namesCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
+    _confirmPasswordCtrl.dispose();
     super.dispose();
   }
 
@@ -143,7 +146,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final names    = _namesCtrl.text.trim();
     final email    = _emailCtrl.text.trim();
     final password = _passwordCtrl.text;
-    if (names.isEmpty || email.isEmpty || password.isEmpty) {
+    final confirm  = _confirmPasswordCtrl.text;
+    if (names.isEmpty || email.isEmpty || password.isEmpty || confirm.isEmpty) {
       _showDialog('Please fill in all fields to finish setting up your account.');
       return;
     }
@@ -151,6 +155,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // get an instant, clear message instead of a server rejection.
     if (password.length < 6) {
       _showDialog('Your password needs at least 6 characters. Please choose a longer one.');
+      return;
+    }
+    if (password != confirm) {
+      _showDialog('Your passwords don\'t match. Please re-type them.');
       return;
     }
 
@@ -522,8 +530,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       TextField(
         controller: _passwordCtrl,
         obscureText: _obscurePassword,
-        textInputAction: TextInputAction.done,
-        onSubmitted: (_) => _completeRegistration(),
+        textInputAction: TextInputAction.next,
         style: _inputStyle,
         decoration: _inputDeco(
           hint: 'Create a strong password',
@@ -534,6 +541,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
               color: AppTheme.textMuted, size: 20,
             ),
             onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+          ),
+        ),
+      ),
+      const SizedBox(height: 20),
+
+      const _FieldLabel(text: 'Confirm Password'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _confirmPasswordCtrl,
+        obscureText: _obscureConfirm,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _completeRegistration(),
+        style: _inputStyle,
+        decoration: _inputDeco(
+          hint: 'Re-type your password',
+          icon: Icons.lock_outline_rounded,
+          suffix: IconButton(
+            icon: Icon(
+              _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+              color: AppTheme.textMuted, size: 20,
+            ),
+            onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
           ),
         ),
       ),

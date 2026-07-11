@@ -28,6 +28,7 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   late int _currentIndex;
+  late final PageController _pageController;
   final _searchCtrl = TextEditingController();
   bool _isSearching = false;
 
@@ -35,6 +36,14 @@ class _MainLayoutState extends State<MainLayout> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _searchCtrl.dispose();
+    super.dispose();
   }
 
   List<Widget> get _pages => [
@@ -90,7 +99,7 @@ class _MainLayoutState extends State<MainLayout> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Row(children: [
                 const Icon(Icons.search_rounded, color: Colors.white70, size: 20),
@@ -111,7 +120,7 @@ class _MainLayoutState extends State<MainLayout> {
                     ),
                     onChanged: (v) {
                       context.read<AppProvider>().updateSearchQuery(v);
-                      setState(() {}); // toggle the clear button
+                      setState(() {});
                     },
                   ),
                 ),
@@ -199,6 +208,7 @@ class _MainLayoutState extends State<MainLayout> {
                 onSelected: (val) async {
                   if (val == 0) {
                     setState(() => _currentIndex = 3); // Go to profile
+                    _pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                   } else if (val == 1) {
                     // ── LOGOUT CONFIRMATION DIALOG ──────────────────
                     final confirmed = await showDialog<bool>(
@@ -276,8 +286,12 @@ class _MainLayoutState extends State<MainLayout> {
           child: Container(color: AppTheme.border.withValues(alpha: 0.5), height: 1),
         ),
       ),
-      body: IndexedStack(
-        index: _currentIndex,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (i) {
+          HapticFeedback.lightImpact();
+          setState(() => _currentIndex = i);
+        },
         children: List.generate(_pages.length, (index) {
           return Navigator(
             key: _navigatorKeys[index],
@@ -299,7 +313,6 @@ class _MainLayoutState extends State<MainLayout> {
                   builder = PlateLookupScreen(initialPlate: settings.arguments as String);
                   break;
                 case 'trigger_search':
-                  // This is a special trigger to open the search bar
                   _triggerHeaderSearch();
                   builder = _pages[index];
                   break;
@@ -319,7 +332,7 @@ class _MainLayoutState extends State<MainLayout> {
             return;
           }
           HapticFeedback.lightImpact();
-          setState(() => _currentIndex = i);
+          _pageController.animateToPage(i, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
         },
       ),
     );
@@ -350,7 +363,8 @@ class _MainLayoutState extends State<MainLayout> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => _currentIndex = 3); // Take to My Account
+              setState(() => _currentIndex = 3);
+              _pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF7A5B40),

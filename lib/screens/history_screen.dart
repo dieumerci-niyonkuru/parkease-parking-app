@@ -116,7 +116,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
       ? _filtered
       : _filtered.where((e) =>
           e.plateNumber.toLowerCase().contains(query) ||
-          e.parkingName.toLowerCase().contains(query)).toList();
+          e.parkingName.toLowerCase().contains(query) ||
+          (e.receiptNumber?.toLowerCase().contains(query) ?? false)).toList();
 
     final totalPaid = displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0));
     final count = displayRecords.length;

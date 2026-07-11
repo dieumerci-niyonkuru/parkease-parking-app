@@ -27,6 +27,19 @@
 	<string>0d2b7d9f85206cda962feadc78d510a9</string>
 	<key>FacebookDisplayName</key>
 	<string>ITEC Parking</string>
+	<!-- Required on iOS so url_launcher can open phone, email, web and maps
+	     links (tap-to-call, mail us, View Location Site, help/terms). Without
+	     this, canLaunchUrl returns false and those buttons do nothing. -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
+		<string>mailto</string>
+		<string>comgooglemaps</string>
+		<string>fbapi</string>
+		<string>fb-messenger-share-api</string>
+	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

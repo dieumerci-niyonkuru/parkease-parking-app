@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
@@ -14,13 +13,33 @@ class ParkingListScreen extends StatefulWidget {
   @override State<ParkingListScreen> createState() => _ParkingListScreenState();
 }
 
+enum _SiteSort { recommended, mostAvailable, cheapest, nameAZ }
+
 class _ParkingListScreenState extends State<ParkingListScreen> with SingleTickerProviderStateMixin {
   List<ParkingFacility> _all = [];
   bool _loading = true;
+  _SiteSort _sort = _SiteSort.recommended;
 
   // Pagination (All Sites tab)
   int _currentPage = 0;
   final int _pageSize = 5;
+
+  void _changeSort(_SiteSort s) => setState(() { _sort = s; _currentPage = 0; });
+
+  List<ParkingFacility> _applySort(List<ParkingFacility> list) {
+    final sorted = [...list];
+    switch (_sort) {
+      case _SiteSort.recommended:
+        break; // keep API order
+      case _SiteSort.mostAvailable:
+        sorted.sort((a, b) => b.parkingLots.compareTo(a.parkingLots));
+      case _SiteSort.cheapest:
+        sorted.sort((a, b) => a.ratePerHour.compareTo(b.ratePerHour));
+      case _SiteSort.nameAZ:
+        sorted.sort((a, b) => a.fullParkName.toLowerCase().compareTo(b.fullParkName.toLowerCase()));
+    }
+    return sorted;
+  }
 
   late final TabController _tabController;
 
@@ -50,11 +69,12 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
     final query = provider.searchQuery.toLowerCase().trim();
     final isSearching = provider.isSearchActive || query.isNotEmpty;
 
-    final filtered = query.isEmpty
+    final matched = query.isEmpty
         ? _all
         : _all.where((f) =>
             f.fullParkName.toLowerCase().contains(query) ||
             f.address.toLowerCase().contains(query)).toList();
+    final filtered = _applySort(matched);
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
@@ -96,7 +116,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                     unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     tabs: const [
                       Tab(text: 'ALL SITES', icon: Icon(Icons.directions_car_rounded, size: 18)),
-                      Tab(text: 'RATES', icon: Icon(Icons.local_parking_rounded, size: 18)),
+                      Tab(text: 'BROWSE', icon: Icon(Icons.local_parking_rounded, size: 18)),
                     ],
                   ),
                 ],
@@ -111,6 +131,8 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                     loading: _loading,
                     currentPage: _currentPage,
                     pageSize: _pageSize,
+                    sort: _sort,
+                    onSortChanged: _changeSort,
                     onRefresh: _load,
                     onPageChanged: (p) => setState(() => _currentPage = p),
                   )
@@ -122,6 +144,8 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                         loading: _loading,
                         currentPage: _currentPage,
                         pageSize: _pageSize,
+                        sort: _sort,
+                        onSortChanged: _changeSort,
                         onRefresh: _load,
                         onPageChanged: (p) => setState(() => _currentPage = p),
                       ),
@@ -141,6 +165,8 @@ class _AllSitesTab extends StatelessWidget {
   final bool loading;
   final int currentPage;
   final int pageSize;
+  final _SiteSort sort;
+  final ValueChanged<_SiteSort> onSortChanged;
   final Future<void> Function() onRefresh;
   final ValueChanged<int> onPageChanged;
   const _AllSitesTab({
@@ -148,6 +174,8 @@ class _AllSitesTab extends StatelessWidget {
     required this.loading,
     required this.currentPage,
     required this.pageSize,
+    required this.sort,
+    required this.onSortChanged,
     required this.onRefresh,
     required this.onPageChanged,
   });
@@ -164,8 +192,22 @@ class _AllSitesTab extends StatelessWidget {
     final items = (start < filtered.length) ? filtered.sublist(start, end) : <ParkingFacility>[];
 
     return Column(children: [
+      // ── SORT / FILTER CHIPS ─────────────────────────────
+      SizedBox(
+        height: 44,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
+          children: [
+            _SortChip(label: 'Recommended', active: sort == _SiteSort.recommended, onTap: () => onSortChanged(_SiteSort.recommended)),
+            _SortChip(label: 'Most Available', icon: Icons.local_parking_rounded, active: sort == _SiteSort.mostAvailable, onTap: () => onSortChanged(_SiteSort.mostAvailable)),
+            _SortChip(label: 'Cheapest', icon: Icons.payments_rounded, active: sort == _SiteSort.cheapest, onTap: () => onSortChanged(_SiteSort.cheapest)),
+            _SortChip(label: 'Name A–Z', icon: Icons.sort_by_alpha_rounded, active: sort == _SiteSort.nameAZ, onTap: () => onSortChanged(_SiteSort.nameAZ)),
+          ],
+        ),
+      ),
       Padding(
-        padding: const EdgeInsets.fromLTRB(24, 14, 24, 2),
+        padding: const EdgeInsets.fromLTRB(24, 6, 24, 2),
         child: Row(children: [
           Text('${filtered.length} ${filtered.length == 1 ? "SITE" : "SITES"} AVAILABLE',
             style: AppTheme.label.copyWith(fontWeight: FontWeight.w900, color: AppTheme.textMuted)),
@@ -236,8 +278,7 @@ class _RatesTab extends StatelessWidget {
     if (loading) return const BrandedLoader(message: 'Loading rates...');
     if (facilities.isEmpty) return const _EmptySearch();
 
-    final sorted = [...facilities]..sort((a, b) => a.ratePerHour.compareTo(b.ratePerHour));
-    final moneyFmt = NumberFormat('#,###');
+    final sorted = [...facilities]..sort((a, b) => a.fullParkName.compareTo(b.fullParkName));
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -247,6 +288,7 @@ class _RatesTab extends StatelessWidget {
         itemCount: sorted.length,
         itemBuilder: (ctx, i) {
           final f = sorted[i];
+          final available = f.parkingLots > 0;
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
@@ -269,14 +311,15 @@ class _RatesTab extends StatelessWidget {
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(f.fullParkName.toUpperCase(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                     const SizedBox(height: 4),
-                    Text('${f.parkingLots} spots available', style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w600)),
+                    Row(children: [
+                      Icon(Icons.local_parking_rounded, size: 12, color: available ? AppTheme.success : AppTheme.textMuted),
+                      const SizedBox(width: 4),
+                      Text(available ? '${f.parkingLots} spots available' : 'Full',
+                        style: TextStyle(fontSize: 11, color: available ? Colors.grey.shade600 : AppTheme.textMuted, fontWeight: FontWeight.w600)),
+                    ]),
                   ]),
                 ),
-                Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                  Text('Frw ${moneyFmt.format(f.ratePerHour)}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppTheme.primary)),
-                  const SizedBox(height: 2),
-                  Text('per hour', style: TextStyle(fontSize: 9, color: Colors.grey.shade500, fontWeight: FontWeight.w700)),
-                ]),
+                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary.withValues(alpha: 0.4), size: 14),
               ]),
             ),
           ).animate().fadeIn(delay: Duration(milliseconds: i * 40)).slideX(begin: 0.05);
@@ -371,6 +414,40 @@ class _PageButton extends StatelessWidget {
       ),
     );
   }
+}
+
+class _SortChip extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final bool active;
+  final VoidCallback onTap;
+  const _SortChip({required this.label, this.icon, required this.active, required this.onTap});
+
+  @override Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(right: 8),
+    child: GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: active ? AppTheme.primary : Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: active ? AppTheme.primary : AppTheme.border),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: active ? Colors.white : AppTheme.textMuted),
+            const SizedBox(width: 5),
+          ],
+          Text(label, style: TextStyle(
+            fontSize: 12, fontWeight: FontWeight.w800,
+            color: active ? Colors.white : AppTheme.textSecond,
+          )),
+        ]),
+      ),
+    ),
+  );
 }
 
 class _EmptySearch extends StatelessWidget {

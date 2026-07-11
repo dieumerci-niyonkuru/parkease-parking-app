@@ -283,9 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
                   }),
-                  _ProfileTile(icon: Icons.monetization_on_outlined, label: 'View Price List', onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ParkingCostsScreen()));
-                  }),
+                  _ProfileTile(icon: Icons.monetization_on_outlined, label: 'View Price List', onTap: () => showPriceListSheet(context)),
                   
                   const SizedBox(height: 32),
                   
@@ -322,7 +320,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   
                   const SizedBox(height: 32),
-                  Center(child: Text('BUILD VERSION 1.0.5 - STABLE PRODUCTION', style: AppTheme.label.copyWith(fontSize: 8, color: AppTheme.textHint, letterSpacing: 1))),
+                  Center(child: Text('ITEC PARKING · VERSION 1.0.0', style: AppTheme.label.copyWith(fontSize: 8, color: AppTheme.textHint, letterSpacing: 1))),
                 ]),
               ),
             ),

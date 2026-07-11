@@ -8,39 +8,69 @@ class SetPasswordScreen extends StatefulWidget {
 }
 
 class _SetPasswordScreenState extends State<SetPasswordScreen> {
+  final _currentCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _isLoading = false;
+  bool _obscureCurrent = true;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
   Future<void> _setPassword() async {
+    final current  = _currentCtrl.text;
     final password = _passwordCtrl.text;
-    final confirm = _confirmCtrl.text;
+    final confirm  = _confirmCtrl.text;
 
-    if (password.isEmpty || confirm.isEmpty) {
+    if (current.isEmpty || password.isEmpty || confirm.isEmpty) {
       _showMsg('Please fill in all fields');
       return;
     }
     if (password.length < 6) {
-      _showMsg('Password must be at least 6 characters');
+      _showMsg('Your new password must be at least 6 characters');
       return;
     }
     if (password != confirm) {
-      _showMsg('Passwords do not match');
+      _showMsg('Your new passwords do not match');
+      return;
+    }
+    if (current == password) {
+      _showMsg('Your new password must be different from your current one');
+      return;
+    }
+
+    final identifier = (AuthService.user?.phone.isNotEmpty ?? false)
+        ? AuthService.user!.phone
+        : (AuthService.user?.email ?? '');
+    if (identifier.isEmpty) {
+      _showMsg('We couldn\'t verify your account. Please sign in again.');
       return;
     }
 
     setState(() => _isLoading = true);
+
+    // 1) Verify the current password by re-authenticating.
+    final verify = await AuthService.login(identifier, current);
+    if (!mounted) return;
+    if (verify['success'] != true) {
+      setState(() => _isLoading = false);
+      _showMsg('Your current password is incorrect.');
+      return;
+    }
+
+    // 2) Set the new password.
     final result = await AuthService.setPassword(password);
     if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result['success'] == true) {
-      _showMsg('Password set successfully!', isError: false);
-    } else {
-      _showMsg(result['message'] ?? 'Failed to set password');
+    if (result['success'] != true) {
+      setState(() => _isLoading = false);
+      _showMsg(result['message'] ?? 'Couldn\'t change your password. Please try again.');
+      return;
     }
+
+    // 3) Refresh the session + stored credentials with the new password.
+    await AuthService.login(identifier, password);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    _showMsg('Password changed successfully!', isError: false);
   }
 
   void _showMsg(String msg, {bool isError = true}) {
@@ -97,6 +127,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
   @override
   void dispose() {
+    _currentCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -126,9 +157,9 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                   const SizedBox(width: 48),
                 ]),
                 const SizedBox(height: 16),
-                const Icon(Icons.lock_outline_rounded, color: Colors.white, size: 48),
+                const Icon(Icons.lock_reset_rounded, color: Colors.white, size: 48),
                 const SizedBox(height: 12),
-                const Text('Set Password', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                const Text('Change Password', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
               ],
             ),
           ),
@@ -139,8 +170,29 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 20),
-                  Text('Create a password for your account. This will allow you to sign in with your email or username.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
+                  Text('Enter your current password, then choose a new one to keep your account secure.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
                   const SizedBox(height: 28),
+                  Text('CURRENT PASSWORD', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _currentCtrl,
+                    obscureText: _obscureCurrent,
+                    textInputAction: TextInputAction.next,
+                    style: AppTheme.body.copyWith(color: AppTheme.textPrimary, fontWeight: FontWeight.w600, fontSize: 15),
+                    decoration: InputDecoration(
+                      hintText: 'Your existing password',
+                      filled: true, fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.lock_clock_rounded, color: AppTheme.textMuted, size: 20),
+                      suffixIcon: IconButton(
+                        icon: Icon(_obscureCurrent ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: AppTheme.textMuted, size: 20),
+                        onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                      ),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.border)),
+                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.border)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   Text('NEW PASSWORD', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
                   const SizedBox(height: 8),
                   TextField(

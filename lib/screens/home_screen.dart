@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/api_service.dart';
+import '../services/auth_service.dart';
 import '../services/phone_service.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
@@ -52,6 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override Widget build(BuildContext context) {
     final query = context.watch<AppProvider>().searchQuery;
+    final user = AuthService.user;
+    final firstName = user?.names.split(' ').first ?? '';
 
     final displayFacilities = query.isEmpty 
       ? _facilities 
@@ -82,8 +85,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text(_greeting,
                             style: const TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w600)),
                           const SizedBox(height: 4),
+                          Text('Welcome, $firstName',
+                            style: const TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+                          const SizedBox(height: 2),
                           const Text('ITEC Parking',
-                            style: TextStyle(color: AppTheme.textPrimary, fontSize: 22, fontWeight: FontWeight.w900)),
+                            style: TextStyle(color: AppTheme.textMuted, fontSize: 13, fontWeight: FontWeight.w700)),
                         ],
                       ),
                     ).animate().fadeIn(delay: 100.ms),
@@ -137,26 +143,24 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 24),
                         // ── INLINE SEARCH FIELD ──────────────────────────
                         Container(
-                          height: 48,
-                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          height: 46,
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
-                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2))],
                           ),
                           child: Row(children: [
-                            const SizedBox(width: 14),
                             Icon(Icons.search_rounded, color: AppTheme.textMuted, size: 20),
                             const SizedBox(width: 10),
                             Expanded(
                               child: TextField(
                                 controller: _searchCtrl,
                                 textCapitalization: TextCapitalization.characters,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary, letterSpacing: 0.5),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.textPrimary),
                                 decoration: InputDecoration(
                                   hintText: 'Search parking sites...',
-                                  hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 13, fontWeight: FontWeight.w500),
+                                  hintStyle: TextStyle(color: AppTheme.textHint, fontSize: 13),
                                   border: InputBorder.none,
                                   filled: false,
                                   contentPadding: EdgeInsets.zero,
@@ -175,13 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   context.read<AppProvider>().updateSearchQuery('');
                                   setState(() {});
                                 },
-                                child: const Padding(
-                                  padding: EdgeInsets.only(right: 12),
-                                  child: Icon(Icons.close_rounded, color: AppTheme.textMuted, size: 18),
-                                ),
+                                child: Icon(Icons.close_rounded, color: AppTheme.textMuted, size: 18),
                               ),
                           ]),
-                        ).animate().fadeIn(delay: 100.ms),
+                        ),
                         const SizedBox(height: 20),
 
                         const Text('Parking Sites', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
