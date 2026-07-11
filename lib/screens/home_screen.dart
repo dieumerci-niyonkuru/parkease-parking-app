@@ -22,6 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _loading = true;
   final _searchCtrl = TextEditingController();
 
+  // Pagination
+  int _currentPage = 0;
+  final int _pageSize = 5;
+
   @override void initState() { super.initState(); _load(); }
 
   @override void dispose() { _searchCtrl.dispose(); super.dispose(); }
@@ -183,31 +187,59 @@ class _HomeScreenState extends State<HomeScreen> {
                         const Text('Parking Sites', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 16),
 
-                        // ── List of Facilities ────────────────────────
-                        ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: displayFacilities.length,
-                          itemBuilder: (context, index) {
-                            final f = displayFacilities[index];
-                            return _ParkingHubCard(
-                              facility: f,
-                              onTap: () {
-                                Navigator.of(context).pushNamed(
-                                  'parking_detail',
-                                  arguments: f,
-                                );
-                              },
-                            ).animate().fadeIn(
-                              delay: Duration(milliseconds: index * 50),
-                            ).slideY(begin: 0.1);
-                            },
-                          ),
-
+                        // ── PAGINATED FACILITIES LIST ──────────────────
                         if (displayFacilities.isEmpty)
-                          const _EmptySearch().animate().fadeIn(),
-                          
+                          const _EmptySearch().animate().fadeIn()
+                        else ...[
+                          (() {
+                            final totalPages = (displayFacilities.length / _pageSize).ceil();
+                            var page = _currentPage;
+                            if (page >= totalPages && totalPages > 0) page = totalPages - 1;
+                            _currentPage = page;
+                            final start = page * _pageSize;
+                            final end = (start + _pageSize).clamp(0, displayFacilities.length);
+                            final items = displayFacilities.sublist(start, end);
+
+                            return Column(children: [
+                              ...List.generate(items.length, (i) {
+                                final f = items[i];
+                                return _ParkingHubCard(
+                                  facility: f,
+                                  onTap: () => Navigator.of(context).pushNamed('parking_detail', arguments: f),
+                                ).animate().fadeIn(delay: Duration(milliseconds: i * 50)).slideY(begin: 0.1);
+                              }),
+                              if (totalPages > 1)
+                                Container(
+                                  margin: const EdgeInsets.only(top: 12),
+                                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2))],
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      _PageBtn(
+                                        icon: Icons.arrow_back_ios_new_rounded,
+                                        label: 'BACK',
+                                        onPressed: page > 0 ? () => setState(() => _currentPage = page - 1) : null,
+                                      ),
+                                      Text('PAGE ${page + 1} OF $totalPages',
+                                        style: AppTheme.label.copyWith(fontWeight: FontWeight.w900, color: AppTheme.primary, fontSize: 11)),
+                                      _PageBtn(
+                                        icon: Icons.arrow_forward_ios_rounded,
+                                        label: 'NEXT',
+                                        isReverse: true,
+                                        onPressed: (page + 1) < totalPages ? () => setState(() => _currentPage = page + 1) : null,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                            ]);
+                          }()),
+                        ],
+
                         const SizedBox(height: 120), // Extra space for bottom nav
                       ]),
                     ),
@@ -326,4 +358,23 @@ class _EmptySearch extends StatelessWidget {
       ]),
     ),
   );
+}
+
+class _PageBtn extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+  final bool isReverse;
+  const _PageBtn({required this.icon, required this.label, this.onPressed, this.isReverse = false});
+
+  @override Widget build(BuildContext context) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: isReverse ? Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)) : Icon(icon, size: 14),
+      label: isReverse ? Icon(icon, size: 14) : Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11)),
+      style: TextButton.styleFrom(
+        foregroundColor: onPressed != null ? AppTheme.primary : Colors.grey.shade400,
+      ),
+    );
+  }
 }

@@ -128,7 +128,10 @@ class _MainLayoutState extends State<MainLayout> {
             )
           : Row(
               children: [
-                const ItecLogo(size: 32, fontSize: 18),
+                GestureDetector(
+                  onTap: () => setState(() => _currentIndex = 0),
+                  child: const ItecLogo(size: 32, fontSize: 18),
+                ),
                 const SizedBox(width: 12),
                 Text(_pageTitle,
                   style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
