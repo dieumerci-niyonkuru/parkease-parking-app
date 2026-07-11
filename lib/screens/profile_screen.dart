@@ -156,21 +156,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         margin: const EdgeInsets.only(bottom: 24),
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.orange.shade50,
+                          color: AppTheme.warning.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.orange.shade200),
+                          border: Border.all(color: AppTheme.warning.withValues(alpha: 0.4)),
                         ),
                         child: Column(
                           children: [
                             const Row(
                               children: [
-                                Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                                Icon(Icons.warning_amber_rounded, color: AppTheme.warning),
                                 SizedBox(width: 12),
-                                Text('Incomplete Profile', style: TextStyle(fontWeight: FontWeight.w900, color: Colors.orange)),
+                                Text('Incomplete Profile', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.warning)),
                               ],
                             ),
                             const SizedBox(height: 8),
-                            const Text('Link your phone number to enable payments and receipts.', style: TextStyle(fontSize: 12)),
+                            Text('Link your phone number to enable payments and receipts.', style: AppTheme.bodySmall.copyWith(color: AppTheme.textSecond)),
                             const SizedBox(height: 16),
                             SizedBox(
                               width: double.infinity,
@@ -178,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 onPressed: () {
                                   Navigator.push(context, MaterialPageRoute(builder: (_) => const CompleteProfileScreen()));
                                 },
-                                style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, foregroundColor: Colors.white),
+                                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.warning, foregroundColor: Colors.white),
                                 child: const Text('SET PHONE NUMBER', style: TextStyle(fontWeight: FontWeight.w900)),
                               ),
                             ),
@@ -219,6 +219,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 18),
                       Text(name, style: AppTheme.heading2.copyWith(fontSize: 26)),
                       Text(user?.email ?? 'driver@itec.rw', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+                      if (user?.phone != null && user!.phone.isNotEmpty && user.phone != '+250 7XX XXX XXX' && user.phone != '—') ...[
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primary.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            const Icon(Icons.phone_android_rounded, size: 13, color: AppTheme.primary),
+                            const SizedBox(width: 6),
+                            Text(user.phone, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: AppTheme.primary)),
+                          ]),
+                        ),
+                      ],
                     ]),
                   ),
                   

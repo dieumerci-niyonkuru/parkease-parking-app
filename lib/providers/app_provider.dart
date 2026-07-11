@@ -116,7 +116,7 @@ class AppProvider extends ChangeNotifier {
     try {
       final result = await ApiService.lookupVehicle(slotId);
       if (result == null) {
-        _lookupError = 'No record found for "$slotId"';
+        _lookupError = 'No parking charges found for "$slotId". This vehicle may not be parked right now, or has nothing to pay.';
       } else {
         _currentRecord = result;
         if (result.status == VehicleStatus.parked) {

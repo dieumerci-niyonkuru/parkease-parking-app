@@ -19,7 +19,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   List<HistoryEntry> _all      = [];
   List<HistoryEntry> _filtered = [];
   bool _loading    = true;
-  bool _tableView  = false;
+  bool _tableView  = true; // default to table view; users can switch to cards
 
   DateTime? _from;
   DateTime? _to;
@@ -112,11 +112,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final hasFilter = _from != null || _to != null;
     final query = context.watch<AppProvider>().searchQuery.toLowerCase().trim();
 
-    var displayRecords = query.isEmpty 
-      ? _filtered 
-      : _filtered.where((e) => 
-          e.plateNumber.toLowerCase().contains(query) || 
+    var displayRecords = query.isEmpty
+      ? _filtered
+      : _filtered.where((e) =>
+          e.plateNumber.toLowerCase().contains(query) ||
           e.parkingName.toLowerCase().contains(query)).toList();
+
+    final totalPaid = displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0));
+    final count = displayRecords.length;
 
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
@@ -124,63 +127,48 @@ class _HistoryScreenState extends State<HistoryScreen> {
         children: [
           // ── HEADER ──────────────────────────────────────────
           Container(
-            padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 20),
             color: Colors.white,
             child: Column(
               children: [
                 const Text('RECEIPT HISTORY', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
                 const SizedBox(height: 4),
                 Text('Official Parking Records'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
-                const SizedBox(height: 16),
-                InkWell(
-                  onTap: () => Navigator.of(context).pushNamed('plate_lookup', arguments: ''),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+
+                // ── SPEND SUMMARY (always visible) ──────────────
+                if (!_loading && count > 0) ...[
+                  const SizedBox(height: 18),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                     decoration: BoxDecoration(
                       color: AppTheme.primary,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 3))],
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 12, offset: const Offset(0, 5))],
                     ),
                     child: Row(children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(10)),
-                        child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 22),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+                        child: const Icon(Icons.account_balance_wallet_rounded, color: Colors.white, size: 24),
                       ),
                       const SizedBox(width: 14),
-                      const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('QUICK PAY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 1)),
-                        SizedBox(height: 2),
-                        Text('Pay by plate number', style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600)),
-                      ])),
-                      Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.6), size: 12),
+                      Expanded(
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('TOTAL PAID', style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                          const SizedBox(height: 2),
+                          Text('RWF ${_moneyFmt.format(totalPaid.toInt())}', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                        ]),
+                      ),
+                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                        Text('$count', style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                        Text(count == 1 ? 'RECEIPT' : 'RECEIPTS', style: const TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                      ]),
                     ]),
-                  ),
-                ),
+                  ).animate().fadeIn().slideY(begin: 0.1),
+                ],
               ],
             ),
           ),
-
-          if (_tableView && !_loading && displayRecords.isNotEmpty)
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-              child: Column(
-                children: [
-                  Row(children: [
-                    _SummaryChip(
-                      icon: Icons.payments_rounded,
-                      label: 'TOTAL PAID: RWF ${_moneyFmt.format(displayRecords.fold<double>(0, (s, e) => s + (e.amountPaid ?? 0)).toInt())}',
-                      color: AppTheme.success,
-                    ),
-                    const Spacer(),
-                    Text('${displayRecords.length} RECEIPTS', style: AppTheme.label.copyWith(fontSize: 10, fontWeight: FontWeight.w900)),
-                  ]),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
 
           Container(
             color: AppTheme.bgCard,

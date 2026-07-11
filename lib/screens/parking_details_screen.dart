@@ -17,6 +17,7 @@ class ParkingDetailsScreen extends StatefulWidget {
 class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
   PricingData? _pricing;
   bool _loading = true;
+  int _estHours = 1; // hours the user wants to estimate a fee for
 
   @override void initState() {
     super.initState();
@@ -117,7 +118,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                           child: ElevatedButton.icon(
                             onPressed: _openInMaps,
                             icon: const Icon(Icons.navigation_rounded, size: 18, color: Colors.white),
-                            label: const Text('NAVIGATE TO SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5, color: Colors.white)),
+                            label: const Text('VIEW LOCATION SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5, color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primary,
                               elevation: 0,
@@ -138,6 +139,16 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text('Pricing Information', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                        const SizedBox(height: 16),
+
+                        // ── FEE ESTIMATOR (search by hours) ───────────
+                        if (categories.isNotEmpty)
+                          _FeeEstimator(
+                            category: categories.first,
+                            currency: _pricing?.currency ?? 'RWF',
+                            hours: _estHours,
+                            onChanged: (h) => setState(() => _estHours = h),
+                          ).animate().fadeIn(),
                         const SizedBox(height: 24),
 
                         if (categories.isEmpty)
@@ -162,6 +173,73 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
             ),
     );
   }
+}
+
+// ── FEE ESTIMATOR ────────────────────────────────────────────────────
+// Lets the user pick a number of hours and instantly see the fee, using the
+// site's real per-hour price tiers.
+class _FeeEstimator extends StatelessWidget {
+  final PriceCategory category;
+  final String currency;
+  final int hours;
+  final ValueChanged<int> onChanged;
+  const _FeeEstimator({required this.category, required this.currency, required this.hours, required this.onChanged});
+
+  @override Widget build(BuildContext context) {
+    final moneyFmt = NumberFormat('#,###');
+    final sym = currency == 'RWF' ? 'Frw ' : '$currency ';
+    final price = category.priceForHours(hours);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.primary,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 8))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Icon(Icons.calculate_rounded, color: Colors.white, size: 18),
+          const SizedBox(width: 8),
+          Text('ESTIMATE YOUR FEE', style: AppTheme.label.copyWith(color: Colors.white70, letterSpacing: 1.5, fontWeight: FontWeight.w900)),
+        ]),
+        const SizedBox(height: 16),
+        Row(children: [
+          // Hours stepper
+          Container(
+            decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(14)),
+            child: Row(children: [
+              _stepBtn(Icons.remove_rounded, hours > 1 ? () => onChanged(hours - 1) : null),
+              SizedBox(
+                width: 64,
+                child: Column(children: [
+                  Text('$hours', style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+                  Text(hours == 1 ? 'HOUR' : 'HOURS', style: const TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 1)),
+                ]),
+              ),
+              _stepBtn(Icons.add_rounded, hours < 24 ? () => onChanged(hours + 1) : null),
+            ]),
+          ),
+          const Spacer(),
+          Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+            const Text('TOTAL', style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 1)),
+            const SizedBox(height: 2),
+            Text(price != null ? '$sym${moneyFmt.format(price)}' : '—',
+              style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
+          ]),
+        ]),
+      ]),
+    );
+  }
+
+  Widget _stepBtn(IconData icon, VoidCallback? onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      width: 40, height: 48,
+      alignment: Alignment.center,
+      child: Icon(icon, color: onTap == null ? Colors.white30 : Colors.white, size: 22),
+    ),
+  );
 }
 
 class _CategoryPricingCard extends StatelessWidget {

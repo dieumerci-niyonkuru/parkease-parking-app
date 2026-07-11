@@ -64,7 +64,20 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
           color: Colors.white,
           child: Column(
             children: [
-              const Text('Type your plate number', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+              Row(children: [
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppTheme.primary, size: 20),
+                  tooltip: 'Back',
+                ),
+                const Expanded(
+                  child: Text('Type your plate number', textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529), letterSpacing: 1)),
+                ),
+                const SizedBox(width: 20),
+              ]),
               const SizedBox(height: 4),
               Text('Instant Multi-Site Search'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
               const SizedBox(height: 24),
@@ -288,18 +301,25 @@ class _ErrorView extends StatelessWidget {
   final VoidCallback onRetry;
   const _ErrorView({required this.message, required this.onRetry});
   @override Widget build(BuildContext context) => Center(
-    child: Column(mainAxisSize: MainAxisSize.min, children: [
-      const Icon(Icons.error_outline_rounded, color: AppTheme.danger, size: 64),
-      const SizedBox(height: 20),
-      Text('Lookup Failed', style: AppTheme.heading4.copyWith(color: AppTheme.danger)),
-      const SizedBox(height: 8),
-      Padding(padding: const EdgeInsets.symmetric(horizontal: 50), child: Text(message, textAlign: TextAlign.center, style: AppTheme.body)),
-      const SizedBox(height: 24),
-      TextButton.icon(
-        onPressed: onRetry, 
-        icon: const Icon(Icons.refresh_rounded),
-        label: const Text('TRY AGAIN', style: TextStyle(fontWeight: FontWeight.w900)),
-      ),
-    ]),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(color: AppTheme.warning.withValues(alpha: 0.1), shape: BoxShape.circle),
+          child: const Icon(Icons.search_off_rounded, color: AppTheme.warning, size: 44),
+        ),
+        const SizedBox(height: 20),
+        Text('No Result Found', style: AppTheme.heading4.copyWith(color: AppTheme.textPrimary)),
+        const SizedBox(height: 8),
+        Text(message, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
+        const SizedBox(height: 24),
+        TextButton.icon(
+          onPressed: onRetry,
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('TRY AGAIN', style: TextStyle(fontWeight: FontWeight.w900)),
+        ),
+      ]),
+    ),
   );
 }

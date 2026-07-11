@@ -184,10 +184,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           // ── HERO HEADER ─────────────────────────────────────────────
           Container(
             width: double.infinity,
-            padding: EdgeInsets.only(top: statusBarH + 12, bottom: 20),
+            padding: EdgeInsets.only(top: statusBarH + 6, bottom: 14),
             decoration: const BoxDecoration(
               color: AppTheme.primary,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(36)),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(28)),
             ),
             child: Column(
               children: [
@@ -215,12 +215,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     const SizedBox(width: 48),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 3),
                 const Text(
                   'SMART PARKING SOLUTIONS',
-                  style: TextStyle(color: Colors.white60, fontSize: 8, fontWeight: FontWeight.w700, letterSpacing: 2),
+                  style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // ── STEP INDICATORS ─────────────────────────────────────
                 Row(
@@ -233,21 +233,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
-                          width: isActive ? 36 : 28,
-                          height: 36,
+                          width: isActive ? 30 : 26,
+                          height: 30,
                           decoration: BoxDecoration(
-                            color: isDone ? AppTheme.success : (isActive ? Colors.white : Colors.white30),
-                            borderRadius: BorderRadius.circular(18),
+                            color: isDone ? AppTheme.success : (isActive ? Colors.white : Colors.white.withValues(alpha: 0.28)),
+                            borderRadius: BorderRadius.circular(15),
+                            border: isActive || isDone ? null : Border.all(color: Colors.white.withValues(alpha: 0.5), width: 1),
                           ),
                           child: Center(
                             child: isDone
-                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
+                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
                               : Text(
                                   '$stepNum',
                                   style: TextStyle(
-                                    color: isActive ? AppTheme.primary : Colors.white70,
+                                    color: isActive ? AppTheme.primary : Colors.white,
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 14,
+                                    fontSize: 13,
                                   ),
                                 ),
                           ),
@@ -255,8 +256,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (i < 2)
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 300),
-                            width: 40, height: 2,
-                            color: _step > stepNum ? AppTheme.success : Colors.white30,
+                            width: 32, height: 2,
+                            color: _step > stepNum ? AppTheme.success : Colors.white.withValues(alpha: 0.4),
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                           ),
                       ],

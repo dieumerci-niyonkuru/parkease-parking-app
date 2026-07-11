@@ -224,6 +224,11 @@ class NotificationService {
     _persist();
   }
 
+  static void remove(String id) {
+    _inAppNotifications.removeWhere((n) => n.id == id);
+    _persist();
+  }
+
   static String _formatRwf(double amount) =>
       amount.toStringAsFixed(0).replaceAllMapped(
         RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),

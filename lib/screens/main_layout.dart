@@ -84,21 +84,47 @@ class _MainLayoutState extends State<MainLayout> {
         elevation: 4,
         leadingWidth: 0,
         automaticallyImplyLeading: false,
-        title: _isSearching 
-          ? TextField(
-              controller: _searchCtrl,
-              autofocus: true,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
-              decoration: const InputDecoration(
-                hintText: 'Type search here...',
-                hintStyle: TextStyle(color: Colors.white70),
-                border: InputBorder.none,
-                filled: false,
-                contentPadding: EdgeInsets.zero,
+        title: _isSearching
+          ? Container(
+              height: 42,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
               ),
-              onChanged: (v) {
-                context.read<AppProvider>().updateSearchQuery(v);
-              },
+              child: Row(children: [
+                const Icon(Icons.search_rounded, color: Colors.white70, size: 20),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    autofocus: true,
+                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                    cursorColor: Colors.white,
+                    decoration: const InputDecoration(
+                      hintText: 'Search sites, plates, receipts...',
+                      hintStyle: TextStyle(color: Colors.white60, fontSize: 13),
+                      border: InputBorder.none,
+                      filled: false,
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
+                    ),
+                    onChanged: (v) {
+                      context.read<AppProvider>().updateSearchQuery(v);
+                      setState(() {}); // toggle the clear button
+                    },
+                  ),
+                ),
+                if (_searchCtrl.text.isNotEmpty)
+                  GestureDetector(
+                    onTap: () {
+                      _searchCtrl.clear();
+                      context.read<AppProvider>().updateSearchQuery('');
+                      setState(() {});
+                    },
+                    child: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
+                  ),
+              ]),
             )
           : Row(
               children: [
@@ -143,10 +169,17 @@ class _MainLayoutState extends State<MainLayout> {
             onPressed: () {
               setState(() {
                 _isSearching = !_isSearching;
+                if (!_isSearching) {
+                  // Closing search: clear the field and the active query so
+                  // lists return to their full, unfiltered state.
+                  _searchCtrl.clear();
+                  context.read<AppProvider>().updateSearchQuery('');
+                }
                 context.read<AppProvider>().setSearchActive(_isSearching);
               });
             },
             icon: Icon(_isSearching ? Icons.close_rounded : Icons.search_rounded, size: 22, color: Colors.white),
+            tooltip: _isSearching ? 'Close search' : 'Search',
           ),
           if (!_isSearching)
             Padding(
@@ -351,7 +384,10 @@ class _PremiumBottomNav extends StatelessWidget {
               final item   = items[i];
 
               return GestureDetector(
-                onTap: () => onTap(i),
+                onTap: () {
+                  if (!active) HapticFeedback.selectionClick();
+                  onTap(i);
+                },
                 behavior: HitTestBehavior.opaque,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 250),

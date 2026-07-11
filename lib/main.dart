@@ -33,6 +33,18 @@ class ITECParkingApp extends StatelessWidget {
       navigatorKey: AppNavigation.navigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.theme,
+      // Clamp system font scaling so very large accessibility text sizes
+      // can't overflow or hide content on any screen, while still honouring
+      // moderate scaling for readability.
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 1.25),
+          ),
+          child: child!,
+        );
+      },
       home: const SplashScreen(),
       routes: {
         '/main':     (context) => const MainLayout(),

@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../models/models.dart';
 import '../providers/app_provider.dart';
 import '../widgets/branded_loader.dart';
+import '../widgets/pay_now_card.dart';
 
 class ParkingListScreen extends StatefulWidget {
   const ParkingListScreen({super.key});
@@ -77,56 +78,13 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                     child: Text('National Management Portal'.toUpperCase(),
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
                   ),
-                  const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(children: [
-                      // ── QUICK PAY CARD ─────────────────────────────
-                      InkWell(
-                        onTap: () => Navigator.of(context).pushNamed('plate_lookup', arguments: ''),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primary,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.3), blurRadius: 10, offset: const Offset(0, 4))],
-                          ),
-                          child: Row(children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.bolt_rounded, color: Colors.white, size: 28),
-                            ),
-                            const SizedBox(width: 16),
-                            const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('QUICK PAY', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1)),
-                              SizedBox(height: 2),
-                              Text('Pay parking fees instantly by plate number', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
-                            ])),
-                            Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.6), size: 14),
-                          ]),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56,
-                        child: ElevatedButton.icon(
-                          onPressed: () => Navigator.of(context).pushNamed('trigger_search'),
-                          icon: const Icon(Icons.search_rounded, color: Colors.white, size: 20),
-                          label: const Text('QUICKLY SEARCH SITE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primary,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 4,
-                            shadowColor: AppTheme.primary.withValues(alpha: 0.3),
-                          ),
-                        ),
-                      ),
-                    ]),
+                  const SizedBox(height: 16),
+                  // ── PAY NOW (compact) ────────────────────────────
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24),
+                    child: PayNowCard(dense: true),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 14),
                   // ── SUB-TABS ─────────────────────────────────────
                   TabBar(
                     controller: _tabController,
@@ -206,12 +164,21 @@ class _AllSitesTab extends StatelessWidget {
     final items = (start < filtered.length) ? filtered.sublist(start, end) : <ParkingFacility>[];
 
     return Column(children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(24, 14, 24, 2),
+        child: Row(children: [
+          Text('${filtered.length} ${filtered.length == 1 ? "SITE" : "SITES"} AVAILABLE',
+            style: AppTheme.label.copyWith(fontWeight: FontWeight.w900, color: AppTheme.textMuted)),
+          const Spacer(),
+          Text('Tap for details', style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textHint)),
+        ]),
+      ),
       Expanded(
         child: RefreshIndicator(
           onRefresh: onRefresh,
           color: AppTheme.primary,
           child: ListView.builder(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
             itemCount: items.length,
             itemBuilder: (ctx, i) {
               final f = items[i];
@@ -324,48 +291,66 @@ class _ParkingSiteCard extends StatelessWidget {
   const _ParkingSiteCard({required this.facility, required this.onTap});
 
   @override Widget build(BuildContext context) {
+    final moneyFmt = NumberFormat('#,###');
+    final available = facility.parkingLots > 0;
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFFFFF7F2),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
+          border: Border.all(color: AppTheme.border.withValues(alpha: 0.6)),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
-                const SizedBox(width: 14),
-                Expanded(child: Text(facility.fullParkName.toUpperCase(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF212529)))),
-                Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary.withValues(alpha: 0.5), size: 14),
-              ],
-            ),
-            const Divider(height: 24, thickness: 0.5),
-            _row('LOCATION', facility.address),
-            _row('AVAILABLE', '${facility.parkingLots} SPOTS', isLast: true),
+            Row(children: [
+              Container(
+                width: 44, height: 44,
+                decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(14)),
+                child: const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(facility.fullParkName.toUpperCase(), maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                  const SizedBox(height: 3),
+                  Row(children: [
+                    Icon(Icons.location_on_rounded, size: 12, color: Colors.grey.shade500),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(facility.address, maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600, fontWeight: FontWeight.w600))),
+                  ]),
+                ]),
+              ),
+              Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.primary.withValues(alpha: 0.5), size: 14),
+            ]),
+            const SizedBox(height: 14),
+            Row(children: [
+              _chip(Icons.payments_rounded, 'Frw ${moneyFmt.format(facility.ratePerHour)}/hr', AppTheme.primary),
+              const SizedBox(width: 8),
+              _chip(Icons.local_parking_rounded, available ? '${facility.parkingLots} spots' : 'Full',
+                available ? AppTheme.success : AppTheme.textMuted),
+            ]),
           ],
         ),
       ),
     );
   }
 
-  Widget _row(String label, String value, {bool isLast = false}) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey)),
-          Text(value, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
-        ],
-      ),
-    );
-  }
+  Widget _chip(IconData icon, String text, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+    child: Row(mainAxisSize: MainAxisSize.min, children: [
+      Icon(icon, size: 13, color: color),
+      const SizedBox(width: 5),
+      Text(text, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: color)),
+    ]),
+  );
 }
 
 class _PageButton extends StatelessWidget {
