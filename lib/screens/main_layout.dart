@@ -94,48 +94,41 @@ class _MainLayoutState extends State<MainLayout> {
         leadingWidth: 0,
         automaticallyImplyLeading: false,
         title: _isSearching
-          ? Container(
-              height: 42,
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-              child: Row(children: [
-                const Icon(Icons.search_rounded, color: Colors.white70, size: 20),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextField(
-                    controller: _searchCtrl,
-                    autofocus: true,
-                    style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                    cursorColor: Colors.white,
-                    decoration: const InputDecoration(
-                      hintText: 'Search sites, plates, receipts...',
-                      hintStyle: TextStyle(color: Colors.white54, fontSize: 13),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      filled: false,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
-                    ),
-                    onChanged: (v) {
-                      context.read<AppProvider>().updateSearchQuery(v);
-                      setState(() {});
-                    },
+          ? Row(children: [
+              const Icon(Icons.search_rounded, color: Colors.white70, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _searchCtrl,
+                  autofocus: true,
+                  style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600),
+                  cursorColor: Colors.white,
+                  decoration: const InputDecoration(
+                    hintText: 'Search sites, plates, receipts...',
+                    hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
                   ),
+                  onChanged: (v) {
+                    context.read<AppProvider>().updateSearchQuery(v);
+                    setState(() {});
+                  },
                 ),
-                if (_searchCtrl.text.isNotEmpty)
-                  GestureDetector(
-                    onTap: () {
-                      _searchCtrl.clear();
-                      context.read<AppProvider>().updateSearchQuery('');
-                      setState(() {});
-                    },
-                    child: const Icon(Icons.close_rounded, color: Colors.white70, size: 18),
-                  ),
-              ]),
-            )
+              ),
+              if (_searchCtrl.text.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    _searchCtrl.clear();
+                    context.read<AppProvider>().updateSearchQuery('');
+                    setState(() {});
+                  },
+                  child: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                ),
+            ])
           : Row(
               children: [
                 GestureDetector(
@@ -218,7 +211,7 @@ class _MainLayoutState extends State<MainLayout> {
                         backgroundColor: AppTheme.bgCard,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
                         title: Text('Sign Out', style: AppTheme.heading3),
-                        content: const Text('Are you sure you want to exit the ITEC Portal?', style: TextStyle(fontSize: 14)),
+                        content: const Text('Are you sure you want to sign out of your account?', style: TextStyle(fontSize: 14)),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx, false),

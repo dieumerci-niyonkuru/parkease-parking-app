@@ -219,7 +219,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               color: AppTheme.primary,
               onRefresh: _load,
               child: _loading
-                  ? const BrandedLoader(message: 'Retrieving official history...')
+                  ? const BrandedLoader(message: 'Loading your receipts...')
                   : displayRecords.isEmpty
                       ? _EmptyState(hasFilter: hasFilter || query.isNotEmpty)
                       : _tableView

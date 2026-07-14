@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen>
       final v = _ctrl.value;
       setState(() {
         if (v < 0.25) { _step = 'Securing Connection...'; }
-        else if (v < 0.5) { _step = 'Retrieving Parking Sites...'; }
+        else if (v < 0.5) { _step = 'Loading parking sites...'; }
         else if (v < 0.75) { _step = 'Validating Driver Session...'; }
         else { _step = 'Smart Parking Solutions'; }
       });

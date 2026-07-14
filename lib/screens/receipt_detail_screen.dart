@@ -48,7 +48,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
     if (_loading && _entry == null) {
       return const Scaffold(
         backgroundColor: AppTheme.bgDeep,
-        body: BrandedLoader(message: 'Retrieving official receipt...'),
+        body: BrandedLoader(message: 'Loading your receipt...'),
       );
     }
 

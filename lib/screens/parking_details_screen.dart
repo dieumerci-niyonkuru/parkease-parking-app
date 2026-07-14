@@ -79,7 +79,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
         ],
       ),
       body: _loading
-          ? const BrandedLoader(message: 'Loading real-time rates...')
+          ? const BrandedLoader(message: 'Loading prices...')
           : SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Column(

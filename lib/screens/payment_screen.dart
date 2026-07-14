@@ -95,37 +95,48 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     setState(() => _payStatus = 'Approve the prompt on $payerPhone...');
 
-    // 2) Poll for completion (up to ~2 minutes).
-    final ok = await _pollStatus(dbId, reqRef);
+    // 2) Poll for completion (up to ~2 minutes). Returns the server-charged
+    //    amount on success, or null on failure/timeout.
+    final charged = await _pollStatus(dbId, reqRef);
     if (!mounted) return;
 
-    if (!ok) {
+    if (charged == null) {
       setState(() { _paying = false; _payStatus = ''; });
       _snack('Payment not completed. If you were charged, it will reflect shortly.', isError: true);
       return;
     }
 
-    // 3) Success → build the receipt.
+    // 3) Success → build the receipt using the EXACT amount the server charged
+    //    (the authoritative API figure, reflecting the current parked time).
     final updated = await widget.onPay(r);
     if (!mounted) return;
-    setState(() { _paying = false; _done = true; _receipt = updated; _payStatus = ''; });
+    final base = updated ?? r;
+    setState(() {
+      _paying = false;
+      _done = true;
+      _receipt = charged > 0 ? base.copyWith(amountPaid: charged) : base;
+      _payStatus = '';
+    });
     HapticFeedback.heavyImpact();
     _snack('Payment successful!', isError: false);
   }
 
-  // Polls /payment/status until SUCCESSFUL (true) or FAILED/timeout (false).
-  Future<bool> _pollStatus(int dbId, String reqRef) async {
+  // Polls /payment/status until SUCCESSFUL (returns the charged amount) or
+  // FAILED/timeout (returns null).
+  Future<double?> _pollStatus(int dbId, String reqRef) async {
     const maxAttempts = 24;      // 24 x 5s ≈ 2 minutes
     for (var i = 0; i < maxAttempts; i++) {
       await Future.delayed(const Duration(seconds: 5));
-      if (!mounted) return false;
+      if (!mounted) return null;
       final st = await ApiService.paymentStatus(dbId, reqRef);
       final state = st['state']?.toString();
-      if (state == 'SUCCESSFUL') return true;
-      if (state == 'FAILED' || state == 'CANCELLED') return false;
+      if (state == 'SUCCESSFUL') {
+        return (st['charged'] as double?) ?? (st['amount'] as double?) ?? 0;
+      }
+      if (state == 'FAILED' || state == 'CANCELLED') return null;
       if (mounted) setState(() => _payStatus = 'Waiting for confirmation... (${i + 1})');
     }
-    return false;
+    return null;
   }
 
 
@@ -238,7 +249,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               if (_paying)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: BrandedLoader(message: _payStatus.isEmpty ? 'Authorizing payment...' : _payStatus),
+                  child: BrandedLoader(message: _payStatus.isEmpty ? 'Processing your payment...' : _payStatus),
                 )
               else ...[
                 SizedBox(
@@ -254,7 +265,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       Icon(Icons.lock_rounded, size: 20),
                       SizedBox(width: 12),
-                      Text('AUTHORIZE PAYMENT', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                      Text('PAY NOW', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
                     ]),
                   ),
                 ).animate().fadeIn(delay: 400.ms),
@@ -483,12 +494,26 @@ class _ReceiptView extends StatelessWidget {
                   const Text('DIGITAL RECEIPT', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: AppTheme.primary, letterSpacing: 1)),
                   Text(record.receiptNumber ?? 'ITEC-RE-000', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, fontFamily: 'monospace')),
                 ]),
-                const Divider(height: 40),
-                _Row('Vehicle Plate', record.plateNumber, isMono: true),
+                const Divider(height: 32),
+
+                // ── PARKING ───────────────────────────────
+                const _SectionLabel('PARKING'),
                 _Row('Parking Site', record.parkingName),
-                _Row('Amount Paid', 'RWF ${NumberFormat('#,###').format(record.amountPaid)}', isHighlight: true),
-                _Row('Entry Time', DateFormat('HH:mm (dd MMM)').format(record.entryTime)),
-                _Row('Payment Date', DateFormat('HH:mm (dd MMM)').format(record.exitTime ?? DateTime.now())),
+                if (record.parkingAddress.isNotEmpty) _Row('Address', record.parkingAddress),
+                if (record.spotNumber.isNotEmpty && record.spotNumber != '—') _Row('Slot', record.spotNumber),
+
+                // ── VEHICLE & SESSION ─────────────────────
+                const _SectionLabel('SESSION'),
+                _Row('Vehicle Plate', record.plateNumber, isMono: true),
+                _Row('Entry Time', DateFormat('HH:mm · dd MMM yyyy').format(record.entryTime)),
+                _Row('Exit / Paid', DateFormat('HH:mm · dd MMM yyyy').format(record.exitTime ?? DateTime.now())),
+                _Row('Duration', record.durationDisplay),
+
+                // ── PAYMENT ───────────────────────────────
+                const _SectionLabel('PAYMENT'),
+                _Row('Method', 'Mobile Money'),
+                _Row('Status', 'PAID'),
+                _Row('Amount Paid', 'RWF ${NumberFormat('#,###').format(record.amountPaid ?? record.totalAmount)}', isHighlight: true),
               ]),
             ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
             
@@ -498,7 +523,7 @@ class _ReceiptView extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
                 style: ElevatedButton.styleFrom(backgroundColor: AppTheme.textPrimary, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18))),
-                child: const Text('BACK TO PORTAL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                child: const Text('DONE', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
               ),
             ),
           ]),
@@ -513,15 +538,28 @@ class _Row extends StatelessWidget {
   final bool isMono, isHighlight;
   const _Row(this.label, this.value, {this.isMono = false, this.isHighlight = false});
   @override Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 8),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(label, style: AppTheme.bodySmall),
-      Text(value, style: TextStyle(
-        color: isHighlight ? AppTheme.success : AppTheme.textPrimary, 
-        fontWeight: FontWeight.w800,
+    padding: const EdgeInsets.symmetric(vertical: 7),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(width: 110, child: Text(label, style: AppTheme.bodySmall)),
+      Expanded(child: Text(value, textAlign: TextAlign.right, style: TextStyle(
+        color: isHighlight ? AppTheme.success : AppTheme.textPrimary,
+        fontSize: isHighlight ? 16 : 13,
+        fontWeight: isHighlight ? FontWeight.w900 : FontWeight.w800,
         fontFamily: isMono ? 'monospace' : null,
         letterSpacing: isMono ? 1 : null,
-      )),
+      ))),
     ]),
+  );
+}
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+  @override Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 12, bottom: 4),
+    child: Align(
+      alignment: Alignment.centerLeft,
+      child: Text(text, style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, letterSpacing: 1.5, fontSize: 9)),
+    ),
   );
 }

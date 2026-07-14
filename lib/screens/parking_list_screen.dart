@@ -95,7 +95,7 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text('National Management Portal'.toUpperCase(),
+                    child: Text('Find and pay for parking near you'.toUpperCase(),
                       style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
                   ),
                   const SizedBox(height: 16),
@@ -181,7 +181,7 @@ class _AllSitesTab extends StatelessWidget {
   });
 
   @override Widget build(BuildContext context) {
-    if (loading) return const BrandedLoader(message: 'Syncing facilities...');
+    if (loading) return const BrandedLoader(message: 'Loading parking sites...');
     if (filtered.isEmpty) return const _EmptySearch();
 
     final totalPages = (filtered.length / pageSize).ceil();

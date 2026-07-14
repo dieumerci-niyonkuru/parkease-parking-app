@@ -98,7 +98,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: AppTheme.bgCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         title: Text('Sign Out', style: AppTheme.heading3),
-        content: Text('Are you sure you want to exit the ITEC Portal?', style: AppTheme.body),
+        content: Text('Are you sure you want to sign out of your account?', style: AppTheme.body),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text('CANCEL', style: AppTheme.label.copyWith(color: AppTheme.textMuted))),
           ElevatedButton(

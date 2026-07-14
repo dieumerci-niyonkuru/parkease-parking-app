@@ -121,7 +121,7 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
 
         Expanded(
           child: provider.lookupLoading
-            ? const BrandedLoader(message: 'Searching vehicle records...')
+            ? const BrandedLoader(message: 'Checking your plate...')
             : _error != null
               ? _ErrorView(message: _error!, onRetry: _search)
               : _record == null

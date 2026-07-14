@@ -107,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // ── MAIN CONTENT ─────────────────────────────────────
             SliverToBoxAdapter(
               child: _loading
-                  ? const SizedBox(height: 300, child: BrandedLoader(message: 'Retrieving Parking Sites...'))
+                  ? const SizedBox(height: 300, child: BrandedLoader(message: 'Loading parking sites...'))
                   : Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
@@ -281,15 +281,17 @@ class _ParkingHubCard extends StatelessWidget {
               children: [
                 const Icon(Icons.directions_car_rounded, color: AppTheme.primary, size: 24),
                 const SizedBox(width: 14),
-                const Text('Parking Site', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF212529))),
-                const Spacer(),
+                Expanded(
+                  child: Text(facility.fullParkName.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
+                ),
+                const SizedBox(width: 8),
                 Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textMuted.withValues(alpha: 0.5), size: 16),
               ],
             ),
             const SizedBox(height: 12),
             const Divider(height: 1, thickness: 0.5),
             const SizedBox(height: 16),
-            _mockupRow('Parking Site', facility.fullParkName.toUpperCase()),
             _mockupRow('Location', facility.address),
             _mockupRow('Available Spots', facility.parkingLots.toString(), isHighlight: true),
           ],
