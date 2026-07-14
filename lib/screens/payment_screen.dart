@@ -9,7 +9,7 @@ import '../widgets/branded_loader.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 
-enum PayMethod { momo, airtel, card, cash }
+enum PayMethod { momo, airtel, card, cash, other }
 
 class PaymentScreen extends StatefulWidget {
   final VehicleRecord record;
@@ -19,20 +19,20 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
-  PayMethod _method  = PayMethod.momo;
+  PayMethod? _method;
   bool      _paying  = false;
   bool      _done    = false;
   VehicleRecord? _receipt;
 
   String _countryCode = '+250';
-  final _momoCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   
   final _cardNumCtrl = TextEditingController();
   final _expiryCtrl  = TextEditingController();
   final _cvvCtrl     = TextEditingController();
 
   @override void dispose() {
-    _momoCtrl.dispose(); _cardNumCtrl.dispose();
+    _phoneCtrl.dispose(); _cardNumCtrl.dispose();
     _expiryCtrl.dispose(); _cvvCtrl.dispose();
     super.dispose();
   }
@@ -41,32 +41,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _payStatus = '';
 
-  Future<void> _pay() async {
+  Future<void> _pay(String payerPhone) async {
     final r = widget.record;
 
-    // Card / cash aren't supported by the self-service payment API (mobile
-    // money only). Be honest rather than pretend to charge a card.
-    if (_method == PayMethod.card) {
-      _snack('Card payment isn\'t available yet. Please use Mobile Money.', isError: true);
-      return;
-    }
-    if (_method == PayMethod.cash) {
-      _snack('For cash, please pay the attendant at the parking exit.', isError: true);
-      return;
-    }
-
-    // ── MOBILE MONEY (real API) ─────────────────────────────────
-    final localPhone = _momoCtrl.text.trim();
-    if (localPhone.length < 8) {
-      _snack('Please enter the phone number that will receive the payment prompt.', isError: true);
-      return;
-    }
     if (r.dbId == null || r.pInId == null || (r.paymentType ?? '').isEmpty) {
       _snack('This vehicle can\'t be paid here right now. Please look up the plate again.', isError: true);
       return;
     }
 
-    final payerPhone = '$_countryCode$localPhone';
     HapticFeedback.mediumImpact();
     setState(() { _paying = true; _payStatus = 'Sending payment request...'; });
 
@@ -139,7 +121,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return null;
   }
 
-
   void _snack(String msg, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -148,6 +129,215 @@ class _PaymentScreenState extends State<PaymentScreen> {
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ));
+  }
+
+  void _showMethodPicker() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Select Payment Method', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 20),
+              _MethodOption(
+                icon: Icons.phone_iphone_rounded, label: 'MTN MoMo',
+                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.momo); },
+              ),
+              _MethodOption(
+                icon: Icons.phone_iphone_rounded, label: 'Airtel Money',
+                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.airtel); },
+              ),
+              _MethodOption(
+                icon: Icons.credit_card_rounded, label: 'Bank Card',
+                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.card); },
+              ),
+              _MethodOption(
+                icon: Icons.payments_rounded, label: 'Cash Payment',
+                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.cash); },
+              ),
+              _MethodOption(
+                icon: Icons.more_horiz_rounded, label: 'Other / Not Listed',
+                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.other); },
+              ),
+              const SizedBox(height: 12),
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('CANCEL', style: AppTheme.label.copyWith(color: AppTheme.textMuted)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onMethodSelected(PayMethod method) {
+    setState(() => _method = method);
+    if (method == PayMethod.momo || method == PayMethod.airtel || method == PayMethod.other) {
+      _showPhoneEntry();
+    } else if (method == PayMethod.card) {
+      _showCardEntry();
+    } else if (method == PayMethod.cash) {
+      _showCashConfirmation();
+    }
+  }
+
+  void _showCardEntry() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Enter Card Details', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 8),
+              Text('Pay securely with your credit/debit card', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+              const SizedBox(height: 24),
+              TextField(
+                controller: _cardNumCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(hintText: 'Card Number', prefixIcon: Icon(Icons.credit_card_rounded)),
+              ),
+              const SizedBox(height: 16),
+              Row(children: [
+                Expanded(child: TextField(controller: _expiryCtrl, decoration: const InputDecoration(hintText: 'MM/YY'))),
+                const SizedBox(width: 16),
+                Expanded(child: TextField(controller: _cvvCtrl, obscureText: true, decoration: const InputDecoration(hintText: 'CVV'))),
+              ]),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity, height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _snack('Card payment isn\'t available yet. Please use Mobile Money.', isError: true);
+                  },
+                  child: const Text('CONFIRM & PAY', style: TextStyle(fontWeight: FontWeight.w900)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('CANCEL', style: AppTheme.label.copyWith(color: AppTheme.textMuted)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCashConfirmation() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.payments_rounded, size: 48, color: AppTheme.primary),
+              const SizedBox(height: 16),
+              Text('Cash Payment', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 12),
+              Text(
+                'Please present this screen to the parking attendant at the exit booth to settle your fee in cash.',
+                textAlign: TextAlign.center,
+                style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity, height: 52,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
+                  child: const Text('UNDERSTOOD', style: TextStyle(fontWeight: FontWeight.w900)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPhoneEntry() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Enter Phone Number', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
+              const SizedBox(height: 8),
+              Text('Prompt will be sent to this number', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
+              const SizedBox(height: 24),
+              Row(children: [
+                Container(
+                  decoration: BoxDecoration(border: Border.all(color: AppTheme.border), borderRadius: BorderRadius.circular(12)),
+                  child: CountryCodePicker(
+                    onChanged: (c) => setState(() => _countryCode = c.dialCode ?? '+250'),
+                    initialSelection: 'RW', favorite: const ['+250', 'RW'],
+                    textStyle: AppTheme.body.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _phoneCtrl, keyboardType: TextInputType.phone,
+                    autofocus: true,
+                    style: AppTheme.body.copyWith(fontWeight: FontWeight.w900),
+                    decoration: const InputDecoration(hintText: '78XXX XXXX'),
+                  ),
+                ),
+              ]),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity, height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    final num = _phoneCtrl.text.trim();
+                    if (num.length < 8) {
+                       _snack('Please enter a valid phone number.', isError: true);
+                       return;
+                    }
+                    Navigator.pop(ctx);
+                    _pay('$_countryCode$num');
+                  },
+                  child: const Text('CONFIRM & PAY', style: TextStyle(fontWeight: FontWeight.w900)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('CANCEL', style: AppTheme.label.copyWith(color: AppTheme.textMuted)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -161,7 +351,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Scaffold(
       backgroundColor: AppTheme.bgDeep,
       appBar: AppBar(
-        backgroundColor: AppTheme.primary, // Brand Background
+        backgroundColor: AppTheme.primary,
         surfaceTintColor: Colors.transparent,
         elevation: 4,
         leadingWidth: 0,
@@ -170,10 +360,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           children: [
             Container(
               width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-              ),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
               child: const Center(
                 child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
               ),
@@ -200,11 +387,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start, 
             children: [
-              // ── PREMIUM INVOICE CARD ────────────────────────────────────
+              // ── INVOICE CARD ────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
@@ -231,49 +418,61 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ]),
               ).animate().fadeIn().slideY(begin: 0.1),
 
-              const SizedBox(height: 32),
-              Text('PAYMENT METHOD', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900)),
-              const SizedBox(height: 16),
-              
-              _PaymentGrid(selected: _method, onSelect: (m) => setState(() => _method = m)),
-              
-              const SizedBox(height: 32),
-              
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: KeyedSubtree(key: ValueKey(_method), child: _buildMethodForm()),
-              ),
-              
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
               
               if (_paying)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20),
-                  child: BrandedLoader(message: _payStatus.isEmpty ? 'Processing your payment...' : _payStatus),
-                )
+                BrandedLoader(message: _payStatus.isEmpty ? 'Processing your payment...' : _payStatus)
               else ...[
+                Text('CHOOSE PAYMENT METHOD', style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, letterSpacing: 1)),
+                const SizedBox(height: 16),
+                
+                // ── SELECTION BUTTON ───────────────────────────
+                GestureDetector(
+                  onTap: _showMethodPicker,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppTheme.primary, width: 2),
+                      boxShadow: AppTheme.subtleShadow,
+                    ),
+                    child: Row(children: [
+                      Icon(_method == null ? Icons.payment_rounded : _methodIcon(_method!), color: AppTheme.primary, size: 28),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          _method == null ? 'Select Payment Method' : _methodLabel(_method!),
+                          style: AppTheme.body.copyWith(fontWeight: FontWeight.w900, fontSize: 16, color: AppTheme.textPrimary),
+                        ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_down_rounded, color: AppTheme.primary),
+                    ]),
+                  ),
+                ).animate().fadeIn(delay: 200.ms),
+
+                const SizedBox(height: 40),
+
                 SizedBox(
                   width: double.infinity, height: 60,
                   child: ElevatedButton(
-                    onPressed: _pay,
+                    onPressed: _method == null ? _showMethodPicker : () => _showPhoneEntry(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primary,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
                       elevation: 4,
                     ),
-                      child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(Icons.lock_rounded, size: 20),
-                      SizedBox(width: 12),
-                      Text('PAY NOW', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(_method == null ? Icons.touch_app_rounded : Icons.lock_rounded, size: 20),
+                      const SizedBox(width: 12),
+                      Text(_method == null ? 'START PAYMENT' : 'PAY NOW', style: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1)),
                     ]),
                   ),
-                ).animate().fadeIn(delay: 400.ms),
+                ).animate().fadeIn(delay: 300.ms),
               ],
               
               const SizedBox(height: 40),
               Center(child: Text('🔒 SECURE SSL ENCRYPTED TRANSACTION', style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textHint, letterSpacing: 1))),
-              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -281,21 +480,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  Widget _buildMethodForm() {
-    switch (_method) {
-      case PayMethod.momo:
-      case PayMethod.airtel:
-        return _MobileForm(
-          ctrl: _momoCtrl,
-          method: _method,
-          onCountryChanged: (c) => setState(() => _countryCode = c),
-        );
-      case PayMethod.card:
-        return _CardForm(num: _cardNumCtrl, exp: _expiryCtrl, cvv: _cvvCtrl);
-      case PayMethod.cash:
-        return _CashNotice();
+  IconData _methodIcon(PayMethod m) {
+    switch (m) {
+      case PayMethod.momo:   return Icons.phone_iphone_rounded;
+      case PayMethod.airtel: return Icons.phone_iphone_rounded;
+      case PayMethod.card:   return Icons.credit_card_rounded;
+      case PayMethod.cash:   return Icons.payments_rounded;
+      case PayMethod.other:  return Icons.more_horiz_rounded;
     }
   }
+
+  String _methodLabel(PayMethod m) {
+    switch (m) {
+      case PayMethod.momo:   return 'MTN MoMo';
+      case PayMethod.airtel: return 'Airtel Money';
+      case PayMethod.card:   return 'Bank Card';
+      case PayMethod.cash:   return 'Cash Payment';
+      case PayMethod.other:  return 'Other / Not Listed';
+    }
+  }
+}
+
+class _MethodOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  const _MethodOption({required this.icon, required this.label, required this.onTap});
+
+  @override Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: InkWell(
+      onTap: () { HapticFeedback.selectionClick(); onTap(); },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.bgDeep,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(children: [
+          Icon(icon, color: AppTheme.primary, size: 22),
+          const SizedBox(width: 16),
+          Text(label, style: AppTheme.body.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+          const Spacer(),
+          const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textHint, size: 14),
+        ]),
+      ),
+    ),
+  );
 }
 
 // ── COMPONENTS ──────────────────────────────────────────────────────
@@ -311,72 +544,6 @@ class _InvoiceRow extends StatelessWidget {
     const Spacer(),
     Text(value, style: AppTheme.body.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
   ]);
-}
-
-class _PaymentGrid extends StatelessWidget {
-  final PayMethod selected;
-  final ValueChanged<PayMethod> onSelect;
-  const _PaymentGrid({required this.selected, required this.onSelect});
-
-  @override Widget build(BuildContext context) {
-    final list = [
-      (PayMethod.momo,   'MTN MOMO',    null),
-      (PayMethod.airtel, 'AIRTEL MONEY', null),
-      (PayMethod.card,   'BANK CARD',    null),
-      (PayMethod.cash,   'CASH PAYMENT', null),
-    ];
-
-    return GridView.count(
-      crossAxisCount: 2, shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 16, crossAxisSpacing: 16,
-      childAspectRatio: 1.3, // Made taller for better design
-      children: list.map((m) {
-        final active = selected == m.$1;
-        return GestureDetector(
-          onTap: () { HapticFeedback.selectionClick(); onSelect(m.$1); },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: active ? AppTheme.primary.withValues(alpha: 0.08) : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: active ? AppTheme.primary : AppTheme.border, 
-                width: active ? 2.5 : 1.5,
-              ),
-              boxShadow: active ? [
-                BoxShadow(color: AppTheme.primary.withValues(alpha: 0.15), blurRadius: 15, offset: const Offset(0, 8))
-              ] : [],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  m.$1 == PayMethod.momo ? Icons.phone_iphone_rounded
-                      : m.$1 == PayMethod.airtel ? Icons.phone_iphone_rounded
-                      : m.$1 == PayMethod.card ? Icons.credit_card_rounded
-                      : Icons.payments_rounded,
-                  color: active ? AppTheme.primary : AppTheme.textMuted,
-                  size: 32,
-                ),
-                const SizedBox(height: 12),
-                Text(m.$2, 
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11, 
-                    fontWeight: FontWeight.w900, 
-                    color: active ? AppTheme.primary : AppTheme.textSecond,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
 }
 
 class _MobileForm extends StatelessWidget {

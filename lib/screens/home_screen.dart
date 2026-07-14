@@ -95,9 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ).animate().fadeIn(delay: 100.ms),
                     const SizedBox(height: 4),
                     // ── PAY NOW HERO ─────────────────────────────
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(24, 12, 24, 16),
-                      child: PayNowCard(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                      child: PayNowCard(onTap: () => widget.onNavigateToTab?.call(1)),
                     ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.1),
                   ],
                 ),

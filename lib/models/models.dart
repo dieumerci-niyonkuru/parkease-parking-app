@@ -103,8 +103,9 @@ class VehicleRecord {
   factory VehicleRecord.fromPaymentMatch(Map<String, dynamic> m, {String? fallbackPlate}) {
     final payable = m['payable'] != false; // default true unless explicitly false
     final hours = double.tryParse(m['hours']?.toString() ?? '0') ?? 0.0;
-    final entry = DateTime.tryParse((m['entre_time'] ?? '').toString())
+    final entry = DateTime.tryParse((m['entre_time'] ?? m['entry_time'] ?? '').toString())
         ?? DateTime.now().subtract(Duration(minutes: (hours * 60).round()));
+    final exit = DateTime.tryParse((m['exit_time'] ?? '').toString());
     final owed = double.tryParse(m['amount_owed']?.toString() ?? '');
     return VehicleRecord(
       slotId:         '${m['db_id'] ?? ''}-${m['p_in_id'] ?? m['parking_id'] ?? ''}',
@@ -113,6 +114,7 @@ class VehicleRecord {
       ownerPhone:     '',
       ownerEmail:     '',
       entryTime:      entry,
+      exitTime:       exit,
       spotNumber:     m['parking_id']?.toString() ?? '—',
       parkingName:    m['db_name']?.toString() ?? 'Parking Site',
       parkingAddress: '',

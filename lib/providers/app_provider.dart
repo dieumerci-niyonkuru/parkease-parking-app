@@ -139,6 +139,42 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ── Lookup with specific site (optional) ─────────────────────
+  Future<VehicleRecord?> lookupWithSite(String plate, {int? dbId}) async {
+    _lookupLoading = true;
+    _lookupError  = null;
+    notifyListeners();
+
+    try {
+      final result = await ApiService.paymentLookup(plate, dbId: dbId);
+      
+      if (result['success'] == true) {
+        final matches = (result['matches'] as List?) ?? [];
+        if (matches.isNotEmpty) {
+          final record = VehicleRecord.fromPaymentMatch(
+            (matches.first as Map).cast<String, dynamic>(),
+            fallbackPlate: plate,
+          );
+          
+          _currentRecord = record;
+          _lookupLoading = false;
+          notifyListeners();
+          
+          await NotificationService.notifyVehicleLookup(record);
+          return record;
+        }
+      }
+      
+      _lookupError = result['message'] ?? 'No parking session found.';
+    } catch (e) {
+      _lookupError = 'Connection error. Please try again.';
+    }
+
+    _lookupLoading = false;
+    notifyListeners();
+    return null;
+  }
+
   // ── Process payment ───────────────────────────────────────────
   Future<VehicleRecord?> processPayment(VehicleRecord record) async {
     final exitTime = DateTime.now();

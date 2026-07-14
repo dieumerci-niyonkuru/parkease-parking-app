@@ -15,7 +15,7 @@ class HistoryScreen extends StatefulWidget {
   @override State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProviderStateMixin {
   List<HistoryEntry> _all      = [];
   List<HistoryEntry> _filtered = [];
   bool _loading    = true;
@@ -24,12 +24,59 @@ class _HistoryScreenState extends State<HistoryScreen> {
   DateTime? _from;
   DateTime? _to;
 
+  late final TabController _tabController;
+
   static final _dateFmt  = DateFormat('dd MMM yyyy');
   static final _moneyFmt = NumberFormat('#,###');
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_handleTabChange);
+    // Default to Today
+    final now = DateTime.now();
+    _from = DateTime(now.year, now.month, now.day);
+    _to   = DateTime(now.year, now.month, now.day);
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _handleTabChange() {
+    if (!_tabController.indexIsChanging) {
+      _applyTabFilter();
+    }
+  }
+
+  void _applyTabFilter() {
+    final now = DateTime.now();
+    setState(() {
+      switch (_tabController.index) {
+        case 0: // Today
+          _from = DateTime(now.year, now.month, now.day);
+          _to   = DateTime(now.year, now.month, now.day);
+          break;
+        case 1: // Week
+          _from = now.subtract(Duration(days: now.weekday - 1));
+          _from = DateTime(_from!.year, _from!.month, _from!.day);
+          _to   = now;
+          break;
+        case 2: // Month
+          _from = DateTime(now.year, now.month, 1);
+          _to   = now;
+          break;
+        case 3: // All
+          _from = null;
+          _to   = null;
+          break;
+      }
+    });
     _load();
   }
 
@@ -167,34 +214,50 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ]),
                   ).animate().fadeIn().slideY(begin: 0.1),
                 ],
+                const SizedBox(height: 20),
+                TabBar(
+                  controller: _tabController,
+                  isScrollable: false,
+                  labelColor: AppTheme.primary,
+                  unselectedLabelColor: AppTheme.textMuted,
+                  indicatorColor: AppTheme.primary,
+                  indicatorWeight: 3,
+                  labelPadding: EdgeInsets.zero,
+                  labelStyle: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
+                  unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 11),
+                  tabs: const [
+                    Tab(text: 'TODAY'),
+                    Tab(text: 'WEEK'),
+                    Tab(text: 'MONTH'),
+                    Tab(text: 'ALL'),
+                  ],
+                ),
               ],
             ),
           ),
 
           Container(
             color: AppTheme.bgCard,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Row(
               children: [
-                _SummaryChip(
-                  icon: _tableView ? Icons.table_chart_rounded : Icons.view_list_rounded,
-                  label: _tableView ? 'TABLE VIEW' : 'CARD VIEW',
-                  color: AppTheme.primary,
-                ),
+                const SizedBox(width: 8),
+                Text(_tableView ? 'TABLE VIEW' : 'CARD VIEW', 
+                  style: AppTheme.label.copyWith(color: AppTheme.primary, fontWeight: FontWeight.w900, fontSize: 10)),
                 const Spacer(),
                 IconButton(
                   onPressed: () => setState(() => _tableView = !_tableView),
-                  icon: Icon(_tableView ? Icons.grid_view_rounded : Icons.table_chart_outlined, color: AppTheme.primary, size: 22),
+                  icon: Icon(_tableView ? Icons.grid_view_rounded : Icons.table_chart_outlined, color: AppTheme.primary, size: 20),
                   tooltip: 'Switch View',
                 ),
                 IconButton(
                   onPressed: _pickRange,
-                  icon: Icon(Icons.calendar_month_rounded, color: hasFilter ? AppTheme.primary : AppTheme.textMuted, size: 22),
+                  icon: Icon(Icons.calendar_month_rounded, color: hasFilter ? AppTheme.primary : AppTheme.textMuted, size: 20),
                   tooltip: 'Filter Date',
                 ),
                 IconButton(
                   onPressed: _load,
-                  icon: const Icon(Icons.sync_rounded, color: AppTheme.textMuted, size: 22),
+                  icon: const Icon(Icons.sync_rounded, color: AppTheme.textMuted, size: 20),
                   tooltip: 'Sync History',
                 ),
               ],

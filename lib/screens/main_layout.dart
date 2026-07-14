@@ -13,6 +13,7 @@ import '../widgets/widgets.dart';
 import 'home_screen.dart';
 import 'notifications_screen.dart';
 import 'parking_list_screen.dart';
+import 'pay_screen.dart';
 import 'plate_lookup_screen.dart';
 import 'history_screen.dart';
 import 'receipt_detail_screen.dart';
@@ -47,13 +48,20 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   List<Widget> get _pages => [
-    HomeScreen(onNavigateToTab: (i) => setState(() => _currentIndex = i)),
-    const ParkingListScreen(),
+    HomeScreen(onNavigateToTab: (i) => _onNavigateToTab(i)),
+    const PayScreen(),
+    ParkingListScreen(onNavigateToTab: (i) => _onNavigateToTab(i)),
     const HistoryScreen(),
     const ProfileScreen(),
   ];
 
+  void _onNavigateToTab(int i) {
+    setState(() => _currentIndex = i);
+    _pageController.animateToPage(i, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
+    GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
     GlobalKey<NavigatorState>(),
@@ -63,9 +71,10 @@ class _MainLayoutState extends State<MainLayout> {
   String get _pageTitle {
     switch (_currentIndex) {
       case 0: return 'DASHBOARD';
-      case 1: return 'PARKING SITE';
-      case 2: return 'RECEIPTS';
-      case 3: return 'MY ACCOUNT';
+      case 1: return 'PAY PARKING';
+      case 2: return 'PARKING SITE';
+      case 3: return 'RECEIPTS';
+      case 4: return 'MY ACCOUNT';
       default: return 'ITEC PARKING';
     }
   }
@@ -201,8 +210,8 @@ class _MainLayoutState extends State<MainLayout> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 onSelected: (val) async {
                   if (val == 0) {
-                    setState(() => _currentIndex = 3); // Go to profile
-                    _pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                    setState(() => _currentIndex = 4); // Go to profile (index 4 now)
+                    _pageController.animateToPage(4, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
                   } else if (val == 1) {
                     // ── LOGOUT CONFIRMATION DIALOG ──────────────────
                     final confirmed = await showDialog<bool>(
@@ -320,7 +329,7 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: _PremiumBottomNav(
         current: _currentIndex,
         onTap: (i) {
-          if (i == 2 && _isProfileIncomplete) {
+          if (i == 3 && _isProfileIncomplete) { // Receipts is now index 3
             _showProfileRequiredDialog();
             return;
           }
@@ -356,8 +365,8 @@ class _MainLayoutState extends State<MainLayout> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(ctx);
-              setState(() => _currentIndex = 3);
-              _pageController.animateToPage(3, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+              setState(() => _currentIndex = 4); // Account is now index 4
+              _pageController.animateToPage(4, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF7A5B40),
@@ -379,6 +388,7 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
+      (Icons.payment_rounded,         Icons.payment_outlined,        'Pay'),
       (Icons.directions_car_rounded,  Icons.directions_car_outlined, 'Parking Site'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
       (Icons.person_rounded,          Icons.person_outlined,         'Account'),

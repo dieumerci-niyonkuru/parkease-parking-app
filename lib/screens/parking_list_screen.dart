@@ -9,7 +9,8 @@ import '../widgets/branded_loader.dart';
 import '../widgets/pay_now_card.dart';
 
 class ParkingListScreen extends StatefulWidget {
-  const ParkingListScreen({super.key});
+  final void Function(int tabIndex)? onNavigateToTab;
+  const ParkingListScreen({super.key, this.onNavigateToTab});
   @override State<ParkingListScreen> createState() => _ParkingListScreenState();
 }
 
@@ -100,9 +101,9 @@ class _ParkingListScreenState extends State<ParkingListScreen> with SingleTicker
                   ),
                   const SizedBox(height: 16),
                   // ── PAY NOW (compact) ────────────────────────────
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: PayNowCard(dense: true),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: PayNowCard(dense: true, onTap: () => widget.onNavigateToTab?.call(1)),
                   ),
                   const SizedBox(height: 14),
                   // ── SUB-TABS ─────────────────────────────────────

@@ -215,15 +215,15 @@ class AuthService {
   }
 
   // ── Register: step 1 — send OTP ──────────────────────────────
-  static Future<Map<String, dynamic>> initiateRegister(String phone, String username) async {
+  static Future<Map<String, dynamic>> initiateRegister(String phone, {String? username}) async {
     try {
+      final body = <String, dynamic>{'phone': phone};
+      if (username != null) body['username'] = username;
+
       final resp = await http.post(
         Uri.parse('$baseUrl/auth/register/initiate'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phone': phone,
-          'username': username,
-        }),
+        body: jsonEncode(body),
       ).timeout(timeout);
 
       final data = jsonDecode(resp.body);
@@ -235,6 +235,29 @@ class AuthService {
         };
       }
       return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
+    } catch (e) {
+      return {'success': false, 'message': AppUtils.friendlyNetworkError()};
+    }
+  }
+
+  // ── Register: step 1.5 — initiate reclaim OTP ────────────────
+  static Future<Map<String, dynamic>> initiateReclaimForRegistration(String phone) async {
+    try {
+      // NOTE: This uses the public reclaim initiation which doesn't require a token
+      final resp = await http.post(
+        Uri.parse('$baseUrl/auth/phone/reclaim/initiate'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone': phone}),
+      ).timeout(timeout);
+
+      final data = jsonDecode(resp.body);
+      if (resp.statusCode == 200 && data['status'] == 'success') {
+        return {
+          'success': true,
+          'message': data['message'] ?? 'Reclaim OTP sent',
+        };
+      }
+      return {'success': false, 'message': data['message'] ?? 'Failed to send reclaim OTP'};
     } catch (e) {
       return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }

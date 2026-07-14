@@ -12,10 +12,16 @@ import '../screens/payment_screen.dart';
 /// the default is the full hero card (used on Home).
 class PayNowCard extends StatelessWidget {
   final bool dense;
-  const PayNowCard({super.key, this.dense = false});
+  final VoidCallback? onTap;
+  const PayNowCard({super.key, this.dense = false, this.onTap});
 
-  void _open(BuildContext context) =>
+  void _open(BuildContext context) {
+    if (onTap != null) {
+      onTap!();
+    } else {
       showDialog(context: context, builder: (_) => const _PayDialog());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
+  bool _isReclaimMode = false;
 
   // Step 1: Phone
   String _countryCode = '+250';
@@ -45,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _showDialog(String msg, {bool isError = true}) async {
+  Future<void> _showDialog(String msg, {bool isError = true, bool showReclaim = false}) async {
     if (!mounted) return;
     await showDialog(
       context: context,
@@ -78,15 +79,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 8),
               Text(msg, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
               const SizedBox(height: 28),
+              if (showReclaim) ...[
+                SizedBox(
+                  width: double.infinity, height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _initiateReclaim();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text('Claim this number', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity, height: 50,
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: () => Navigator.pop(ctx),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isError ? AppTheme.danger : AppTheme.success,
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: isError ? AppTheme.danger : AppTheme.success),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: const Text('OK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                  child: Text(showReclaim ? 'Cancel' : 'OK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isError ? AppTheme.danger : AppTheme.success)),
                 ),
               ),
             ],
@@ -98,13 +116,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _initiateRegistration() async {
     final phone    = _phoneCtrl.text.trim();
-    final username = _usernameCtrl.text.trim();
     if (phone.isEmpty) { _showDialog('Please enter your phone number'); return; }
-    if (username.isEmpty) { _showDialog('Please enter a username'); return; }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _isReclaimMode = false;
+    });
     final fullPhone = '$_countryCode$phone';
-    final result = await AuthService.initiateRegister(fullPhone, username);
+    final result = await AuthService.initiateRegister(fullPhone);
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -115,7 +134,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       });
       _showDialog('OTP sent to $fullPhone', isError: false);
     } else {
-      _showDialog(result['message'] ?? 'Failed to send OTP');
+      final msg = result['message'] ?? 'Failed to send OTP';
+      bool userExists = msg.toLowerCase().contains('already exists') || msg.toLowerCase().contains('taken');
+      _showDialog(msg, showReclaim: userExists);
+    }
+  }
+
+  Future<void> _initiateReclaim() async {
+    final phone = _phoneCtrl.text.trim();
+    final fullPhone = '$_countryCode$phone';
+
+    setState(() => _isLoading = true);
+    final result = await AuthService.initiateReclaimForRegistration(fullPhone);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (result['success'] == true) {
+      setState(() {
+        _isReclaimMode = true;
+        _step = 2;
+      });
+      _showDialog('Reclaim OTP sent to $fullPhone', isError: false);
+    } else {
+      _showDialog(result['message'] ?? 'Failed to initiate reclaim');
     }
   }
 
@@ -125,10 +166,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     setState(() => _isLoading = true);
     final fullPhone = '$_countryCode${_phoneCtrl.text.trim()}';
-    final result = await AuthService.verifyOtp(
-      fullPhone, otp,
-      verificationPayload: _verificationPayload,
-    );
+    
+    Map<String, dynamic> result;
+    if (_isReclaimMode) {
+      result = await AuthService.verifyReclaimOtp(fullPhone, otp);
+    } else {
+      result = await AuthService.verifyOtp(
+        fullPhone, otp,
+        verificationPayload: _verificationPayload,
+      );
+    }
+
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -359,16 +407,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Text('Enter your phone number to get started', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
       const SizedBox(height: 32),
 
-      const _FieldLabel(text: 'Username'),
-      const SizedBox(height: 8),
-      TextField(
-        controller: _usernameCtrl,
-        textInputAction: TextInputAction.next,
-        style: _inputStyle,
-        decoration: _inputDeco(hint: 'e.g. john_doe', icon: Icons.account_circle_outlined),
-      ),
-      const SizedBox(height: 20),
-
       const _FieldLabel(text: 'Phone Number'),
       const SizedBox(height: 8),
       Container(
@@ -503,6 +541,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       const SizedBox(height: 6),
       Text('Almost there! Tell us a bit about yourself.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
       const SizedBox(height: 32),
+
+      const _FieldLabel(text: 'Username'),
+      const SizedBox(height: 8),
+      TextField(
+        controller: _usernameCtrl,
+        textInputAction: TextInputAction.next,
+        style: _inputStyle,
+        decoration: _inputDeco(hint: 'e.g. john_doe', icon: Icons.account_circle_outlined),
+      ),
+      const SizedBox(height: 20),
 
       const _FieldLabel(text: 'Full Name'),
       const SizedBox(height: 8),

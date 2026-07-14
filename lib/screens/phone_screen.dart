@@ -22,7 +22,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
     setState(() { _phones = phones; _loading = false; });
   }
 
-  void _showQuickAdd() => _showAddDialog(title: 'Quick Add', mode: 'quick');
   void _showReclaim()  => _showAddDialog(title: 'Reclaim Number', mode: 'reclaim');
   void _showVerifyAdd() => _showAddDialog(title: 'Add & Verify', mode: 'verify');
 
@@ -117,9 +116,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                 Text(title, style: AppTheme.heading3),
                 const SizedBox(height: 6),
                 Text(
-                  mode == 'quick'
-                      ? 'Add a phone number instantly — no verification needed.'
-                      : mode == 'verify'
+                  mode == 'verify'
                         ? 'Add a number and verify it via OTP.'
                         : 'Reclaim a number that was registered by someone else.',
                   style: AppTheme.body,
@@ -210,20 +207,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                             if (phoneCtrl.text.trim().isEmpty) return;
                             setModal(() => loading = true);
 
-                            if (mode == 'quick' && !otpSent) {
-                              final full =
-                                  '$countryCode${phoneCtrl.text.trim()}';
-                              final r = await PhoneService.quickAdd(full);
-                              if (!ctx.mounted) return;
-                              setModal(() => loading = false);
-                              if (r['success'] == true) {
-                                Navigator.pop(ctx);
-                                _snack('Number added!', isError: false);
-                                _load();
-                              } else {
-                                _snack(r['message'] ?? 'Couldn\'t add that number. Please try again.');
-                              }
-                            } else if (!otpSent) {
+                            if (!otpSent) {
                               // Reclaim or Verify — initiate OTP
                               final full =
                                   '$countryCode${phoneCtrl.text.trim()}';
@@ -267,8 +251,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                                 color: Colors.white, strokeWidth: 2.5),
                           )
                         : Text(
-                            otpSent ? 'Confirm OTP' :
-                            mode == 'quick' ? 'Add Number' : 'Send OTP',
+                            otpSent ? 'Confirm OTP' : 'Send OTP',
                             style: AppTheme.heading4
                                 .copyWith(color: Colors.white),
                           ),
@@ -312,11 +295,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _ActionBtn(
-                        label: '+ Quick Add',
-                        color: AppTheme.success,
-                        onTap: _showQuickAdd,
-                      ),
                       _ActionBtn(
                         label: 'Add & Verify',
                         color: AppTheme.primary,
@@ -439,11 +417,6 @@ class _PhoneScreenState extends State<PhoneScreen> {
                               style: AppTheme.heading4.copyWith(fontSize: 14)),
                         ]),
                         const SizedBox(height: 14),
-                        const _InfoBullet(
-                          bold: 'Quick Add',
-                          text: ' saves a number to your account right away.',
-                        ),
-                        const SizedBox(height: 10),
                         const _InfoBullet(
                           bold: 'Add & Verify',
                           text:
