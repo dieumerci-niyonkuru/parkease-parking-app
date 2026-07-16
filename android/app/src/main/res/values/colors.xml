@@ -6,5 +6,5 @@
     <color name="accent_blue">#FF0077FF</color>
     <color name="white">#FFFFFFFF</color>
     <color name="transparent">#00000000</color>
-	<color name="ic_launcher_background">#7A5B40</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
 </resources>

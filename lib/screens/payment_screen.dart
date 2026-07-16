@@ -3,11 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:country_code_picker/country_code_picker.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../models/models.dart';
 import '../widgets/branded_loader.dart';
+import '../widgets/widgets.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
+import '../providers/app_provider.dart';
 
 enum PayMethod { momo, airtel, card, cash, other }
 
@@ -22,14 +25,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
   PayMethod? _method;
   bool      _paying  = false;
   bool      _done    = false;
+  bool      _refreshing = false;
   VehicleRecord? _receipt;
+  late VehicleRecord _record;
 
   String _countryCode = '+250';
   final _phoneCtrl = TextEditingController();
-  
+
   final _cardNumCtrl = TextEditingController();
   final _expiryCtrl  = TextEditingController();
   final _cvvCtrl     = TextEditingController();
+
+  @override void initState() {
+    super.initState();
+    _record = widget.record;
+  }
 
   @override void dispose() {
     _phoneCtrl.dispose(); _cardNumCtrl.dispose();
@@ -41,8 +51,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   String _payStatus = '';
 
+  // Re-fetch the session so the amount owed reflects the current time
+  // rather than whatever it was when this screen first opened.
+  Future<void> _refreshAmount() async {
+    if (_refreshing || _paying) return;
+    setState(() => _refreshing = true);
+    try {
+      final result = await ApiService.paymentLookup(_record.plateNumber, dbId: _record.dbId);
+      if (result['success'] == true) {
+        final matches = (result['matches'] as List?) ?? [];
+        if (matches.isNotEmpty && mounted) {
+          final facilities = context.read<AppProvider>().facilities;
+          setState(() {
+            _record = VehicleRecord.fromPaymentMatch(
+              (matches.first as Map).cast<String, dynamic>(),
+              fallbackPlate: _record.plateNumber,
+              facilities: facilities,
+            );
+          });
+        }
+      }
+    } catch (_) {
+      // Keep showing the last known amount if the refresh fails.
+    }
+    if (mounted) setState(() => _refreshing = false);
+  }
+
   Future<void> _pay(String payerPhone) async {
-    final r = widget.record;
+    final r = _record;
 
     if (r.dbId == null || r.pInId == null || (r.paymentType ?? '').isEmpty) {
       _snack('This vehicle can\'t be paid here right now. Please look up the plate again.', isError: true);
@@ -138,12 +174,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Select Payment Method', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               _MethodOption(
                 icon: Icons.phone_iphone_rounded, label: 'MTN MoMo',
                 onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.momo); },
@@ -155,14 +191,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
               _MethodOption(
                 icon: Icons.credit_card_rounded, label: 'Bank Card',
                 onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.card); },
-              ),
-              _MethodOption(
-                icon: Icons.payments_rounded, label: 'Cash Payment',
-                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.cash); },
-              ),
-              _MethodOption(
-                icon: Icons.more_horiz_rounded, label: 'Other / Not Listed',
-                onTap: () { Navigator.pop(ctx); _onMethodSelected(PayMethod.other); },
               ),
               const SizedBox(height: 12),
               TextButton(
@@ -194,7 +222,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +230,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Text('Enter Card Details', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
               Text('Pay securely with your credit/debit card', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               TextField(
                 controller: _cardNumCtrl,
                 keyboardType: TextInputType.number,
@@ -214,7 +242,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const SizedBox(width: 16),
                 Expanded(child: TextField(controller: _cvvCtrl, obscureText: true, decoration: const InputDecoration(hintText: 'CVV'))),
               ]),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity, height: 52,
                 child: ElevatedButton(
@@ -246,7 +274,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -259,7 +287,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 textAlign: TextAlign.center,
                 style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity, height: 52,
                 child: ElevatedButton(
@@ -282,7 +310,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +318,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               Text('Enter Phone Number', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
               Text('Prompt will be sent to this number', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Row(children: [
                 Container(
                   decoration: BoxDecoration(border: Border.all(color: AppTheme.border), borderRadius: BorderRadius.circular(12)),
@@ -310,7 +338,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                 ),
               ]),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity, height: 52,
                 child: ElevatedButton(
@@ -354,17 +382,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         backgroundColor: AppTheme.primary,
         surfaceTintColor: Colors.transparent,
         elevation: 4,
-        leadingWidth: 0,
-        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+          tooltip: 'Back',
+        ),
         title: Row(
           children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-              child: const Center(
-                child: Text('P', style: TextStyle(color: Color(0xFF7A5B40), fontSize: 18, fontWeight: FontWeight.w900)),
-              ),
-            ),
+            const ItecLogo(size: 32, fontSize: 18),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,6 +402,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            onPressed: _refreshing ? null : _refreshAmount,
+            icon: _refreshing
+              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : const Icon(Icons.refresh_rounded, color: Colors.white, size: 24),
+            tooltip: 'Refresh Amount',
+          ),
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
@@ -393,7 +425,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             children: [
               // ── INVOICE CARD ────────────────────────────────────
               Container(
-                padding: const EdgeInsets.all(28),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: AppTheme.bgCard,
                   borderRadius: BorderRadius.circular(28),
@@ -401,24 +433,34 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
                 ),
                 child: Column(children: [
-                  Text('TOTAL INVOICE AMOUNT', style: AppTheme.label.copyWith(letterSpacing: 2)),
+                  Text('YOU ARE PAYING', style: AppTheme.label.copyWith(letterSpacing: 2)),
                   const SizedBox(height: 12),
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                     const Text('RWF ', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.textMuted)),
-                    Text(_fmt(widget.record.totalAmount), 
+                    Text(_fmt(_record.totalAmount),
                       style: AppTheme.heading1.copyWith(fontSize: 40, color: AppTheme.textPrimary, fontWeight: FontWeight.w900)),
                   ]),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   const Divider(height: 32),
-                  _InvoiceRow(Icons.location_on_rounded, 'Site', widget.record.parkingName),
+                  _InvoiceRow(Icons.location_on_rounded, 'Site', _record.parkingName),
+                  if (_record.parkingAddress.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    _InvoiceRow(Icons.map_outlined, 'Address', _record.parkingAddress),
+                  ],
                   const SizedBox(height: 10),
-                  _InvoiceRow(Icons.timer_outlined, 'Duration', widget.record.durationDisplay),
+                  _InvoiceRow(Icons.login_rounded, 'Entry Time', DateFormat('HH:mm, dd MMM').format(_record.entryTime)),
                   const SizedBox(height: 10),
-                  _InvoiceRow(Icons.directions_car_rounded, 'Vehicle', widget.record.plateNumber),
+                  _InvoiceRow(Icons.timer_outlined, 'Duration', _record.durationDisplay),
+                  const SizedBox(height: 10),
+                  _InvoiceRow(Icons.directions_car_rounded, 'Vehicle', _record.plateNumber),
+                  if (_record.spotNumber.isNotEmpty && _record.spotNumber != '—') ...[
+                    const SizedBox(height: 10),
+                    _InvoiceRow(Icons.pin_drop_outlined, 'Spot No.', _record.spotNumber),
+                  ],
                 ]),
               ).animate().fadeIn().slideY(begin: 0.1),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 28),
               
               if (_paying)
                 BrandedLoader(message: _payStatus.isEmpty ? 'Processing your payment...' : _payStatus)
@@ -430,7 +472,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 GestureDetector(
                   onTap: _showMethodPicker,
                   child: Container(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
@@ -451,7 +493,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ),
                 ).animate().fadeIn(delay: 200.ms),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
                 SizedBox(
                   width: double.infinity, height: 60,
@@ -471,7 +513,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ).animate().fadeIn(delay: 300.ms),
               ],
               
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
               Center(child: Text('🔒 SECURE SSL ENCRYPTED TRANSACTION', style: AppTheme.label.copyWith(fontSize: 9, color: AppTheme.textHint, letterSpacing: 1))),
             ],
           ),
@@ -508,23 +550,22 @@ class _MethodOption extends StatelessWidget {
   const _MethodOption({required this.icon, required this.label, required this.onTap});
 
   @override Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.only(bottom: 8),
     child: InkWell(
       onTap: () { HapticFeedback.selectionClick(); onTap(); },
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
           color: AppTheme.bgDeep,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.border),
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Row(children: [
-          Icon(icon, color: AppTheme.primary, size: 22),
-          const SizedBox(width: 16),
+          Icon(icon, color: AppTheme.primary, size: 20),
+          const SizedBox(width: 12),
           Text(label, style: AppTheme.body.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
           const Spacer(),
-          const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textHint, size: 14),
+          const Icon(Icons.arrow_forward_ios_rounded, color: AppTheme.textHint, size: 13),
         ]),
       ),
     ),
@@ -537,12 +578,15 @@ class _InvoiceRow extends StatelessWidget {
   final IconData icon;
   final String label, value;
   const _InvoiceRow(this.icon, this.label, this.value);
-  @override Widget build(BuildContext context) => Row(children: [
+  @override Widget build(BuildContext context) => Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
     Icon(icon, size: 16, color: AppTheme.textMuted),
     const SizedBox(width: 10),
     Text(label, style: AppTheme.bodySmall),
-    const Spacer(),
-    Text(value, style: AppTheme.body.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+    const SizedBox(width: 12),
+    Expanded(
+      child: Text(value, textAlign: TextAlign.right, maxLines: 2, overflow: TextOverflow.ellipsis,
+        style: AppTheme.body.copyWith(fontWeight: FontWeight.w800, color: AppTheme.textPrimary)),
+    ),
   ]);
 }
 
@@ -618,7 +662,7 @@ class _CardForm extends StatelessWidget {
 
 class _CashNotice extends StatelessWidget {
   @override Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(24),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(color: AppTheme.success.withValues(alpha: 0.05), borderRadius: BorderRadius.circular(24), border: Border.all(color: AppTheme.success.withValues(alpha: 0.2))),
     child: Row(children: [
       const Icon(Icons.info_rounded, color: AppTheme.success, size: 32),
@@ -639,22 +683,22 @@ class _ReceiptView extends StatelessWidget {
       backgroundColor: AppTheme.bgDeep,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(20),
           child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             Container(
               width: 100, height: 100,
               decoration: const BoxDecoration(color: AppTheme.success, shape: BoxShape.circle),
               child: const Icon(Icons.check_rounded, color: Colors.white, size: 60),
             ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text('PAYMENT SUCCESSFUL', style: AppTheme.heading2.copyWith(letterSpacing: 2, fontSize: 20, color: AppTheme.success)),
             const SizedBox(height: 12),
             const Text('Your official EBM digital receipt has been generated.', textAlign: TextAlign.center, style: TextStyle(fontSize: 14)),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
             
             // Receipt Card
             Container(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32), boxShadow: AppTheme.glowShadow),
               child: Column(children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

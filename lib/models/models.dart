@@ -100,13 +100,30 @@ class VehicleRecord {
   // Build a record from a /payment/lookup match. The server computes the
   // amount owed and whether the vehicle can be self-paid, so we trust those
   // directly rather than recalculating locally.
-  factory VehicleRecord.fromPaymentMatch(Map<String, dynamic> m, {String? fallbackPlate}) {
+  //
+  // The lookup response only carries `db_name` (the tenant database's name,
+  // e.g. "Central Parking Database") — not the actual site name shown on the
+  // parking list (e.g. "Downtown Garage"). When the caller already has the
+  // facilities list loaded, resolve the real site by parking_id/db_id so the
+  // payment screens show the correct site name and address instead.
+  factory VehicleRecord.fromPaymentMatch(Map<String, dynamic> m, {String? fallbackPlate, List<ParkingFacility>? facilities}) {
     final payable = m['payable'] != false; // default true unless explicitly false
     final hours = double.tryParse(m['hours']?.toString() ?? '0') ?? 0.0;
     final entry = DateTime.tryParse((m['entre_time'] ?? m['entry_time'] ?? '').toString())
         ?? DateTime.now().subtract(Duration(minutes: (hours * 60).round()));
     final exit = DateTime.tryParse((m['exit_time'] ?? '').toString());
     final owed = double.tryParse(m['amount_owed']?.toString() ?? '');
+    final matchParkingId = int.tryParse(m['parking_id']?.toString() ?? '');
+    final matchDbId = int.tryParse(m['db_id']?.toString() ?? '');
+    ParkingFacility? site;
+    if (facilities != null && matchParkingId != null) {
+      for (final f in facilities) {
+        if (f.parkingId == matchParkingId && (matchDbId == null || f.dbId == matchDbId)) {
+          site = f;
+          break;
+        }
+      }
+    }
     return VehicleRecord(
       slotId:         '${m['db_id'] ?? ''}-${m['p_in_id'] ?? m['parking_id'] ?? ''}',
       plateNumber:    (m['plate_no'] ?? fallbackPlate ?? '').toString().toUpperCase(),
@@ -116,8 +133,8 @@ class VehicleRecord {
       entryTime:      entry,
       exitTime:       exit,
       spotNumber:     m['parking_id']?.toString() ?? '—',
-      parkingName:    m['db_name']?.toString() ?? 'Parking Site',
-      parkingAddress: '',
+      parkingName:    site?.fullParkName ?? m['db_name']?.toString() ?? 'Parking Site',
+      parkingAddress: site?.address ?? '',
       vehicleType:    'Vehicle',
       vehicleColor:   '—',
       vehicleMake:    '—',

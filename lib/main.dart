@@ -7,6 +7,7 @@ import 'screens/main_layout.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/history_screen.dart';
 import 'providers/app_provider.dart';
+import 'providers/theme_provider.dart';
 import 'app_navigation.dart';
 
 void main() async {
@@ -16,9 +17,14 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   AppTheme.setSystemUI();
+  final themeProvider = ThemeProvider();
+  await themeProvider.load();
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => AppProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppProvider()),
+        ChangeNotifierProvider.value(value: themeProvider),
+      ],
       child: const ITECParkingApp(),
     ),
   );
@@ -28,11 +34,14 @@ class ITECParkingApp extends StatelessWidget {
   const ITECParkingApp({super.key});
 
   @override Widget build(BuildContext context) {
+    final themeMode = context.watch<ThemeProvider>().mode;
     return MaterialApp(
       title: 'ITEC Parking',
       navigatorKey: AppNavigation.navigatorKey,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.theme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       // Clamp system font scaling so very large accessibility text sizes
       // can't overflow or hide content on any screen, while still honouring
       // moderate scaling for readability.

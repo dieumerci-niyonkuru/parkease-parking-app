@@ -80,7 +80,7 @@ class _PlateLookupScreenState extends State<PlateLookupScreen> {
               ]),
               const SizedBox(height: 4),
               Text('Instant Multi-Site Search'.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.grey, letterSpacing: 2)),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
                   color: AppTheme.bgDeep,
@@ -141,12 +141,12 @@ class _RecordDetails extends StatelessWidget {
   @override Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       child: Column(children: [
         
         // ── FEE CARD ────────────────────────────────────────────────
         Container(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             color: AppTheme.primary,
             borderRadius: BorderRadius.circular(28),
@@ -157,9 +157,9 @@ class _RecordDetails extends StatelessWidget {
             const SizedBox(height: 12),
             Text('RWF ${NumberFormat('#,###').format(record.totalAmount)}', 
               style: const TextStyle(fontSize: 44, fontWeight: FontWeight.w900, color: Colors.white, fontFamily: 'monospace')),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             const Divider(color: Colors.white24),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
               _InfoBit(label: 'DURATION', value: record.durationDisplay),
               _InfoBit(label: 'RATE', value: '${record.ratePerHour.toInt()}/hr'),
@@ -168,7 +168,7 @@ class _RecordDetails extends StatelessWidget {
           ]),
         ).animate().fadeIn().scale(duration: 400.ms, curve: Curves.easeOutBack),
         
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
 
         // ── PAY BUTTON (or postpaid notice) ─────────────────────────
         if (record.payable)
@@ -207,7 +207,7 @@ class _RecordDetails extends StatelessWidget {
             ]),
           ).animate().fadeIn(delay: 300.ms),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 20),
         
         // ── VEHICLE & LOCATION DETAILS ──────────────────────────────
         _DetailCard(title: 'YOUR PARKING DETAILS', items: [
@@ -226,7 +226,7 @@ class _RecordDetails extends StatelessWidget {
           _Row('Slot Number', record.spotNumber, isHighlight: true),
         ]).animate().fadeIn(delay: 550.ms),
         
-        const SizedBox(height: 40),
+        const SizedBox(height: 24),
       ]),
     );
   }
@@ -248,7 +248,7 @@ class _DetailCard extends StatelessWidget {
   const _DetailCard({required this.title, required this.items});
   @override Widget build(BuildContext context) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20), 
       border: Border.all(color: AppTheme.border, width: 0.5),
@@ -284,7 +284,7 @@ class _WelcomeView extends StatelessWidget {
   @override Widget build(BuildContext context) => Center(
     child: Column(mainAxisSize: MainAxisSize.min, children: [
       Icon(Icons.directions_car_filled_rounded, color: AppTheme.textHint.withValues(alpha: 0.5), size: 100),
-      const SizedBox(height: 24),
+      const SizedBox(height: 16),
       Text('Ready to pay?', style: AppTheme.heading2),
       const SizedBox(height: 10),
       Padding(
@@ -305,15 +305,15 @@ class _ErrorView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: AppTheme.warning.withValues(alpha: 0.1), shape: BoxShape.circle),
           child: const Icon(Icons.search_off_rounded, color: AppTheme.warning, size: 44),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         Text('No Result Found', style: AppTheme.heading4.copyWith(color: AppTheme.textPrimary)),
         const SizedBox(height: 8),
         Text(message, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         TextButton.icon(
           onPressed: onRetry,
           icon: const Icon(Icons.refresh_rounded),

@@ -114,7 +114,7 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final result = await ApiService.lookupVehicle(slotId);
+      final result = await ApiService.lookupVehicle(slotId, facilities: _facilities);
       if (result == null) {
         _lookupError = 'No parking charges found for "$slotId". This vehicle may not be parked right now, or has nothing to pay.';
       } else {
@@ -154,6 +154,7 @@ class AppProvider extends ChangeNotifier {
           final record = VehicleRecord.fromPaymentMatch(
             (matches.first as Map).cast<String, dynamic>(),
             fallbackPlate: plate,
+            facilities: _facilities,
           );
           
           _currentRecord = record;

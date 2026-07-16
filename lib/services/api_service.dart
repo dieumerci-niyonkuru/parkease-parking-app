@@ -253,7 +253,7 @@ class ApiService {
   // Searches every registered parking database for the plate and reports what
   // is owed. Returns the first match as a VehicleRecord (carrying the real
   // amount owed, db_id, p_in_id, payment_type and payable flag needed to pay).
-  static Future<VehicleRecord?> lookupVehicle(String plate) async {
+  static Future<VehicleRecord?> lookupVehicle(String plate, {List<ParkingFacility>? facilities}) async {
     final result = await paymentLookup(plate);
     if (result['success'] == true) {
       final matches = (result['matches'] as List?) ?? [];
@@ -261,6 +261,7 @@ class ApiService {
         return VehicleRecord.fromPaymentMatch(
           (matches.first as Map).cast<String, dynamic>(),
           fallbackPlate: plate,
+          facilities: facilities,
         );
       }
     }

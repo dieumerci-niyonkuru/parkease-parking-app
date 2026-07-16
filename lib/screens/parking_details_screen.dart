@@ -88,7 +88,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                   // ── SITE HEADER ───────────────────────────────────
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFF7F2), // Premium Cream
                       border: Border(bottom: BorderSide(color: AppTheme.primary.withValues(alpha: 0.1))),
@@ -130,7 +130,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                     ),
                   ).animate().fadeIn().slideY(begin: 0.1),
 
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
 
                   // ── PRICING SECTION ───────────────────────────────
                   Padding(
@@ -149,7 +149,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                             hours: _estHours,
                             onChanged: (h) => setState(() => _estHours = h),
                           ).animate().fadeIn(),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
 
                         if (categories.isEmpty)
                           const _PricingUnavailable().animate().fadeIn()
@@ -164,7 +164,7 @@ class _ParkingDetailsScreenState extends State<ParkingDetailsScreen> {
                             ).animate().fadeIn(),
                           )),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 14),
                       ],
                     ),
                   ),
@@ -191,7 +191,7 @@ class _FeeEstimator extends StatelessWidget {
     final price = category.priceForHours(hours);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppTheme.primary,
         borderRadius: BorderRadius.circular(24),
@@ -257,7 +257,7 @@ class _CategoryPricingCard extends StatelessWidget {
     final previewTiers = category.tiers.where((t) => t.hours > 0).take(5).toList();
 
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7F2),
         borderRadius: BorderRadius.circular(28),
@@ -269,11 +269,11 @@ class _CategoryPricingCard extends StatelessWidget {
           Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
           const SizedBox(height: 16),
           const Divider(height: 1, thickness: 0.5),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           for (final t in previewTiers)
             _priceItem('${t.hours} Hour${t.hours == 1 ? "" : "s"}', '$sym${moneyFmt.format(t.price)}'),
           if (onViewFull != null) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Center(
               child: TextButton(
                 onPressed: onViewFull,
@@ -352,7 +352,7 @@ extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
     final moneyFmt = NumberFormat('#,###');
     final sym = _pricing?.currency == 'RWF' ? 'Frw ' : '${_pricing?.currency ?? ''} ';
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7F2),
         borderRadius: BorderRadius.circular(24),
@@ -380,7 +380,7 @@ extension _ParkingDetailsExtra on _ParkingDetailsScreenState {
 class _PricingUnavailable extends StatelessWidget {
   const _PricingUnavailable();
   @override Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(28),
+    padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       color: const Color(0xFFFFF7F2),
       borderRadius: BorderRadius.circular(28),

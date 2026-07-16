@@ -66,7 +66,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 Navigator.pop(ctx);
               },
             ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -135,7 +135,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -167,7 +167,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
             Text('Full Name', style: AppTheme.label),
             const SizedBox(height: 8),
             TextField(
@@ -175,7 +175,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
               decoration: const InputDecoration(hintText: 'John Doe'),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text('Email Address', style: AppTheme.label),
             const SizedBox(height: 8),
             TextField(
@@ -184,7 +184,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               style: AppTheme.body.copyWith(color: AppTheme.textPrimary),
               decoration: const InputDecoration(hintText: 'john@example.com'),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 28),
             SizedBox(
               width: double.infinity,
               height: 56,

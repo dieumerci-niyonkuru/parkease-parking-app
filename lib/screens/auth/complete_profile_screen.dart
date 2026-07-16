@@ -100,9 +100,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       backgroundColor: AppTheme.primary,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(20),
           child: Container(
-            padding: const EdgeInsets.all(28),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(32),
@@ -123,7 +123,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     mainAxisSize: MainAxisSize.min,
     children: [
       const Icon(Icons.contact_phone_rounded, color: Color(0xFF7A5B40), size: 64),
-      const SizedBox(height: 24),
+      const SizedBox(height: 16),
       const Text('One Last Step!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
       const SizedBox(height: 12),
       Text(
@@ -131,7 +131,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         textAlign: TextAlign.center,
         style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
       ),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
       TextField(
         controller: _phoneCtrl,
         keyboardType: TextInputType.phone,
@@ -151,7 +151,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         showFlag: true,
         showDropDownButton: true,
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
       TextField(
         controller: _passwordCtrl,
         obscureText: !_showPassword,
@@ -166,7 +166,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
       SizedBox(
         width: double.infinity,
         height: 56,
@@ -185,7 +185,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     mainAxisSize: MainAxisSize.min,
     children: [
       const Icon(Icons.sms_rounded, color: Color(0xFF7A5B40), size: 64),
-      const SizedBox(height: 24),
+      const SizedBox(height: 16),
       const Text('Verify OTP', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
       const SizedBox(height: 12),
       Text(
@@ -193,7 +193,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         textAlign: TextAlign.center,
         style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
       ),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
       TextField(
         controller: _otpCtrl,
         keyboardType: TextInputType.number,
@@ -206,7 +206,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           hintStyle: TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.w300),
         ),
       ),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
       SizedBox(
         width: double.infinity,
         height: 56,

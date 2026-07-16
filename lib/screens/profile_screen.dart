@@ -5,10 +5,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
 import '../services/phone_service.dart';
+import '../providers/theme_provider.dart';
 import 'auth/complete_profile_screen.dart';
 import 'auth/set_password_screen.dart';
 import 'phone_screen.dart';
@@ -66,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Navigator.pop(ctx);
               },
             ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
         ],
       ),
     );
@@ -154,7 +156,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (user?.phone == null || user!.phone.isEmpty || user.phone == '+250 7XX XXX XXX' || user.phone == '—')
                       Container(
                         margin: const EdgeInsets.only(bottom: 24),
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: AppTheme.warning.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(20),
@@ -237,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ]),
                   ),
                   
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // ── SECURITY SECTION ──────────────────────────────────
                   const _SectionHeader('SECURITY & ACCOUNT'),
@@ -251,14 +253,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     trailing: '${_phones.length} active', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PhoneScreen())).then((_) => _refresh()),
                   ),
-                  _ProfileTile(icon: Icons.security_rounded, label: 'Identity Verification', trailing: 'Verified', onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Identity verified via phone number.'), behavior: SnackBarBehavior.floating),
-                    );
-                  }),
                   _ProfileTile(icon: Icons.lock_outline_rounded, label: 'Set Password',
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SetPasswordScreen()))),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
                   
                   // ── PREFERENCES SECTION ───────────────────────────────
                   const _SectionHeader('PREFERENCES'),
@@ -267,43 +264,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     trailing: 'Enabled', 
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationSettingsScreen())),
                   ),
-                  _ProfileTile(icon: Icons.language_rounded, label: 'Language', trailing: 'English (RW)', onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Language selection coming soon.'), behavior: SnackBarBehavior.floating),
-                    );
-                  }),
-                  _ProfileTile(icon: Icons.dark_mode_outlined, label: 'Appearance', trailing: 'System', onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                        title: const Text('Appearance'),
-                        content: const Text('Theme customization will be available in a future update.'),
-                        actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
-                      ),
-                    );
-                  }),
+                  const _AppearanceTile(),
                   _ProfileTile(icon: Icons.monetization_on_outlined, label: 'View Price List', onTap: () => showPriceListSheet(context)),
                   
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
                   
                   // ── SUPPORT SECTION ───────────────────────────────────
                   const _SectionHeader('SUPPORT'),
                   _ProfileTile(icon: Icons.contact_support_rounded, label: 'Contact Us', onTap: () => _showContactSheet(context)),
-                  _ProfileTile(icon: Icons.help_outline_rounded, label: 'Help & FAQ Center', onTap: () async {
-                    final uri = Uri.parse('https://iteccone.com/help');
-                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }),
-                  _ProfileTile(icon: Icons.info_outline_rounded, label: 'About ITEC Rwanda', onTap: () async {
-                    final uri = Uri.parse('https://iteccone.com/about');
-                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }),
-                  _ProfileTile(icon: Icons.policy_outlined, label: 'Terms of Service', onTap: () async {
-                    final uri = Uri.parse('https://iteccone.com/terms');
-                    if (await canLaunchUrl(uri)) await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }),
-                  
-                  const SizedBox(height: 48),
+
+                  const SizedBox(height: 28),
                   
                   // ── LOGOUT BUTTON ─────────────────────────────────────
                   SizedBox(
@@ -319,7 +289,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
                   Center(child: Text('ITEC PARKING · VERSION 1.0.0', style: AppTheme.label.copyWith(fontSize: 8, color: AppTheme.textHint, letterSpacing: 1))),
                 ]),
               ),
@@ -365,8 +335,7 @@ class _BiometricToggleState extends State<_BiometricToggle> {
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border.withValues(alpha: 0.5), width: 1),
-        boxShadow: AppTheme.subtleShadow,
+        boxShadow: AppTheme.cardShadow,
       ),
       child: SwitchListTile(
         secondary: Container(
@@ -405,8 +374,7 @@ class _ProfileTile extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(
       color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.border.withValues(alpha: 0.5), width: 1),
-      boxShadow: AppTheme.subtleShadow,
+      boxShadow: AppTheme.cardShadow,
     ),
     child: ListTile(
       onTap: onTap,
@@ -424,6 +392,80 @@ class _ProfileTile extends StatelessWidget {
         const Icon(Icons.chevron_right_rounded, color: AppTheme.textMuted, size: 20),
       ]),
     ),
+  );
+}
+
+// ── APPEARANCE ────────────────────────────────────────────────────
+class _AppearanceTile extends StatelessWidget {
+  const _AppearanceTile();
+
+  @override Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    return _ProfileTile(
+      icon: Icons.dark_mode_outlined,
+      label: 'Appearance',
+      trailing: themeProvider.label,
+      onTap: () => _showPicker(context, themeProvider),
+    );
+  }
+
+  void _showPicker(BuildContext context, ThemeProvider themeProvider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.bgCard,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40, height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
+                ),
+              ),
+              Text('Appearance', style: AppTheme.heading4),
+              const SizedBox(height: 12),
+              _ModeOption(
+                icon: Icons.light_mode_outlined, label: 'Light',
+                selected: themeProvider.mode == ThemeMode.light,
+                onTap: () { themeProvider.setMode(ThemeMode.light); Navigator.pop(ctx); },
+              ),
+              _ModeOption(
+                icon: Icons.dark_mode_outlined, label: 'Dark',
+                selected: themeProvider.mode == ThemeMode.dark,
+                onTap: () { themeProvider.setMode(ThemeMode.dark); Navigator.pop(ctx); },
+              ),
+              _ModeOption(
+                icon: Icons.brightness_auto_outlined, label: 'System',
+                selected: themeProvider.mode == ThemeMode.system,
+                onTap: () { themeProvider.setMode(ThemeMode.system); Navigator.pop(ctx); },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ModeOption({required this.icon, required this.label, required this.selected, required this.onTap});
+
+  @override Widget build(BuildContext context) => ListTile(
+    onTap: onTap,
+    contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+    leading: Icon(icon, color: selected ? AppTheme.primary : AppTheme.textSecond),
+    title: Text(label, style: AppTheme.body.copyWith(fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
+    trailing: selected ? const Icon(Icons.check_circle_rounded, color: AppTheme.primary) : null,
   );
 }
 
@@ -450,18 +492,18 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20), onPressed: () => Navigator.pop(context)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const _SectionHeader('CHANNELS'),
           _SwitchCard(title: 'Push Notifications', sub: 'Instant updates on your device', val: _push, onChange: (v) => setState(() => _push = v)),
           _SwitchCard(title: 'SMS Alerts', sub: 'Direct text messages for critical alerts', val: _sms, onChange: (v) => setState(() => _sms = v)),
           _SwitchCard(title: 'Email Reports', sub: 'Weekly summaries and digital receipts', val: _email, onChange: (v) => setState(() => _email = v)),
           
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           const _SectionHeader('AUTOMATED ALERTS'),
           _SwitchCard(title: 'Parking Reminders', sub: 'Notify me 15 mins before duration ends', val: _reminder, onChange: (v) => setState(() => _reminder = v)),
           
-          const SizedBox(height: 48),
+          const SizedBox(height: 28),
           SizedBox(
             width: double.infinity, height: 64,
             child: ElevatedButton(
@@ -505,9 +547,9 @@ void _showContactSheet(BuildContext context) {
               decoration: BoxDecoration(color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           Text('GETTING ASSISTANCE', style: AppTheme.label.copyWith(color: AppTheme.primary, letterSpacing: 2, fontWeight: FontWeight.w900)),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
           _ContactRow(
             icon: Icons.phone_in_talk_rounded,
             label: 'Quick Call Us',
@@ -580,8 +622,7 @@ class _SwitchCard extends StatelessWidget {
     margin: const EdgeInsets.only(bottom: 12),
     decoration: BoxDecoration(
       color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: AppTheme.border.withValues(alpha: 0.5)),
-      boxShadow: AppTheme.subtleShadow,
+      boxShadow: AppTheme.cardShadow,
     ),
     child: SwitchListTile(
       value: val, onChanged: onChange,

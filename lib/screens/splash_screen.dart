@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../theme/app_theme.dart';
 import '../services/notification_service.dart';
 import '../services/profile_service.dart';
 import '../services/auth_service.dart';
+import '../providers/app_provider.dart';
 import 'main_layout.dart';
 import 'auth/login_screen.dart';
 import '../widgets/widgets.dart';
@@ -42,6 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
       AuthService.restore(),
       NotificationService.init(),
       ProfileService.load(),
+      context.read<AppProvider>().loadFacilities(),
     ]);
 
     bool isValid = true; 
@@ -115,7 +118,7 @@ class _SplashScreenState extends State<SplashScreen>
             ).animate().scale(begin: const Offset(0.5, 0.5), duration: 800.ms, curve: Curves.easeOutBack),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
           const Text('ITEC PARKING',
             style: TextStyle(color: Colors.white, fontSize: 28, letterSpacing: 4, fontWeight: FontWeight.w900),
           ).animate().fadeIn(delay: 300.ms),
@@ -136,7 +139,7 @@ class _SplashScreenState extends State<SplashScreen>
                 valueColor: AlwaysStoppedAnimation(Colors.white),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: Text(_step,

@@ -101,8 +101,18 @@ class AppTheme {
     color: primary, letterSpacing: 3.0,
   );
 
+  // ── Dark Palette ──────────────────────────────────────────────
+  static const Color darkBgDeep    = Color(0xFF17120F);
+  static const Color darkBgCard    = Color(0xFF241C17);
+  static const Color darkBorder    = Color(0xFF3A2F28);
+  static const Color darkTextPrimary = Color(0xFFF5F1ED);
+  static const Color darkTextSecond  = Color(0xFFC9BFB6);
+  static const Color darkTextMuted   = Color(0xFF9C8F84);
+
   // ── Theme Data ────────────────────────────────────────────────
-  static ThemeData get theme => ThemeData(
+  static ThemeData get theme => lightTheme;
+
+  static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
     scaffoldBackgroundColor: bgDeep,
@@ -181,6 +191,94 @@ class AppTheme {
     snackBarTheme: SnackBarThemeData(
       backgroundColor: textPrimary,
       contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMd)),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+
+  static ThemeData get darkTheme => ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: darkBgDeep,
+    colorScheme: const ColorScheme.dark(
+      primary: primary,
+      secondary: accent,
+      surface: darkBgCard,
+      error: danger,
+    ),
+    textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
+    appBarTheme: AppBarTheme(
+      backgroundColor: darkBgCard,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      titleTextStyle: GoogleFonts.inter(
+        fontSize: 18, fontWeight: FontWeight.w600, color: darkTextPrimary,
+      ),
+      iconTheme: const IconThemeData(color: darkTextPrimary),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: darkBgCard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: darkBorder),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: darkBorder),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: primary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: const BorderSide(color: danger, width: 1.5),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      hintStyle: GoogleFonts.inter(color: darkTextMuted),
+      labelStyle: GoogleFonts.inter(color: darkTextSecond),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radiusMd),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: darkBgCard,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(radiusLg),
+        side: const BorderSide(color: darkBorder, width: 0.5),
+      ),
+      margin: const EdgeInsets.only(bottom: 16),
+    ),
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: darkBgCard,
+      selectedItemColor: primary,
+      unselectedItemColor: darkTextMuted,
+      elevation: 8,
+      type: BottomNavigationBarType.fixed,
+    ),
+    dividerTheme: const DividerThemeData(color: darkBorder, thickness: 0.5),
+    dialogTheme: DialogThemeData(
+      backgroundColor: darkBgCard,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusXxl)),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: darkTextPrimary,
+      contentTextStyle: GoogleFonts.inter(color: darkBgDeep, fontSize: 13),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(radiusMd)),
       behavior: SnackBarBehavior.floating,
     ),

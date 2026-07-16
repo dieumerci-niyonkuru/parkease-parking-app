@@ -79,11 +79,6 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
-  bool get _isProfileIncomplete {
-    final user = AuthService.user;
-    return user == null || user.phone.isEmpty || user.phone == '+250 7XX XXX XXX' || user.phone == '—';
-  }
-
   void _triggerHeaderSearch() {
     if (!_isSearching) {
       setState(() => _isSearching = true);
@@ -141,7 +136,18 @@ class _MainLayoutState extends State<MainLayout> {
           : Row(
               children: [
                 GestureDetector(
-                  onTap: () => setState(() => _currentIndex = 0),
+                  onTap: () {
+                    _pageController.jumpToPage(0);
+                    _navigatorKeys[0].currentState?.popUntil((r) => r.isFirst);
+                    if (_isSearching) {
+                      _searchCtrl.clear();
+                      context.read<AppProvider>().updateSearchQuery('');
+                    }
+                    setState(() {
+                      _currentIndex = 0;
+                      _isSearching = false;
+                    });
+                  },
                   child: const ItecLogo(size: 32, fontSize: 18),
                 ),
                 const SizedBox(width: 12),
@@ -329,52 +335,9 @@ class _MainLayoutState extends State<MainLayout> {
       bottomNavigationBar: _PremiumBottomNav(
         current: _currentIndex,
         onTap: (i) {
-          if (i == 3 && _isProfileIncomplete) { // Receipts is now index 3
-            _showProfileRequiredDialog();
-            return;
-          }
           HapticFeedback.lightImpact();
           _pageController.animateToPage(i, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
         },
-      ),
-    );
-  }
-
-  void _showProfileRequiredDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        title: const Row(
-          children: [
-            Icon(Icons.lock_outline_rounded, color: Color(0xFF7A5B40)),
-            SizedBox(width: 12),
-            Text('Action Required', style: TextStyle(fontWeight: FontWeight.w900)),
-          ],
-        ),
-        content: const Text(
-          'To access Receipts, you must first complete your profile by linking a phone number.',
-          style: TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('LATER', style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w700)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              setState(() => _currentIndex = 4); // Account is now index 4
-              _pageController.animateToPage(4, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7A5B40),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('SET PHONE NOW', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
-          ),
-        ],
       ),
     );
   }
@@ -388,7 +351,7 @@ class _PremiumBottomNav extends StatelessWidget {
   @override Widget build(BuildContext context) {
     const items = [
       (Icons.home_rounded,            Icons.home_outlined,           'Home'),
-      (Icons.payment_rounded,         Icons.payment_outlined,        'Pay'),
+      (Icons.payments_rounded,        Icons.payments_outlined,       'Pay'),
       (Icons.directions_car_rounded,  Icons.directions_car_outlined, 'Parking Site'),
       (Icons.receipt_long_rounded,    Icons.receipt_long_outlined,   'Receipts'),
       (Icons.person_rounded,          Icons.person_outlined,         'Account'),

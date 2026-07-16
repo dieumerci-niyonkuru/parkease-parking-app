@@ -80,7 +80,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -96,14 +96,14 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                   size: 40,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Text(
                 isError ? 'Oops!' : 'Success',
                 style: AppTheme.heading2.copyWith(color: isError ? AppTheme.danger : AppTheme.success),
               ),
               const SizedBox(height: 8),
               Text(msg, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity, height: 50,
                 child: ElevatedButton(
@@ -154,7 +154,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
                   ),
                   const Expanded(child: Center(child: Text('ITEC PARKING', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: 4)))),
-                  const SizedBox(width: 48),
+                  const SizedBox(width: 28),
                 ]),
                 const SizedBox(height: 16),
                 const Icon(Icons.lock_reset_rounded, color: Colors.white, size: 48),
@@ -165,13 +165,13 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   Text('Enter your current password, then choose a new one to keep your account secure.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 18),
                   Text('CURRENT PASSWORD', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
                   const SizedBox(height: 8),
                   TextField(
@@ -192,7 +192,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   Text('NEW PASSWORD', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
                   const SizedBox(height: 8),
                   TextField(
@@ -213,7 +213,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   Text('CONFIRM PASSWORD', style: AppTheme.label.copyWith(fontWeight: FontWeight.w800, fontSize: 10)),
                   const SizedBox(height: 8),
                   TextField(
@@ -235,7 +235,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: const BorderSide(color: AppTheme.primary, width: 2)),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 20),
                   SizedBox(
                     height: 56,
                     child: ElevatedButton(

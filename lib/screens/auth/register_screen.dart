@@ -46,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _showDialog(String msg, {bool isError = true, bool showReclaim = false}) async {
+  Future<void> _showDialog(String msg, {bool isError = true, bool showReclaim = false, bool showSignIn = false}) async {
     if (!mounted) return;
     await showDialog(
       context: context,
@@ -55,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -71,14 +71,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   size: 40,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Text(
                 isError ? 'Oops!' : 'Success!',
                 style: AppTheme.heading2.copyWith(color: isError ? AppTheme.danger : AppTheme.success),
               ),
               const SizedBox(height: 8),
               Text(msg, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
               if (showReclaim) ...[
                 SizedBox(
                   width: double.infinity, height: 50,
@@ -96,6 +96,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 12),
               ],
+              if (showSignIn) ...[
+                SizedBox(
+                  width: double.infinity, height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      Navigator.pop(context); // back to the Sign In screen
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    child: const Text('GO TO SIGN IN', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity, height: 50,
                 child: OutlinedButton(
@@ -104,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     side: BorderSide(color: isError ? AppTheme.danger : AppTheme.success),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: Text(showReclaim ? 'Cancel' : 'OK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isError ? AppTheme.danger : AppTheme.success)),
+                  child: Text((showReclaim || showSignIn) ? 'Cancel' : 'OK', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: isError ? AppTheme.danger : AppTheme.success)),
                 ),
               ),
             ],
@@ -128,15 +145,35 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (result['success'] == true) {
+      final isReclaim = result['verification_type'] == 'reclaim';
       setState(() {
         _verificationPayload = result['verification_payload'] ?? '';
+        _isReclaimMode = isReclaim;
         _step = 2;
       });
-      _showDialog('OTP sent to $fullPhone', isError: false);
+      _showDialog(
+        isReclaim
+          ? 'This phone is already registered. We sent a code to $fullPhone to verify it\'s you.'
+          : 'OTP sent to $fullPhone',
+        isError: false,
+      );
+    } else if (result['can_reclaim'] == true) {
+      _showDialog(result['message'] ?? 'Failed to send OTP', showReclaim: true);
+    } else if (result['is_primary'] == true) {
+      // Already a verified primary phone on a live account. The server
+      // currently reports can_reclaim: false for this case (self-service
+      // takeover of a primary number is blocked), so tapping "Claim" will
+      // honestly report that back rather than silently failing — but the
+      // button stays so this starts working the moment reclaim is enabled
+      // for primary phones server-side, covering the case where someone
+      // else registered using this person's real number.
+      _showDialog(
+        'This phone number already belongs to an account. If that\'s not you, you can try to claim it — otherwise sign in, or contact support if you\'ve lost access.',
+        showReclaim: true,
+        showSignIn: true,
+      );
     } else {
-      final msg = result['message'] ?? 'Failed to send OTP';
-      bool userExists = msg.toLowerCase().contains('already exists') || msg.toLowerCase().contains('taken');
-      _showDialog(msg, showReclaim: userExists);
+      _showDialog(result['message'] ?? 'Failed to send OTP');
     }
   }
 
@@ -155,8 +192,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _step = 2;
       });
       _showDialog('Reclaim OTP sent to $fullPhone', isError: false);
+    } else if (result['can_reclaim'] == true) {
+      // The server confirms it will actually send a code for this phone.
+      setState(() {
+        _isReclaimMode = true;
+        _step = 2;
+      });
+      _showDialog('This phone is already registered. We sent a code to $fullPhone to verify it\'s you.', isError: false);
     } else {
-      _showDialog(result['message'] ?? 'Failed to initiate reclaim');
+      // can_reclaim: false — a verified primary phone can't be reclaimed
+      // via OTP (blocked for security). Sending the user to the OTP step
+      // here would just strand them waiting for a code that never comes.
+      _showDialog(
+        result['is_primary'] == true
+          ? 'This phone number is already the primary number on an existing account. For security, it can\'t be claimed here — please contact support.'
+          : (result['message'] ?? 'Failed to initiate reclaim'),
+      );
     }
   }
 
@@ -268,7 +319,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 48),
+                    const SizedBox(width: 28),
                   ],
                 ),
                 const SizedBox(height: 3),
@@ -405,7 +456,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Text('Create Account', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
       const SizedBox(height: 6),
       Text('Enter your phone number to get started', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
 
       const _FieldLabel(text: 'Phone Number'),
       const SizedBox(height: 8),
@@ -447,7 +498,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       ),
-      const SizedBox(height: 36),
+      const SizedBox(height: 22),
       _PrimaryButton(text: 'Send OTP', isLoading: _isLoading, onPressed: _initiateRegistration),
     ],
   );
@@ -471,7 +522,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ],
         ),
       ),
-      const SizedBox(height: 40),
+      const SizedBox(height: 24),
 
       // Large OTP input
       Container(
@@ -519,9 +570,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted),
         ),
       ),
-      const SizedBox(height: 36),
+      const SizedBox(height: 22),
       _PrimaryButton(text: 'Verify OTP', isLoading: _isLoading, onPressed: _verifyOtp),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
       Center(
         child: TextButton.icon(
           onPressed: _isLoading ? null : _initiateRegistration,
@@ -540,7 +591,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Text('Complete Profile', style: AppTheme.heading2.copyWith(fontWeight: FontWeight.w900)),
       const SizedBox(height: 6),
       Text('Almost there! Tell us a bit about yourself.', style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-      const SizedBox(height: 32),
+      const SizedBox(height: 20),
 
       const _FieldLabel(text: 'Username'),
       const SizedBox(height: 8),
@@ -550,7 +601,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         style: _inputStyle,
         decoration: _inputDeco(hint: 'e.g. john_doe', icon: Icons.account_circle_outlined),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
 
       const _FieldLabel(text: 'Full Name'),
       const SizedBox(height: 8),
@@ -560,7 +611,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         style: _inputStyle,
         decoration: _inputDeco(hint: 'John Doe', icon: Icons.person_outline_rounded),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
 
       const _FieldLabel(text: 'Email Address'),
       const SizedBox(height: 8),
@@ -571,7 +622,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         style: _inputStyle,
         decoration: _inputDeco(hint: 'john@example.com', icon: Icons.email_outlined),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
 
       const _FieldLabel(text: 'Password'),
       const SizedBox(height: 8),
@@ -592,7 +643,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       ),
-      const SizedBox(height: 20),
+      const SizedBox(height: 14),
 
       const _FieldLabel(text: 'Confirm Password'),
       const SizedBox(height: 8),
@@ -620,7 +671,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SizedBox(width: 6),
         Text('Use at least 6 characters.', style: AppTheme.bodySmall.copyWith(color: AppTheme.textMuted)),
       ]),
-      const SizedBox(height: 28),
+      const SizedBox(height: 18),
       _PrimaryButton(text: 'Create Account', isLoading: _isLoading, onPressed: _completeRegistration),
     ],
   );

@@ -112,7 +112,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 Text(title, style: AppTheme.heading3),
                 const SizedBox(height: 6),
                 Text(
@@ -121,7 +121,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                         : 'Reclaim a number that was registered by someone else.',
                   style: AppTheme.body,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 if (!otpSent) ...[
                   Text('Phone Number', style: AppTheme.label),
@@ -196,7 +196,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                   ),
                 ],
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -308,7 +308,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                       ),
                     ],
                   ).animate().fadeIn(delay: 50.ms),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
 
                   // ── Phone List ────────────────────────────
                   Container(
@@ -320,7 +320,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                     ),
                     child: _phones.isEmpty
                         ? Padding(
-                            padding: const EdgeInsets.all(32),
+                            padding: const EdgeInsets.all(20),
                             child: Center(
                               child: Column(children: [
                                 const Icon(Icons.phone_disabled_rounded,
@@ -393,7 +393,7 @@ class _PhoneScreenState extends State<PhoneScreen> {
                             }),
                           ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
                   // ── Info Card ─────────────────────────────
                   Container(

@@ -69,12 +69,12 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
         title: Text('RECEIPT DETAILS', style: AppTheme.heading4.copyWith(letterSpacing: 1.2, color: AppTheme.primary)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // ── RECEIPT HEADER ─────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(24),
@@ -99,7 +99,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
               ),
             ).animate().fadeIn().scale(begin: const Offset(0.9, 0.9)),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // ── PDF VIEW BUTTON ────────────────────────────────
             if (entry.receiptUrl != null && entry.receiptUrl!.isNotEmpty)
@@ -122,7 +122,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
 
             // ── SESSION DETAILS ────────────────────────────────
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(20),
@@ -141,11 +141,11 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
               ),
             ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // ── PARKING SITE INFO ──────────────────────────────
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(20),
@@ -163,7 +163,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
               ),
             ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.1),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // ── ACTIONS ────────────────────────────────────────
             Row(
@@ -195,7 +195,7 @@ class _ReceiptDetailScreenState extends State<ReceiptDetailScreen> {
               ],
             ).animate().fadeIn(delay: 400.ms),
             
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
             Text('Thank you for using ITEC Parking Services!',
               style: AppTheme.label.copyWith(color: AppTheme.textMuted, fontStyle: FontStyle.italic)),
           ],

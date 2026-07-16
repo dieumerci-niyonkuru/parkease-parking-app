@@ -134,7 +134,7 @@ class SocialAuthService {
           createdAt: DateTime.now().toIso8601String(),
         );
         await AuthService.persistSession(token, user);
-        return {'success': true, 'requires_phone': data['requires_phone'] ?? true};
+        return {'success': true, 'requires_phone': data['requires_phone'] ?? false};
       }
       return {'success': false, 'message': data['message'] ?? 'Social login failed'};
     } catch (e) {

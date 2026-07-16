@@ -732,7 +732,7 @@ class _ActiveSessionCardState extends State<ActiveSessionCard> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF15302A),
+          color: AppTheme.primaryDeep,
           borderRadius: BorderRadius.circular(AppTheme.radiusXl),
           border: Border.all(color: AppTheme.primary.withValues(alpha: 0.3), width: 1.5),
           boxShadow: [BoxShadow(color: AppTheme.primary.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 8))],
@@ -830,20 +830,53 @@ class ItecLogo extends StatelessWidget {
           ),
         ],
       ),
-      child: Center(
-        child: Text(
-          'P',
-          style: TextStyle(
-            color: textColor ?? const Color(0xFF7A5B40),
-            fontSize: fontSize,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0,
-            height: 1,
-          ),
+      child: Padding(
+        padding: EdgeInsets.all(size * 0.16),
+        child: CustomPaint(
+          size: Size(size, size),
+          painter: _ConeLogoPainter(coneColor: textColor ?? const Color(0xFF7A5B40)),
         ),
       ),
     );
   }
+}
+
+// Stylized parking-cone mark: a solid triangle with a soft highlight gap
+// above its base and a flattened shadow ellipse beneath it.
+class _ConeLogoPainter extends CustomPainter {
+  final Color coneColor;
+  const _ConeLogoPainter({required this.coneColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width, h = size.height;
+
+    final shadowPaint = Paint()..color = const Color(0xFF4A4A4A).withValues(alpha: 0.85);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.5, h * 0.885), width: w * 0.66, height: h * 0.13),
+      shadowPaint,
+    );
+
+    final conePath = Path()
+      ..moveTo(w * 0.5, h * 0.02)
+      ..lineTo(w * 0.82, h * 0.80)
+      ..quadraticBezierTo(w * 0.5, h * 0.855, w * 0.18, h * 0.80)
+      ..close();
+    canvas.drawPath(conePath, Paint()..color = coneColor);
+
+    final gapPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = h * 0.045
+      ..strokeCap = StrokeCap.round;
+    final gapPath = Path()
+      ..moveTo(w * 0.20, h * 0.795)
+      ..quadraticBezierTo(w * 0.5, h * 0.845, w * 0.80, h * 0.795);
+    canvas.drawPath(gapPath, gapPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ConeLogoPainter oldDelegate) => oldDelegate.coneColor != coneColor;
 }
 
 // ── Empty State ───────────────────────────────────────────────────

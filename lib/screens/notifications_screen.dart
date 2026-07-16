@@ -63,7 +63,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: notifs.isEmpty
         ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(color: AppTheme.primary.withValues(alpha: 0.08), shape: BoxShape.circle),
               child: const Icon(Icons.notifications_off_outlined, color: AppTheme.primary, size: 44),
             ),

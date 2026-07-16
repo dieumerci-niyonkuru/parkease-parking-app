@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -64,14 +64,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   size: 40,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Text(
                 isError ? 'Oops!' : 'Success',
                 style: AppTheme.heading2.copyWith(color: isError ? AppTheme.danger : AppTheme.success),
               ),
               const SizedBox(height: 8),
               Text(msg, textAlign: TextAlign.center, style: AppTheme.body.copyWith(color: AppTheme.textMuted)),
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity, height: 50,
                 child: ElevatedButton(
@@ -148,7 +148,7 @@ class _LoginScreenState extends State<LoginScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         backgroundColor: Colors.white,
         child: Padding(
-          padding: const EdgeInsets.all(28),
+          padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -160,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: const Icon(Icons.fingerprint_rounded, color: AppTheme.primary, size: 40),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
               Text('Enable Fingerprint?', style: AppTheme.heading3.copyWith(fontWeight: FontWeight.w900)),
               const SizedBox(height: 8),
               Text(
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 textAlign: TextAlign.center,
                 style: AppTheme.body.copyWith(color: AppTheme.textMuted),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
               Row(children: [
                 Expanded(
                   child: OutlinedButton(
@@ -222,7 +222,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (result['success'] == true) {
-      if (result['requires_phone'] == true || (AuthService.user?.phone.isEmpty ?? true)) {
+      // Trust the account's actual phone field first — the server's
+      // requires_phone flag is only consulted when we don't already have a
+      // real phone number on file, so a returning social-login user whose
+      // account already has a phone never gets sent to "set phone number".
+      final phone = AuthService.user?.phone ?? '';
+      final hasPhone = phone.isNotEmpty && phone != '+250 7XX XXX XXX' && phone != '—';
+      if (!hasPhone && result['requires_phone'] == true) {
         Navigator.push(context, MaterialPageRoute(builder: (_) => const CompleteProfileScreen()));
       } else {
         _goToMain();
@@ -266,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(color: AppTheme.primary.withValues(alpha: 0.7), fontSize: 9, fontWeight: FontWeight.w700, letterSpacing: 2))
                 .animate().fadeIn(delay: 200.ms),
 
-              const SizedBox(height: 28),
+              const SizedBox(height: 18),
 
               // ── FLOATING AUTH CARD ───────────────────────────────
               Container(
@@ -372,7 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ).animate().fadeIn(delay: 220.ms).slideY(begin: 0.04),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 18),
 
                   // ── SOCIAL LOGIN ───────────────────────────────────
                   Padding(
@@ -392,20 +398,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _SocialIconButton(
-                        icon: Image.asset(
-                          'assets/images/app_photos/google_logo.png',
-                          width: 22, height: 22,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 22, height: 22,
-                            decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFF4285F4)),
-                            child: const Center(child: Text('G', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12))),
-                          ),
-                        ),
+                        icon: const Icon(Icons.g_mobiledata_rounded, color: AppTheme.textPrimary, size: 30),
                         onTap: () => _socialLogin('Google'),
                       ).animate().fadeIn(delay: 500.ms),
                       const SizedBox(width: 14),
                       _SocialIconButton(
-                        icon: Icon(Icons.facebook_rounded, color: const Color(0xFF1877F2).withValues(alpha: 0.3), size: 24),
+                        icon: Icon(Icons.facebook_rounded, color: Colors.black.withValues(alpha: 0.3), size: 24),
                         onTap: () => ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Sign in with Facebook is coming soon.'), behavior: SnackBarBehavior.floating),
                         ),
@@ -420,7 +418,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 18),
 
                   // ── REGISTER LINK ───────────────────────────────────
                   Center(
@@ -440,10 +438,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ).animate().fadeIn(delay: 600.ms),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                   const Text('Copyright © 2026 ITEC Parking',
                     style: TextStyle(color: AppTheme.textHint, fontSize: 10, fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 14),
                 ],
               ),
             ),

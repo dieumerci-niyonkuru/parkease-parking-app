@@ -32,7 +32,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
     // Default to Today
     final now = DateTime.now();
@@ -70,10 +70,6 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
         case 2: // Month
           _from = DateTime(now.year, now.month, 1);
           _to   = now;
-          break;
-        case 3: // All
-          _from = null;
-          _to   = null;
           break;
       }
     });
@@ -214,7 +210,7 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                     ]),
                   ).animate().fadeIn().slideY(begin: 0.1),
                 ],
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
                 TabBar(
                   controller: _tabController,
                   isScrollable: false,
@@ -229,7 +225,6 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
                     Tab(text: 'TODAY'),
                     Tab(text: 'WEEK'),
                     Tab(text: 'MONTH'),
-                    Tab(text: 'ALL'),
                   ],
                 ),
               ],
@@ -560,7 +555,7 @@ class _EmptyState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 48),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Icon(hasFilter ? Icons.filter_list_off_rounded : Icons.receipt_long_rounded, color: AppTheme.textHint.withValues(alpha: 0.3), size: 80),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         Text(hasFilter ? 'No records in this date range' : 'No transaction history', style: AppTheme.heading3.copyWith(color: AppTheme.textMuted), textAlign: TextAlign.center),
         const SizedBox(height: 10),
         Text(hasFilter ? 'Try selecting a wider date range or clear the filter.' : 'Your official parking receipts will appear here after your first payment.', style: AppTheme.bodySmall, textAlign: TextAlign.center),

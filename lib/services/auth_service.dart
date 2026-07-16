@@ -232,20 +232,34 @@ class AuthService {
           'success': true,
           'message': data['message'] ?? 'OTP sent',
           'verification_payload': data['verification_payload'] ?? data['data']?['verification_payload'] ?? '',
+          // The server tells us via this field whether the phone is new
+          // ("register") or already belongs to an account ("reclaim") —
+          // trust it over guessing from error text.
+          'verification_type': data['verification_type'] ?? 'register',
         };
       }
-      return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to send OTP',
+        'can_reclaim': data['can_reclaim'] ?? false,
+        'is_primary': data['is_primary'] ?? false,
+      };
     } catch (e) {
       return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }
   }
 
   // ── Register: step 1.5 — initiate reclaim OTP ────────────────
+  // /auth/phone/reclaim/initiate requires a Bearer token (it's for an
+  // already-logged-in user attaching a phone to their account), which a
+  // user stuck on the registration screen never has. The only public
+  // endpoint that can send an OTP for an existing phone is
+  // /auth/register/initiate itself — reuse it here, then verify with the
+  // public /auth/register/verify-reclaim-otp.
   static Future<Map<String, dynamic>> initiateReclaimForRegistration(String phone) async {
     try {
-      // NOTE: This uses the public reclaim initiation which doesn't require a token
       final resp = await http.post(
-        Uri.parse('$baseUrl/auth/phone/reclaim/initiate'),
+        Uri.parse('$baseUrl/auth/register/initiate'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'phone': phone}),
       ).timeout(timeout);
@@ -255,9 +269,20 @@ class AuthService {
         return {
           'success': true,
           'message': data['message'] ?? 'Reclaim OTP sent',
+          'verification_type': data['verification_type'] ?? 'register',
         };
       }
-      return {'success': false, 'message': data['message'] ?? 'Failed to send reclaim OTP'};
+      // The server tells us explicitly whether this phone can actually be
+      // reclaimed via OTP — a verified primary phone on a live account
+      // comes back with can_reclaim: false (self-service reset is
+      // intentionally blocked for security), so don't imply an OTP is on
+      // its way when the server has already said it won't send one.
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to send reclaim OTP',
+        'can_reclaim': data['can_reclaim'] ?? false,
+        'is_primary': data['is_primary'] ?? false,
+      };
     } catch (e) {
       return {'success': false, 'message': AppUtils.friendlyNetworkError()};
     }

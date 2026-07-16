@@ -113,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         if (!ApiService.lastFetchSuccessful)
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -140,7 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: _StatCard(icon: Icons.phone_android_rounded, iconBg: AppTheme.success, label: 'LINKED PHONES', value: _phones.length.toString()),
                           )),
                         ]).animate().fadeIn().slideY(begin: 0.1),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         // ── INLINE SEARCH FIELD ──────────────────────────
                         Container(
                           height: 46,
@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                           ]),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 14),
 
                         const Text('Parking Sites', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF212529))),
                         const SizedBox(height: 16),
@@ -266,14 +266,11 @@ class _ParkingHubCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: const Color(0xFFFFF7F2), // Light peach/cream from mockup
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.primary.withValues(alpha: 0.05)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))
-          ],
+          boxShadow: AppTheme.cardShadow,
         ),
         child: Column(
           children: [
@@ -308,7 +305,7 @@ class _ParkingHubCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.grey.shade700)),
-          const SizedBox(width: 24),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               value, 
@@ -333,7 +330,7 @@ class _StatCard extends StatelessWidget {
   const _StatCard({required this.icon, required this.iconBg, required this.label, required this.value});
 
   @override Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(20),
+    padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(color: AppTheme.bgCard, borderRadius: BorderRadius.circular(20), boxShadow: AppTheme.subtleShadow),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
